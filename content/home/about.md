@@ -39,7 +39,7 @@ weight = 1
 
 I am an Assistant Professor in the [Quantitative and Mixed Method Research 
 Methodology (QMRM) 
-Program](http://cech.uc.edu/programs/educational_studies/phd-in-edst/concentrations/qmrm.html)
+Program](http://http://cech.uc.edu/education/programs/educational-studies/phd-in-edst/concentrations/qmrm.html)
 in the School of Education at the University of Cincinnati. I received my Ph.D. 
 in Educational Psychology at Texas A&M University.
 
