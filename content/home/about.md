@@ -58,5 +58,3 @@ in other areas such as special education, evolutionary psychology, health
 sciences, etc.
 
 [Click here for a PDF version of my CV](/files/Vita_Lai.pdf)
-
-Testing
