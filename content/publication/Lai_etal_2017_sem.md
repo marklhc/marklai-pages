@@ -10,7 +10,7 @@ publication = "In *Structural Equation Modeling: A Multidisciplinary Journal*"
 publication_short = "*STRUCT EQU MODELING*"
 selected = true
 title = "Understanding the Impact of Partial Factorial Invariance on Selection Accuracy: An R Script"
-url_code = ""
+url_code = "https://github.com/marklhc/PartInv"
 url_dataset = ""
 url_pdf = ""
 url_project = ""
@@ -20,6 +20,10 @@ url_video = ""
 [[url_custom]]
 name = "View Journal Article"
 url = "https://doi.org/10.1080/10705511.2017.1318703"
+
+[[url_custom]]
+name = "Web Application"
+url = "https://sites.google.com/site/partialinvarianceselection/"
 
 # Optional featured image (relative to `static/img/` folder).
 [header]
