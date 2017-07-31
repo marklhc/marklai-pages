@@ -5,9 +5,9 @@
 date = "2016-04-20T00:00:00"
 draft = false
 
-title = "Projects"
+title = "Software"
 subtitle = ""
-widget = "projects"
+widget = "software"
 
 # Order that this section will appear in.
 weight = 50
@@ -26,8 +26,8 @@ view = 1
   tag = "*"
   
 [[filter]]
-  name = "Deep Learning"
-  tag = ".deep-learning"
+  name = "Bayesian"
+  tag = ".bayes"
 
 [[filter]]
   name = "Other"
