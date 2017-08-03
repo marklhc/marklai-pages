@@ -1,0 +1,380 @@
+---
+title: Bayesian MLM With Group Mean Centering
+author: Mark Lai
+date: '2017-08-01'
+slug: bayesian-mlm-with-group-mean-centering
+bibliography: references.bib
+categories:
+  - Statistics
+tags:
+  - multilevel
+  - R
+---
+
+
+
+<p>In the past week I was teaching a one-and-a-half-day workshop on multilevel modeling (MLM) at UC, where I discussed the use of group mean centering to decompose level-1 and level-2 effects of a predictor. In that session I ended by noting alternative approaches that reduce bias <span class="citation">(mainly from Lüdtke et al. 2008)</span>. That lead me also consider the use of Bayesian methods for group mean centering, which will be demonstrated in this post. (Turns out <span class="citation">Zitzmann, Lüdtke, and Robitzsch (2015)</span> has already discussed something similar, but still a good exercise. )</p>
+<div id="the-problem" class="section level2">
+<h2>The Problem</h2>
+<p>In some social scienc research, a predictor can have different meanings at different levels. For example, student’s competence, when aggregated to the school level, becomes the competitiveness of a school. As explained in the <a href="https://en.wikipedia.org/wiki/Big-fish%E2%80%93little-pond_effect">big-fish-little-pond effect</a>, whereas the former can help an individual’s self-concept, being in a more competitive environment can hurt one’s self-concept. Traditionally, and still popular nowadays, we investigate the differential effects of a predictor, <span class="math inline">\(X_{ij}\)</span>, on an outcome at different levels by including the group means, <span class="math inline">\(\bar X_{.j}\)</span>, in the equation.</p>
+<p>The problem, however, is that unless each cluster (e.g., school) has a very large sample size, the group means will not be very reliable. This is true even when the measurement of <span class="math inline">\(X_{ij}\)</span> is perfectly reliable. This is not difficult to understand: just remember in intro stats we learn that the standard error of the sample mean is <span class="math inline">\(\sigma / sqrt{N}\)</span>, so with limited <span class="math inline">\(N\)</span> our sample (group) mean can be quite different from the population (group) mean.</p>
+<p>What’s the problem when the group means are not reliable? Regression literature has shown that unreliability in the predictors lead to downwardly biased coefficients, which is what happen here. The way to account for that, in general, is to treat the unreliable as a latent variable, which is the approach discussed in <span class="citation">Lüdtke et al. (2008)</span> and also demonstrated later in this post.</p>
+</div>
+<div id="demonstration" class="section level2">
+<h2>Demonstration</h2>
+<p>Let’s compare the results using the well-known High School and Beyond Survey subsample discussed in the textbook by <span class="citation">Raudenbush and Bryk (2002)</span>. To illustrate the issue with unreliability of group means, I’ll use a subset of 800 cases, with a random sample of 5 cases from each school.</p>
+<pre class="r"><code>library(tidyverse)
+library(haven)
+library(lme4)
+library(brms)
+library(rstan)
+rstan_options(auto_write = TRUE)
+options(mc.cores = 2L)</code></pre>
+<pre class="r"><code>hsb &lt;- haven::read_sas(&#39;https://stats.idre.ucla.edu/wp-content/uploads/2016/02/hsb.sas7bdat&#39;)
+# Select a subsample
+set.seed(123)
+hsb_sub &lt;- hsb %&gt;% group_by(ID) %&gt;% sample_n(5)
+hsb_sub</code></pre>
+<pre><code>## # A tibble: 800 x 12
+## # Groups:   ID [160]
+##       ID  SIZE SECTOR PRACAD DISCLIM HIMINTY MEANSES MINORITY FEMALE    SES MATHACH `_MERGE`
+##    &lt;chr&gt; &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;
+##  1  1224   842      0   0.35   1.597       0  -0.428        0      1 -0.988  20.178        3
+##  2  1224   842      0   0.35   1.597       0  -0.428        0      0 -0.548   8.296        3
+##  3  1224   842      0   0.35   1.597       0  -0.428        0      1  0.042   2.927        3
+##  4  1224   842      0   0.35   1.597       0  -0.428        0      1  0.972   2.059        3
+##  5  1224   842      0   0.35   1.597       0  -0.428        1      0 -1.658   0.122        3
+##  6  1288  1855      0   0.27   0.174       0   0.128        1      0 -0.328  10.171        3
+##  7  1288  1855      0   0.27   0.174       0   0.128        0      1 -0.678  20.173        3
+##  8  1288  1855      0   0.27   0.174       0   0.128        0      0  0.032   7.519        3
+##  9  1288  1855      0   0.27   0.174       0   0.128        0      0  0.322  23.578        3
+## 10  1288  1855      0   0.27   0.174       0   0.128        0      0  0.682  18.792        3
+## # ... with 790 more rows</code></pre>
+<p>With the subsample, let’s study the association of socioeconomic status (<code>SES</code>) with math achievement (<code>MATHACH</code>) at the student level and the school level. The conventional way is to do group mean centering of <code>SES</code>, by computing the group means and the deviation of each <code>SES</code> score from the corresponding group mean.</p>
+<pre class="r"><code>hsb_sub &lt;- hsb_sub %&gt;% ungroup() %&gt;% 
+  mutate(SES_gpm = ave(SES, ID), SES_gpc = SES - SES_gpm)</code></pre>
+<p>To make things simpler, the random slope of <code>SES</code> is not included. Also, one can study differential effects with grand mean centering <span class="citation">(Enders and Tofighi 2007)</span>, but still the group means should be added as a predictor, so the same issue with unreliability still applies.</p>
+<div id="group-mean-centering-with-lme4" class="section level3">
+<h3>Group mean centering with <code>lme4</code></h3>
+<pre class="r"><code>m1_mer &lt;- lmer(MATHACH ~ SES_gpm + SES_gpc + (1 | ID), data = hsb_sub)
+summary(m1_mer)</code></pre>
+<pre><code>## Linear mixed model fit by REML [&#39;lmerMod&#39;]
+## Formula: MATHACH ~ SES_gpm + SES_gpc + (1 | ID)
+##    Data: hsb_sub
+## 
+## REML criterion at convergence: 5177.8
+## 
+## Scaled residuals: 
+##      Min       1Q   Median       3Q      Max 
+## -2.86505 -0.72680  0.03405  0.69500  2.84485 
+## 
+## Random effects:
+##  Groups   Name        Variance Std.Dev.
+##  ID       (Intercept)  3.285   1.813   
+##  Residual             35.190   5.932   
+## Number of obs: 800, groups:  ID, 160
+## 
+## Fixed effects:
+##             Estimate Std. Error t value
+## (Intercept)  12.7090     0.2546   49.92
+## SES_gpm       4.5859     0.5305    8.64
+## SES_gpc       2.0566     0.3573    5.76
+## 
+## Correlation of Fixed Effects:
+##         (Intr) SES_gpm
+## SES_gpm 0.067         
+## SES_gpc 0.000  0.000</code></pre>
+<p>So the results suggested that one unit difference <code>SES</code> is associated with 4.6 (<em>SE</em> = 0.53) units difference in mean <code>MATHACH</code> at the school level, but 2.1 (<em>SE</em> = 0.36) units difference in mean <code>MATHACH</code> at the student level.</p>
+<p>We can get the contextual effect by substracting the fixed effect coefficient of <code>SES_gpm</code> from that of <code>SES_gpc</code>, or by using the original <code>SES</code> variable <em>together with the group means</em>:</p>
+<pre class="r"><code>m1_mer2 &lt;- lmer(MATHACH ~ SES_gpm + SES + (1 | ID), data = hsb_sub)
+summary(m1_mer2)</code></pre>
+<pre><code>## Linear mixed model fit by REML [&#39;lmerMod&#39;]
+## Formula: MATHACH ~ SES_gpm + SES + (1 | ID)
+##    Data: hsb_sub
+## 
+## REML criterion at convergence: 5177.8
+## 
+## Scaled residuals: 
+##      Min       1Q   Median       3Q      Max 
+## -2.86505 -0.72680  0.03405  0.69500  2.84485 
+## 
+## Random effects:
+##  Groups   Name        Variance Std.Dev.
+##  ID       (Intercept)  3.285   1.813   
+##  Residual             35.190   5.932   
+## Number of obs: 800, groups:  ID, 160
+## 
+## Fixed effects:
+##             Estimate Std. Error t value
+## (Intercept)  12.7090     0.2546   49.92
+## SES_gpm       2.5292     0.6396    3.95
+## SES           2.0566     0.3573    5.76
+## 
+## Correlation of Fixed Effects:
+##         (Intr) SES_gp
+## SES_gpm  0.055       
+## SES      0.000 -0.559</code></pre>
+<p>The coefficient for <code>SES_gpm</code> is now the contextual effect. We can get a 95% confidence interval:</p>
+<pre class="r"><code>confint(m1_mer2, parm = &quot;beta_&quot;)</code></pre>
+<pre><code>## Warning in optwrap(optimizer, par = thopt, fn = mkdevfun(rho, 0L), lower = fitted@lower):
+## convergence code 3 from bobyqa: bobyqa -- a trust region step failed to reduce q</code></pre>
+<pre><code>##                 2.5 %    97.5 %
+## (Intercept) 12.210145 13.207796
+## SES_gpm      1.277615  3.780835
+## SES          1.355781  2.757512</code></pre>
+</div>
+<div id="same-analyses-with-bayesian-using-brms" class="section level3">
+<h3>Same analyses with Bayesian using <code>brms</code></h3>
+<p>I use the <code>brms</code> package with the default priors:</p>
+<span class="math display">\[\begin{align*}
+  Y_{ij} &amp; \sim N(\mu_j + \beta_1 (X_{ij} - \bar X_{.j}), \sigma^2) \\
+  \mu_j &amp; \sim N(\beta_0 + \beta_2 X_{.j}, \tau) \\
+  \beta &amp; \sim N(0, \inf) \\
+  \sigma &amp; \sim t_3(0, 10) \\
+  \tau &amp; \sim t_3(0, 10)
+\end{align*}\]</span>
+<pre class="r"><code>m1_brm &lt;- brm(MATHACH ~ SES_gpm + SES_gpc + (1 | ID), data = hsb_sub, 
+              control = list(max_treedepth = 15, adapt_delta = .90))
+summary(m1_brm)</code></pre>
+<pre><code>##  Family: gaussian(identity) 
+## Formula: MATHACH ~ SES_gpm + SES_gpc + (1 | ID) 
+##    Data: hsb_sub (Number of observations: 800) 
+## Samples: 4 chains, each with iter = 2000; warmup = 1000; thin = 1; 
+##          total post-warmup samples = 4000
+##     ICs: LOO = Not computed; WAIC = Not computed
+##  
+## Group-Level Effects: 
+## ~ID (Number of levels: 160) 
+##               Estimate Est.Error l-95% CI u-95% CI Eff.Sample Rhat
+## sd(Intercept)     1.76       0.4     0.85     2.45        578 1.01
+## 
+## Population-Level Effects: 
+##           Estimate Est.Error l-95% CI u-95% CI Eff.Sample Rhat
+## Intercept    12.71      0.26    12.21    13.20       4000    1
+## SES_gpm       4.58      0.54     3.52     5.61       4000    1
+## SES_gpc       2.06      0.35     1.38     2.76       4000    1
+## 
+## Family Specific Parameters: 
+##       Estimate Est.Error l-95% CI u-95% CI Eff.Sample Rhat
+## sigma     5.95      0.17     5.63     6.29       4000    1
+## 
+## Samples were drawn using sampling(NUTS). For each parameter, Eff.Sample 
+## is a crude measure of effective sample size, and Rhat is the potential 
+## scale reduction factor on split chains (at convergence, Rhat = 1).</code></pre>
+<p>With Bayesian, the results are similar to those with <code>lme4</code>.</p>
+<p>We can summarize the posterior of the contextual effect:</p>
+<pre class="r"><code>post_fixef &lt;- posterior_samples(m1_brm, pars = c(&quot;b_SES_gpm&quot;, &quot;b_SES_gpc&quot;))
+post_contextual &lt;- with(post_fixef, b_SES_gpm - b_SES_gpc)
+c(mean = mean(post_contextual), median = median(post_contextual), 
+  quantile(post_contextual, c(.025, .975)))</code></pre>
+<pre><code>##     mean   median     2.5%    97.5% 
+## 2.525012 2.527907 1.296587 3.814904</code></pre>
+<pre class="r"><code>ggplot(aes(x = post_contextual), data = data_frame(post_contextual)) + 
+    geom_density(bw = &quot;SJ&quot;)</code></pre>
+<p><img src="/post/2017-08-01-bayesian-mlm-with-group-mean-centering_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+</div>
+<div id="group-mean-centering-treating-group-means-as-latent-variables" class="section level3">
+<h3>Group mean centering treating group means as latent variables</h3>
+<p>Instead of treating the group means as known, we can instead treat them as latent variables: <span class="math display">\[X_{ij} \sim N(\mu_{Xj}, \sigma^2_X)\]</span></p>
+<p>and we can set up the model with the priors:</p>
+<span class="math display">\[\begin{align*}
+  Y_{ij} &amp; \sim N(\mu_j + \beta_1 (X_{ij} - \mu_{Xj}), \sigma^2) \\
+  X_{ij} &amp; \sim N(\mu_{Xj}, \sigma^2_X) \\
+  \mu_j &amp; \sim N(0, \tau_X) \\
+  \mu_{Xj} &amp; \sim N(\beta_0 + \beta_2 \mu_{Xj}, \tau) \\
+  \sigma &amp; \sim t_3(0, 10) \\
+  \tau &amp; \sim t_3(0, 10) \\
+  \sigma_X &amp; \sim t_3(0, 10) \\
+  \tau_X &amp; \sim t_3(0, 10) \\
+  \beta &amp; \sim N(0, 10) \\
+\end{align*}\]</span>
+<p>Notice that here we treat <span class="math inline">\(X\)</span> as an outcome variable with a random intercept, just like the way we model <span class="math inline">\(Y\)</span> when there is no predictor.</p>
+<p>Below is the STAN code for this model:</p>
+<pre><code>data { 
+  int&lt;lower=1&gt; N;  // total number of observations 
+  vector[N] Y;  // response variable 
+  int&lt;lower=1&gt; K;  // number of population-level effects 
+  matrix[N, K] X;  // population-level design matrix 
+  int&lt;lower=1&gt; q;  // index of which column needs group mean centering
+  // data for group-level effects of ID 1 
+  int&lt;lower=1&gt; gid[N]; 
+  int&lt;lower=1&gt; J; 
+} 
+transformed data { 
+  int Kc = K - 1; 
+  matrix[N, K - 1] Xc;  // centered version of X 
+  vector[K - 1] means_X;  // column means of X before centering
+  vector[N] xc;  // the column of X to be decomposed
+  for (i in 2:K) { 
+    means_X[i - 1] = mean(X[, i]); 
+    Xc[, i - 1] = X[, i] - means_X[i - 1]; 
+  } 
+  xc = Xc[, q - 1];
+} 
+parameters { 
+  vector[Kc] b;  // population-level effects at level-1
+  real bw;  // population-level effects at level-2
+  real b0;  // intercept (with centered variables)
+  real&lt;lower=0&gt; sigma_y;  // residual SD 
+  real&lt;lower=0&gt; tau_y;  // group-level standard deviations 
+  vector[J] z_y;  // unscaled group-level effects 
+  real&lt;lower=0&gt; sigma_x;  // residual SD 
+  real&lt;lower=0&gt; tau_x;  // group-level standard deviations 
+  vector[J] z_x;  // unscaled group-level effects 
+} 
+transformed parameters { 
+  // group-level effects 
+  vector[J] beta_y = tau_y * z_y; 
+  // group means for x
+  vector[J] beta_x = tau_x * z_x; 
+  matrix[N, K - 1] Xw_c = Xc;  // copy the predictor matrix
+  vector[N] mu_x; 
+  for (n in 1:N) { 
+    mu_x[n] = beta_x[gid[n]];
+  }
+  Xw_c[ , q - 1] = xc - mu_x;  // group mean centering
+} 
+model { 
+  vector[N] mu_y; 
+  for (n in 1:N) { 
+    mu_y[n] = beta_y[gid[n]];  // group specific effect
+  } 
+  // y = intercept + lv-1 + lv-2 effects of x
+  mu_y = b0 + mu_y + Xw_c * b + bw * mu_x;
+  // prior specifications 
+  b ~ normal(0, 10); 
+  bw ~ normal(0, 10); 
+  sigma_y ~ student_t(3, 0, 10); 
+  tau_y ~ student_t(3, 0, 10); 
+  z_y ~ normal(0, 1); 
+  sigma_x ~ student_t(3, 0, 10); 
+  tau_x ~ student_t(3, 0, 10); 
+  z_x ~ normal(0, 1); 
+  xc ~ normal(mu_x, sigma_x);  // prior for lv-1 predictor
+  // likelihood contribution 
+  Y ~ normal(mu_y, sigma_y); 
+} 
+generated quantities {
+  // contextual effect
+  real b_contextual = bw - b[q - 1];
+}</code></pre>
+<p>And to run it in <code>rstan</code>:</p>
+<pre class="r"><code>hsb_sdata &lt;- with(hsb_sub, 
+                  list(N = nrow(hsb_sub), 
+                       Y = MATHACH, 
+                       K = 2, 
+                       X = cbind(1, SES), 
+                       q = 2, 
+                       gid = match(ID, unique(ID)), 
+                       J = length(unique(ID))))
+m2_stan &lt;- stan(&quot;stan_gpc_pv.stan&quot;, data = hsb_sdata)</code></pre>
+<p>The results are shown below:</p>
+<pre class="r"><code>print(m2_stan, pars = c(&quot;b0&quot;, &quot;b&quot;, &quot;bw&quot;, &quot;b_contextual&quot;, &quot;sigma_y&quot;, &quot;tau_y&quot;, 
+                        &quot;sigma_x&quot;, &quot;tau_x&quot;))</code></pre>
+<pre><code>## Inference for Stan model: stan_gpc_pv.
+## 4 chains, each with iter=2000; warmup=1000; thin=1; 
+## post-warmup draws per chain=1000, total post-warmup draws=4000.
+## 
+##               mean se_mean   sd  2.5%   25%   50%   75% 97.5% n_eff Rhat
+## b0           12.57    0.00 0.25 12.09 12.40 12.56 12.73 13.06  4000 1.00
+## b[1]          2.03    0.01 0.37  1.31  1.78  2.02  2.28  2.74  4000 1.00
+## bw            6.22    0.02 0.98  4.38  5.54  6.19  6.83  8.25  1660 1.00
+## b_contextual  4.19    0.03 1.13  2.06  3.40  4.15  4.92  6.51  1512 1.00
+## sigma_y       5.96    0.00 0.17  5.64  5.84  5.95  6.07  6.31  4000 1.00
+## tau_y         1.36    0.02 0.52  0.19  1.03  1.43  1.73  2.23   452 1.01
+## sigma_x       0.66    0.00 0.02  0.62  0.65  0.66  0.67  0.70  4000 1.00
+## tau_x         0.38    0.00 0.04  0.31  0.35  0.38  0.40  0.45  1892 1.00
+## 
+## Samples were drawn using NUTS(diag_e) at Thu Aug  3 09:32:25 2017.
+## For each parameter, n_eff is a crude measure of effective sample size,
+## and Rhat is the potential scale reduction factor on split chains (at 
+## convergence, Rhat=1).</code></pre>
+<p>Note that the coefficient of <code>SES</code> at level-2 now has a posterior mean of 6.2 with a posterior <em>SD</em> of 0.98, and the contextual effect has a posterior mean of 4.2 with a posterior <em>SD</em> of 1.1</p>
+</div>
+</div>
+<div id="using-the-full-data" class="section level2">
+<h2>Using the Full Data</h2>
+<div id="with-lme4" class="section level3">
+<h3>With <code>lme4</code></h3>
+<pre class="r"><code>hsb &lt;- hsb %&gt;% mutate(SES_gpm = ave(SES, ID), SES_gpc = SES - SES_gpm)
+mfull_mer &lt;- lmer(MATHACH ~ SES_gpm + SES_gpc + (1 | ID), data = hsb)
+summary(mfull_mer)</code></pre>
+<pre><code>## Linear mixed model fit by REML [&#39;lmerMod&#39;]
+## Formula: MATHACH ~ SES_gpm + SES_gpc + (1 | ID)
+##    Data: hsb
+## 
+## REML criterion at convergence: 46568.6
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -3.1666 -0.7254  0.0174  0.7558  2.9454 
+## 
+## Random effects:
+##  Groups   Name        Variance Std.Dev.
+##  ID       (Intercept)  2.693   1.641   
+##  Residual             37.019   6.084   
+## Number of obs: 7185, groups:  ID, 160
+## 
+## Fixed effects:
+##             Estimate Std. Error t value
+## (Intercept)  12.6833     0.1494   84.91
+## SES_gpm       5.8662     0.3617   16.22
+## SES_gpc       2.1912     0.1087   20.16
+## 
+## Correlation of Fixed Effects:
+##         (Intr) SES_gpm
+## SES_gpm 0.010         
+## SES_gpc 0.000  0.000</code></pre>
+</div>
+<div id="with-bayesian-taking-into-account-the-unreliability" class="section level3">
+<h3>With Bayesian taking into account the unreliability</h3>
+<pre class="r"><code>hsb_sdata &lt;- with(hsb, 
+                  list(N = nrow(hsb), 
+                       Y = MATHACH, 
+                       K = 2, 
+                       X = cbind(1, SES), 
+                       q = 2, 
+                       gid = match(ID, unique(ID)), 
+                       J = length(unique(ID))))
+# This takes about 4 minutes on my computer
+m2full_stan &lt;- stan(&quot;stan_gpc_pv.stan&quot;, data = hsb_sdata)</code></pre>
+<pre class="r"><code>print(m2full_stan, pars = c(&quot;b0&quot;, &quot;b&quot;, &quot;bw&quot;, &quot;b_contextual&quot;, 
+                            &quot;sigma_y&quot;, &quot;tau_y&quot;, &quot;sigma_x&quot;, &quot;tau_x&quot;))</code></pre>
+<pre><code>## Inference for Stan model: stan_gpc_pv.
+## 4 chains, each with iter=2000; warmup=1000; thin=1; 
+## post-warmup draws per chain=1000, total post-warmup draws=4000.
+## 
+##               mean se_mean   sd  2.5%   25%   50%   75% 97.5% n_eff Rhat
+## b0           12.68    0.00 0.15 12.38 12.57 12.68 12.78 12.98  1156 1.01
+## b[1]          2.19    0.00 0.11  1.98  2.11  2.19  2.26  2.40  4000 1.00
+## bw            6.09    0.01 0.40  5.32  5.82  6.10  6.35  6.85  1032 1.00
+## b_contextual  3.90    0.01 0.42  3.10  3.62  3.90  4.18  4.71  1081 1.00
+## sigma_y       6.08    0.00 0.05  5.98  6.05  6.08  6.12  6.19  4000 1.00
+## tau_y         1.61    0.00 0.13  1.38  1.52  1.61  1.70  1.88  1232 1.00
+## sigma_x       0.67    0.00 0.01  0.66  0.66  0.67  0.67  0.68  4000 1.00
+## tau_x         0.40    0.00 0.02  0.36  0.39  0.40  0.42  0.45   552 1.00
+## 
+## Samples were drawn using NUTS(diag_e) at Thu Aug  3 09:36:12 2017.
+## For each parameter, n_eff is a crude measure of effective sample size,
+## and Rhat is the potential scale reduction factor on split chains (at 
+## convergence, Rhat=1).</code></pre>
+<p>Note that with higher reliabilities, the results are more similar. Also, the results accounting for unreliability with the subset is much closer to the results with the full sample.</p>
+</div>
+</div>
+<div id="bibliography" class="section level2 unnumbered">
+<h2>Bibliography</h2>
+<div id="refs" class="references">
+<div id="ref-Enders2007">
+<p>Enders, Craig K., and Davood Tofighi. 2007. “Centering predictor variables in cross-sectional multilevel models: A new look at an old issue.” <em>Psychological Methods</em> 12: 121–38. doi:<a href="https://doi.org/10.1037/1082-989X.12.2.121">10.1037/1082-989X.12.2.121</a>.</p>
+</div>
+<div id="ref-Ludtke2008">
+<p>Lüdtke, Oliver, Herbert W. Marsh, Alexander Robitzsch, Ulrich Trautwein, Tihomir Asparouhov, and Bengt Muthén. 2008. “The multilevel latent covariate model: A new, more reliable approach to group-level effects in contextual studies.” <em>Psychological Methods</em> 13: 203–29. doi:<a href="https://doi.org/10.1037/a0012869">10.1037/a0012869</a>.</p>
+</div>
+<div id="ref-Raudenbush2002">
+<p>Raudenbush, Stephen W., and Anthony S. Bryk. 2002. <em>Hierarchical linear models: Applications and data analysis methods</em>. 2nd ed. Thousand Oaks, CA: Sage.</p>
+</div>
+<div id="ref-Zitzmann2015">
+<p>Zitzmann, Steffen, Oliver Lüdtke, and Alexander Robitzsch. 2015. “A Bayesian approach to more stable estimates of group-level effects in contextual studies.” <em>Multivariate Behavioral Research</em> 50: 688–705. doi:<a href="https://doi.org/10.1080/00273171.2015.1090899">10.1080/00273171.2015.1090899</a>.</p>
+</div>
+</div>
+</div>
