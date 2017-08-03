@@ -198,8 +198,8 @@ c(mean = mean(post_contextual), median = median(post_contextual),
 <span class="math display">\[\begin{align*}
   Y_{ij} &amp; \sim N(\mu_j + \beta_1 (X_{ij} - \mu_{Xj}), \sigma^2) \\
   X_{ij} &amp; \sim N(\mu_{Xj}, \sigma^2_X) \\
-  \mu_j &amp; \sim N(0, \tau_X) \\
-  \mu_{Xj} &amp; \sim N(\beta_0 + \beta_2 \mu_{Xj}, \tau) \\
+  \mu_j &amp; \sim N(\beta_0 + \beta_2 \mu_{Xj}, \tau) \\
+  \mu_{Xj} &amp; \sim N(0, \tau_X) \\
   \sigma &amp; \sim t_3(0, 10) \\
   \tau &amp; \sim t_3(0, 10) \\
   \sigma_X &amp; \sim t_3(0, 10) \\
@@ -303,7 +303,7 @@ m2_stan &lt;- stan(&quot;stan_gpc_pv.stan&quot;, data = hsb_sdata)</code></pre>
 ## sigma_x       0.66    0.00 0.02  0.62  0.65  0.66  0.67  0.70  4000 1.00
 ## tau_x         0.38    0.00 0.04  0.31  0.35  0.38  0.40  0.45  1892 1.00
 ## 
-## Samples were drawn using NUTS(diag_e) at Thu Aug  3 10:14:27 2017.
+## Samples were drawn using NUTS(diag_e) at Thu Aug  3 10:37:15 2017.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).</code></pre>
@@ -372,7 +372,7 @@ m2full_stan &lt;- stan(&quot;stan_gpc_pv.stan&quot;, data = hsb_sdata)</code></p
 ## sigma_x       0.67    0.00 0.01  0.66  0.66  0.67  0.67  0.68  4000 1.00
 ## tau_x         0.40    0.00 0.02  0.36  0.39  0.40  0.42  0.45   552 1.00
 ## 
-## Samples were drawn using NUTS(diag_e) at Thu Aug  3 10:18:13 2017.
+## Samples were drawn using NUTS(diag_e) at Thu Aug  3 10:40:56 2017.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).</code></pre>
