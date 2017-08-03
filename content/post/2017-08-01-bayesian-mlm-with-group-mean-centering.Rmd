@@ -131,7 +131,7 @@ I use the `brms` package with the default priors:
 
 \begin{align*}
   Y_{ij} & \sim N(\mu_j + \beta_1 (X_{ij} - \bar X_{.j}), \sigma^2) \\
-  \mu_j & \sim N(\beta_0 + \beta_2 X_{.j}, \tau) \\
+  \mu_j & \sim N(\beta_0 + \beta_2 \bar X_{.j}, \tau^2) \\
   \beta & \sim N(0, \inf) \\
   \sigma & \sim t_3(0, 10) \\
   \tau & \sim t_3(0, 10)
@@ -168,8 +168,8 @@ and we can set up the model with the priors:
 \begin{align*}
   Y_{ij} & \sim N(\mu_j + \beta_1 (X_{ij} - \mu_{Xj}), \sigma^2) \\
   X_{ij} & \sim N(\mu_{Xj}, \sigma^2_X) \\
-  \mu_j & \sim N(\beta_0 + \beta_2 \mu_{Xj}, \tau) \\
-  \mu_{Xj} & \sim N(0, \tau_X) \\
+  \mu_j & \sim N(\beta_0 + \beta_2 \mu_{Xj}, \tau^2) \\
+  \mu_{Xj} & \sim N(0, \tau^2_X) \\
   \sigma & \sim t_3(0, 10) \\
   \tau & \sim t_3(0, 10) \\
   \sigma_X & \sim t_3(0, 10) \\
