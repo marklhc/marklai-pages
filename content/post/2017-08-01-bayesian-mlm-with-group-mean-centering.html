@@ -4,6 +4,9 @@ author: Mark Lai
 date: '2017-08-01'
 slug: bayesian-mlm-with-group-mean-centering
 bibliography: references.bib
+output:
+  blogdown::html_page:
+    toc: true
 categories:
   - Statistics
 tags:
@@ -12,12 +15,27 @@ tags:
 ---
 
 
+<div id="TOC">
+<ul>
+<li><a href="#the-problem">The Problem</a></li>
+<li><a href="#demonstration">Demonstration</a><ul>
+<li><a href="#group-mean-centering-with-lme4">Group mean centering with <code>lme4</code></a></li>
+<li><a href="#same-analyses-with-bayesian-using-brms">Same analyses with Bayesian using <code>brms</code></a></li>
+<li><a href="#group-mean-centering-treating-group-means-as-latent-variables">Group mean centering treating group means as latent variables</a></li>
+</ul></li>
+<li><a href="#using-the-full-data">Using the Full Data</a><ul>
+<li><a href="#with-lme4">With <code>lme4</code></a></li>
+<li><a href="#with-bayesian-taking-into-account-the-unreliability">With Bayesian taking into account the unreliability</a></li>
+</ul></li>
+<li><a href="#bibliography">Bibliography</a></li>
+</ul>
+</div>
 
 <p>In the past week I was teaching a one-and-a-half-day workshop on multilevel modeling (MLM) at UC, where I discussed the use of group mean centering to decompose level-1 and level-2 effects of a predictor. In that session I ended by noting alternative approaches that reduce bias <span class="citation">(mainly from Lüdtke et al. 2008)</span>. That lead me also consider the use of Bayesian methods for group mean centering, which will be demonstrated in this post. (Turns out <span class="citation">Zitzmann, Lüdtke, and Robitzsch (2015)</span> has already discussed something similar, but still a good exercise. )</p>
 <div id="the-problem" class="section level2">
 <h2>The Problem</h2>
 <p>In some social scienc research, a predictor can have different meanings at different levels. For example, student’s competence, when aggregated to the school level, becomes the competitiveness of a school. As explained in the <a href="https://en.wikipedia.org/wiki/Big-fish%E2%80%93little-pond_effect">big-fish-little-pond effect</a>, whereas the former can help an individual’s self-concept, being in a more competitive environment can hurt one’s self-concept. Traditionally, and still popular nowadays, we investigate the differential effects of a predictor, <span class="math inline">\(X_{ij}\)</span>, on an outcome at different levels by including the group means, <span class="math inline">\(\bar X_{.j}\)</span>, in the equation.</p>
-<p>The problem, however, is that unless each cluster (e.g., school) has a very large sample size, the group means will not be very reliable. This is true even when the measurement of <span class="math inline">\(X_{ij}\)</span> is perfectly reliable. This is not difficult to understand: just remember in intro stats we learn that the standard error of the sample mean is <span class="math inline">\(\sigma / sqrt{N}\)</span>, so with limited <span class="math inline">\(N\)</span> our sample (group) mean can be quite different from the population (group) mean.</p>
+<p>The problem, however, is that unless each cluster (e.g., school) has a very large sample size, the group means will not be very reliable. This is true even when the measurement of <span class="math inline">\(X_{ij}\)</span> is perfectly reliable. This is not difficult to understand: just remember in intro stats we learn that the standard error of the sample mean is <span class="math inline">\(\sigma / \sqrt{N}\)</span>, so with limited <span class="math inline">\(N\)</span> our sample (group) mean can be quite different from the population (group) mean.</p>
 <p>What’s the problem when the group means are not reliable? Regression literature has shown that unreliability in the predictors lead to downwardly biased coefficients, which is what happen here. The way to account for that, in general, is to treat the unreliable as a latent variable, which is the approach discussed in <span class="citation">Lüdtke et al. (2008)</span> and also demonstrated later in this post.</p>
 </div>
 <div id="demonstration" class="section level2">
@@ -285,7 +303,7 @@ m2_stan &lt;- stan(&quot;stan_gpc_pv.stan&quot;, data = hsb_sdata)</code></pre>
 ## sigma_x       0.66    0.00 0.02  0.62  0.65  0.66  0.67  0.70  4000 1.00
 ## tau_x         0.38    0.00 0.04  0.31  0.35  0.38  0.40  0.45  1892 1.00
 ## 
-## Samples were drawn using NUTS(diag_e) at Thu Aug  3 09:32:25 2017.
+## Samples were drawn using NUTS(diag_e) at Thu Aug  3 10:14:27 2017.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).</code></pre>
@@ -354,7 +372,7 @@ m2full_stan &lt;- stan(&quot;stan_gpc_pv.stan&quot;, data = hsb_sdata)</code></p
 ## sigma_x       0.67    0.00 0.01  0.66  0.66  0.67  0.67  0.68  4000 1.00
 ## tau_x         0.40    0.00 0.02  0.36  0.39  0.40  0.42  0.45   552 1.00
 ## 
-## Samples were drawn using NUTS(diag_e) at Thu Aug  3 09:36:12 2017.
+## Samples were drawn using NUTS(diag_e) at Thu Aug  3 10:18:13 2017.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).</code></pre>

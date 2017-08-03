@@ -1,0 +1,255 @@
+---
+title: Bayesian MLM With Group Mean Centering
+author: Mark Lai
+date: '2017-08-01'
+slug: bayesian-mlm-with-group-mean-centering
+bibliography: references.bib
+output:
+  blogdown::html_page:
+    toc: true
+categories:
+  - Statistics
+tags:
+  - multilevel
+  - R
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+options(width = 100)
+comma <- function(x) format(x, digits = 2, big.mark = ",")
+```
+
+In the past week I was teaching a one-and-a-half-day workshop on multilevel 
+modeling (MLM) at UC, where I discussed the use of group mean centering to 
+decompose level-1 and level-2 effects of a predictor. In that session I ended
+by noting alternative approaches that reduce bias [mainly from @Ludtke2008]. 
+That lead me also consider the use of Bayesian methods for group mean centering,
+which will be demonstrated in this post. (Turns out @Zitzmann2015 has already
+discussed something similar, but still a good exercise. )
+
+## The Problem
+
+In some social scienc research, a predictor can have different meanings at 
+different levels. For example, student's competence, when aggregated to the 
+school level, becomes the competitiveness of a school. As explained in the 
+[big-fish-little-pond
+effect](https://en.wikipedia.org/wiki/Big-fish%E2%80%93little-pond_effect),
+whereas the former can help an individual's self-concept, being in a more 
+competitive environment can hurt one's self-concept. Traditionally, and still 
+popular nowadays, we investigate the differential effects of a predictor,
+$X_{ij}$, on an outcome at different levels by including the group means, $\bar
+X_{.j}$, in the equation. 
+
+The problem, however, is that unless each cluster (e.g., school) has a very 
+large sample size, the group means will not be very reliable. This is true
+even when the measurement of $X_{ij}$ is perfectly reliable. This is not 
+difficult to understand: just remember in intro stats we learn that the 
+standard error of the sample mean is $\sigma / \sqrt{N}$, so with limited $N$ 
+our sample (group) mean can be quite different from the population (group) mean. 
+
+What's the problem when the group means are not reliable? Regression literature
+has shown that unreliability in the predictors lead to downwardly biased 
+coefficients, which is what happen here. The way to account for that, in 
+general, is to treat the unreliable as a latent variable, which is the 
+approach discussed in @Ludtke2008 and also demonstrated later in this post. 
+
+## Demonstration
+
+Let's compare the results using the well-known High School and Beyond Survey
+subsample discussed in the textbook by @Raudenbush2002. To illustrate the 
+issue with unreliability of group means, I'll use a subset of 800 cases, with
+a random sample of 5 cases from each school. 
+
+```{r}
+library(tidyverse)
+library(haven)
+library(lme4)
+library(brms)
+library(rstan)
+rstan_options(auto_write = TRUE)
+options(mc.cores = 2L)
+```
+
+```{r}
+hsb <- haven::read_sas('https://stats.idre.ucla.edu/wp-content/uploads/2016/02/hsb.sas7bdat')
+# Select a subsample
+set.seed(123)
+hsb_sub <- hsb %>% group_by(ID) %>% sample_n(5)
+hsb_sub
+```
+
+With the subsample, let's study the association of socioeconomic status (`SES`) 
+with math achievement (`MATHACH`) at the student level and the school level. 
+The conventional way is to do group mean centering of `SES`, by computing the
+group means and the deviation of each `SES` score from the corresponding group
+mean. 
+
+```{r}
+hsb_sub <- hsb_sub %>% ungroup() %>% 
+  mutate(SES_gpm = ave(SES, ID), SES_gpc = SES - SES_gpm)
+```
+
+To make things simpler, the random slope of `SES` is not included. Also, one 
+can study differential effects with grand mean centering [@Enders2007], but 
+still the group means should be added as a predictor, so the same issue with 
+unreliability still applies. 
+
+### Group mean centering with `lme4`
+
+```{r}
+m1_mer <- lmer(MATHACH ~ SES_gpm + SES_gpc + (1 | ID), data = hsb_sub)
+summary(m1_mer)
+```
+
+So the results suggested that one unit difference `SES` is associated with 
+`r comma(fixef(m1_mer)[2])` (*SE* = `r comma(sqrt(vcov(m1_mer)[2, 2]))`) units 
+difference in mean `MATHACH` at the school level, but 
+`r comma(fixef(m1_mer)[3])` (*SE* = `r comma(sqrt(vcov(m1_mer)[3, 3]))`) units
+difference in mean `MATHACH` at the student level.
+
+We can get the contextual effect by substracting the fixed effect coefficient
+of `SES_gpm` from that of `SES_gpc`, or by using the original `SES` variable
+*together with the group means*:
+
+```{r}
+m1_mer2 <- lmer(MATHACH ~ SES_gpm + SES + (1 | ID), data = hsb_sub)
+summary(m1_mer2)
+```
+
+The coefficient for `SES_gpm` is now the contextual effect. We can get a 
+95% confidence interval:
+
+```{r}
+confint(m1_mer2, parm = "beta_")
+```
+
+
+### Same analyses with Bayesian using `brms`
+
+I use the `brms` package with the default priors:
+
+\begin{align*}
+  Y_{ij} & \sim N(\mu_j + \beta_1 (X_{ij} - \bar X_{.j}), \sigma^2) \\
+  \mu_j & \sim N(\beta_0 + \beta_2 X_{.j}, \tau) \\
+  \beta & \sim N(0, \inf) \\
+  \sigma & \sim t_3(0, 10) \\
+  \tau & \sim t_3(0, 10)
+\end{align*}
+
+```{r}
+m1_brm <- brm(MATHACH ~ SES_gpm + SES_gpc + (1 | ID), data = hsb_sub, 
+              control = list(max_treedepth = 15, adapt_delta = .90))
+summary(m1_brm)
+```
+
+With Bayesian, the results are similar to those with `lme4`. 
+
+We can summarize the posterior of the contextual effect:
+
+```{r}
+post_fixef <- posterior_samples(m1_brm, pars = c("b_SES_gpm", "b_SES_gpc"))
+post_contextual <- with(post_fixef, b_SES_gpm - b_SES_gpc)
+c(mean = mean(post_contextual), median = median(post_contextual), 
+  quantile(post_contextual, c(.025, .975)))
+ggplot(aes(x = post_contextual), data = data_frame(post_contextual)) + 
+    geom_density(bw = "SJ")
+```
+
+
+### Group mean centering treating group means as latent variables
+
+Instead of treating the group means as known, we can instead treat them as 
+latent variables:
+$$X_{ij} \sim N(\mu_{Xj}, \sigma^2_X)$$
+
+and we can set up the model with the priors:
+
+\begin{align*}
+  Y_{ij} & \sim N(\mu_j + \beta_1 (X_{ij} - \mu_{Xj}), \sigma^2) \\
+  X_{ij} & \sim N(\mu_{Xj}, \sigma^2_X) \\
+  \mu_j & \sim N(0, \tau_X) \\
+  \mu_{Xj} & \sim N(\beta_0 + \beta_2 \mu_{Xj}, \tau) \\
+  \sigma & \sim t_3(0, 10) \\
+  \tau & \sim t_3(0, 10) \\
+  \sigma_X & \sim t_3(0, 10) \\
+  \tau_X & \sim t_3(0, 10) \\
+  \beta & \sim N(0, 10) \\
+\end{align*}
+
+Notice that here we treat $X$ as an outcome variable with a random intercept, 
+just like the way we model $Y$ when there is no predictor. 
+
+Below is the STAN code for this model:
+
+```{r, echo=FALSE, comment=NA}
+cat(readLines("stan_gpc_pv.stan"), sep = '\n')
+```
+
+And to run it in `rstan`:
+
+```{r, results='hide'}
+hsb_sdata <- with(hsb_sub, 
+                  list(N = nrow(hsb_sub), 
+                       Y = MATHACH, 
+                       K = 2, 
+                       X = cbind(1, SES), 
+                       q = 2, 
+                       gid = match(ID, unique(ID)), 
+                       J = length(unique(ID))))
+m2_stan <- stan("stan_gpc_pv.stan", data = hsb_sdata)
+```
+
+The results are shown below:
+
+```{r}
+print(m2_stan, pars = c("b0", "b", "bw", "b_contextual", "sigma_y", "tau_y", 
+                        "sigma_x", "tau_x"))
+```
+
+```{r, include=FALSE}
+bw <- as.matrix(m2_stan, "bw")
+bcon <- as.matrix(m2_stan, "b_contextual")
+```
+
+Note that the coefficient of `SES` at level-2 now has a posterior mean of 
+`r comma(mean(bw))` with a posterior *SD* of 
+`r comma(sd(bw))`, and the contextual effect has a posterior mean
+of `r comma(mean(bcon))` with a posterior *SD* of 
+`r comma(sd(bcon))`
+
+## Using the Full Data
+
+### With `lme4`
+
+```{r}
+hsb <- hsb %>% mutate(SES_gpm = ave(SES, ID), SES_gpc = SES - SES_gpm)
+mfull_mer <- lmer(MATHACH ~ SES_gpm + SES_gpc + (1 | ID), data = hsb)
+summary(mfull_mer)
+```
+
+### With Bayesian taking into account the unreliability
+
+```{r, results='hide'}
+hsb_sdata <- with(hsb, 
+                  list(N = nrow(hsb), 
+                       Y = MATHACH, 
+                       K = 2, 
+                       X = cbind(1, SES), 
+                       q = 2, 
+                       gid = match(ID, unique(ID)), 
+                       J = length(unique(ID))))
+# This takes about 4 minutes on my computer
+m2full_stan <- stan("stan_gpc_pv.stan", data = hsb_sdata)
+```
+
+```{r}
+print(m2full_stan, pars = c("b0", "b", "bw", "b_contextual", 
+                            "sigma_y", "tau_y", "sigma_x", "tau_x"))
+```
+
+Note that with higher reliabilities, the results are more similar. Also, 
+the results accounting for unreliability with the subset is much closer to the
+results with the full sample. 
+
+## Bibliography
