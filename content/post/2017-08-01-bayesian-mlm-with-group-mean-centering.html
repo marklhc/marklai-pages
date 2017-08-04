@@ -55,19 +55,20 @@ hsb_sub &lt;- hsb %&gt;% group_by(ID) %&gt;% sample_n(5)
 hsb_sub</code></pre>
 <pre><code>## # A tibble: 800 x 12
 ## # Groups:   ID [160]
-##       ID  SIZE SECTOR PRACAD DISCLIM HIMINTY MEANSES MINORITY FEMALE    SES MATHACH `_MERGE`
-##    &lt;chr&gt; &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;
-##  1  1224   842      0   0.35   1.597       0  -0.428        0      1 -0.988  20.178        3
-##  2  1224   842      0   0.35   1.597       0  -0.428        0      0 -0.548   8.296        3
-##  3  1224   842      0   0.35   1.597       0  -0.428        0      1  0.042   2.927        3
-##  4  1224   842      0   0.35   1.597       0  -0.428        0      1  0.972   2.059        3
-##  5  1224   842      0   0.35   1.597       0  -0.428        1      0 -1.658   0.122        3
-##  6  1288  1855      0   0.27   0.174       0   0.128        1      0 -0.328  10.171        3
-##  7  1288  1855      0   0.27   0.174       0   0.128        0      1 -0.678  20.173        3
-##  8  1288  1855      0   0.27   0.174       0   0.128        0      0  0.032   7.519        3
-##  9  1288  1855      0   0.27   0.174       0   0.128        0      0  0.322  23.578        3
-## 10  1288  1855      0   0.27   0.174       0   0.128        0      0  0.682  18.792        3
-## # ... with 790 more rows</code></pre>
+##       ID  SIZE SECTOR PRACAD DISCLIM HIMINTY MEANSES MINORITY FEMALE
+##    &lt;chr&gt; &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;  &lt;dbl&gt;
+##  1  1224   842      0   0.35   1.597       0  -0.428        0      1
+##  2  1224   842      0   0.35   1.597       0  -0.428        0      0
+##  3  1224   842      0   0.35   1.597       0  -0.428        0      1
+##  4  1224   842      0   0.35   1.597       0  -0.428        0      1
+##  5  1224   842      0   0.35   1.597       0  -0.428        1      0
+##  6  1288  1855      0   0.27   0.174       0   0.128        1      0
+##  7  1288  1855      0   0.27   0.174       0   0.128        0      1
+##  8  1288  1855      0   0.27   0.174       0   0.128        0      0
+##  9  1288  1855      0   0.27   0.174       0   0.128        0      0
+## 10  1288  1855      0   0.27   0.174       0   0.128        0      0
+## # ... with 790 more rows, and 3 more variables: SES &lt;dbl&gt;, MATHACH &lt;dbl&gt;,
+## #   `_MERGE` &lt;dbl&gt;</code></pre>
 <p>With the subsample, let’s study the association of socioeconomic status (<code>SES</code>) with math achievement (<code>MATHACH</code>) at the student level and the school level. The conventional way is to do group mean centering of <code>SES</code>, by computing the group means and the deviation of each <code>SES</code> score from the corresponding group mean.</p>
 <pre class="r"><code>hsb_sub &lt;- hsb_sub %&gt;% ungroup() %&gt;% 
   mutate(SES_gpm = ave(SES, ID), SES_gpc = SES - SES_gpm)</code></pre>
@@ -134,8 +135,9 @@ summary(m1_mer2)</code></pre>
 ## SES      0.000 -0.559</code></pre>
 <p>The coefficient for <code>SES_gpm</code> is now the contextual effect. We can get a 95% confidence interval:</p>
 <pre class="r"><code>confint(m1_mer2, parm = &quot;beta_&quot;)</code></pre>
-<pre><code>## Warning in optwrap(optimizer, par = thopt, fn = mkdevfun(rho, 0L), lower = fitted@lower):
-## convergence code 3 from bobyqa: bobyqa -- a trust region step failed to reduce q</code></pre>
+<pre><code>## Warning in optwrap(optimizer, par = thopt, fn = mkdevfun(rho, 0L), lower
+## = fitted@lower): convergence code 3 from bobyqa: bobyqa -- a trust region
+## step failed to reduce q</code></pre>
 <pre><code>##                 2.5 %    97.5 %
 ## (Intercept) 12.210145 13.207796
 ## SES_gpm      1.277615  3.780835
@@ -147,7 +149,7 @@ summary(m1_mer2)</code></pre>
 <span class="math display">\[\begin{align*}
   Y_{ij} &amp; \sim N(\mu_j + \beta_1 (X_{ij} - \bar X_{.j}), \sigma^2) \\
   \mu_j &amp; \sim N(\beta_0 + \beta_2 \bar X_{.j}, \tau^2) \\
-  \beta &amp; \sim N(0, \inf) \\
+  \beta &amp; \sim N(0, \infty) \\
   \sigma &amp; \sim t_3(0, 10) \\
   \tau &amp; \sim t_3(0, 10)
 \end{align*}\]</span>
@@ -303,7 +305,7 @@ m2_stan &lt;- stan(&quot;stan_gpc_pv.stan&quot;, data = hsb_sdata)</code></pre>
 ## sigma_x       0.66    0.00 0.02  0.62  0.65  0.66  0.67  0.70  4000 1.00
 ## tau_x         0.38    0.00 0.04  0.31  0.35  0.38  0.40  0.45  1892 1.00
 ## 
-## Samples were drawn using NUTS(diag_e) at Thu Aug  3 10:58:23 2017.
+## Samples were drawn using NUTS(diag_e) at Fri Aug  4 11:40:47 2017.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).</code></pre>
@@ -372,7 +374,7 @@ m2full_stan &lt;- stan(&quot;stan_gpc_pv.stan&quot;, data = hsb_sdata)</code></p
 ## sigma_x       0.67    0.00 0.01  0.66  0.66  0.67  0.67  0.68  4000 1.00
 ## tau_x         0.40    0.00 0.02  0.36  0.39  0.40  0.42  0.45   552 1.00
 ## 
-## Samples were drawn using NUTS(diag_e) at Thu Aug  3 11:02:31 2017.
+## Samples were drawn using NUTS(diag_e) at Fri Aug  4 11:44:42 2017.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).</code></pre>

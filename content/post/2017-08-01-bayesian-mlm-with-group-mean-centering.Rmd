@@ -16,7 +16,6 @@ tags:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE)
-options(width = 100)
 comma <- function(x) format(x, digits = 2, big.mark = ",")
 ```
 
@@ -132,7 +131,7 @@ I use the `brms` package with the default priors:
 \begin{align*}
   Y_{ij} & \sim N(\mu_j + \beta_1 (X_{ij} - \bar X_{.j}), \sigma^2) \\
   \mu_j & \sim N(\beta_0 + \beta_2 \bar X_{.j}, \tau^2) \\
-  \beta & \sim N(0, \inf) \\
+  \beta & \sim N(0, \infty) \\
   \sigma & \sim t_3(0, 10) \\
   \tau & \sim t_3(0, 10)
 \end{align*}
