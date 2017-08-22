@@ -196,26 +196,66 @@ hsb_sdata <- with(hsb_sub,
                        q = 2, 
                        gid = match(ID, unique(ID)), 
                        J = length(unique(ID))))
-m2_stan <- stan("stan_gpc_pv.stan", data = hsb_sdata)
+m2_stan <- stan("stan_gpc_pv.stan", data = hsb_sdata, 
+                pars = c("b0", "b", "bm", "b_contextual", "sigma_y", "tau_y", 
+                         "sigma_x", "tau_x"))
 ```
 
 The results are shown below:
 
 ```{r}
-print(m2_stan, pars = c("b0", "b", "bw", "b_contextual", "sigma_y", "tau_y", 
-                        "sigma_x", "tau_x"))
+print(m2_stan, pars = "lp__", include = FALSE)
 ```
 
 ```{r, include=FALSE}
-bw <- as.matrix(m2_stan, "bw")
+bm <- as.matrix(m2_stan, "bm")
 bcon <- as.matrix(m2_stan, "b_contextual")
 ```
 
 Note that the coefficient of `SES` at level-2 now has a posterior mean of 
-`r comma(mean(bw))` with a posterior *SD* of 
-`r comma(sd(bw))`, and the contextual effect has a posterior mean
+`r comma(mean(bm))` with a posterior *SD* of 
+`r comma(sd(bm))`, and the contextual effect has a posterior mean
 of `r comma(mean(bcon))` with a posterior *SD* of 
 `r comma(sd(bcon))`
+
+### With Random Slopes
+
+With `brms`, we have
+
+```{r}
+m2_brm <- brm(MATHACH ~ SES_gpm + SES_gpc + (SES_gpc | ID), data = hsb_sub, 
+              control = list(max_treedepth = 15, adapt_delta = .90))
+summary(m2_brm)
+```
+
+Below is the STAN code for this model incorporating the unreliability of 
+group means:
+
+```{r, echo=FALSE, comment=NA}
+cat(readLines("stan_gpc_pv_ran_slp.stan"), sep = '\n')
+```
+
+And to run it in `rstan`:
+
+```{r, results='hide'}
+hsb_sdata <- with(hsb_sub, 
+                  list(N = nrow(hsb_sub), 
+                       Y = MATHACH, 
+                       K = 2, 
+                       X = cbind(1, SES), 
+                       q = 2, 
+                       gid = match(ID, unique(ID)), 
+                       J = length(unique(ID))))
+m3_stan <- stan("stan_gpc_pv_ran_slp.stan", data = hsb_sdata, 
+                pars = c("b0", "b", "bm", "b_contextual", "sigma_y", "tau_y", 
+                         "sigma_x", "tau_x"))
+```
+
+The results are shown below:
+
+```{r}
+print(m3_stan, pars = "lp__", include = FALSE)
+```
 
 ## Using the Full Data
 
@@ -239,12 +279,13 @@ hsb_sdata <- with(hsb,
                        gid = match(ID, unique(ID)), 
                        J = length(unique(ID))))
 # This takes about 4 minutes on my computer
-m2full_stan <- stan("stan_gpc_pv.stan", data = hsb_sdata)
+m2full_stan <- stan("stan_gpc_pv.stan", data = hsb_sdata, 
+                    pars = c("b0", "b", "bm", "b_contextual", 
+                            "sigma_y", "tau_y", "sigma_x", "tau_x"))
 ```
 
 ```{r}
-print(m2full_stan, pars = c("b0", "b", "bw", "b_contextual", 
-                            "sigma_y", "tau_y", "sigma_x", "tau_x"))
+print(m2full_stan, pars = "lp__", include = FALSE)
 ```
 
 Note that with higher reliabilities, the results are more similar. Also, 
