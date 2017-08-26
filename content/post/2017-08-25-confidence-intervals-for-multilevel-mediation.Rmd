@@ -1,0 +1,145 @@
+---
+title: Confidence Intervals for Multilevel Mediation (Draft)
+author: Mark Lai
+date: '2017-08-25'
+slug: confidence-intervals-for-multilevel-mediation
+output:
+  blogdown::html_page:
+    toc: true
+draft: true
+categories:
+  - Statistics
+tags:
+  - R
+  - multilevel
+  - mediation
+  - confidence interval
+  - Bayesian
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+comma <- function(x) format(x, digits = 2, big.mark = ",")
+```
+
+The data are from the `mediation` package, which are simulated data with the
+source of the Education Longitudinal Study of 2002. For the interest of time as
+well as to consider situations where asymptotic normality may not hold, I only
+select 50 schools (out of 568) from the sample. 
+
+```{r}
+library(tidyverse)
+library(lme4)
+library(mediation)
+data("school", package = "mediation")
+# Select only a random sample of 24 schools, stratified by 
+# `coed` and `catholic`
+set.seed(827)
+# School-level subsample:
+school_sub <- school %>% sample_n(size = 50) %>% arrange(SCH_ID)
+school_sub %>% as_data_frame()
+# Student-level subsample:
+student_sub <- student %>% filter(SCH_ID %in% school_sub$SCH_ID)
+student_sub %>% as_data_frame()
+```
+
+The example is taken from [vignette of the
+package](ftp://ftp.gr.vim.org/mirrors/CRAN/web/packages/mediation/vignettes/mediation.pdf)
+(p. 19), where a school-level poverty indicator (`free`, "percent of 10th grade
+students receiving free lunch" with 7 levels) is hypothesized to cause
+school-level morale (`smorale` with 4 levels), which in turn causes
+student-level tardiness (`late`, "frequency in which the student was late for
+school" with 5 levels). For the mediator equation, the school-level covariates
+are `catholic` and `coed`; for the outcome equation, in addition to the
+school-level covariates, student-level covariates are `gender`, `income`,
+`pared`.
+
+## Quasi-Bayesian/Monte Carlo CI With the `mediation` Package
+
+The `mediate()` function provides CI for the indirect effect using
+Quasi-Bayesian method, which I believe is similar to the Monte Carlo method by
+assuming normality of the $a$ path and the $b$ path. Bootstrapping is not 
+supported when one equation is a multilevel model. 
+
+```{r}
+# Using the mediation package
+# 1. Mediator equation
+med_fit <- lm(smorale ~ free + catholic + coed, data = school_sub)
+# 2. Outcome equation
+out_fit <- lmer(late ~ free + smorale + catholic + coed +
+                  gender + income + pared + (1 | SCH_ID), data = student_sub)
+# Time the output:
+system.time(med_out <- mediate(med_fit, out_fit, treat = "free", 
+                               mediator = "smorale",
+                               control.value = 3, treat.value = 4, sims = 500))
+summary(med_out)  # Summary of mediation analysis
+```
+
+## Analytical Approaches for CI With the `RMediation` Package
+
+### Distribution of Product of Coefficients
+
+```{r}
+# With RMediation
+nmtx <- "free"  # name of treatment variable
+nmmed <- "smorale"  # name of mediator
+a <- coef(med_fit)[nmtx]  # estimate of a path with name removed
+va <- vcov(med_fit)[nmtx, nmtx]  # sampling variance of a path
+b <- fixef(out_fit)[nmmed]  # estimate of b path with name removed
+vb <- vcov(out_fit)[nmmed, nmmed]  # sampling variance of b path
+# Distribution of Product of Coefficients
+(med_dop <- RMediation::medci(mu.x = a, mu.y = b, type = "dop", 
+                              se.x = sqrt(va), se.y = sqrt(vb)))
+```
+
+### Asymptotic Normal CI
+
+```{r}
+# Assuming Asymptotic Normality
+(med_asym <- RMediation::medci(mu.x = a, mu.y = b, type = "asymp", 
+                               se.x = sqrt(va), se.y = sqrt(vb)))
+```
+
+## Case Bootstrap
+
+```{r, cache=TRUE}
+library(boot)  # load the boot package
+# Get the unique school IDs as a global variable
+sch_id <- school_sub$SCH_ID
+
+lv1_resample <- function(new_lv2_id, data = student_sub, 
+                         group_var = "SCH_ID") {
+  group <- data[[group_var]]
+  N <- nrow(data)
+  new_lv1_index <- unlist(
+    lapply(new_lv2_id, function(i) seq_len(N)[group == i]))
+  gp_length <- table(group, dnn = NULL)
+  group_length <- gp_length[as.character(new_lv2_id)]
+  new_group <- rep(seq_along(new_lv2_id), group_length)
+  new_data <- data[new_lv1_index, , drop = FALSE]
+  new_data[group_var] <- new_group
+  rownames(new_data) <- NULL
+  new_data
+}
+
+ab_resample <- function(data_lv2, i, ...) {
+  new_sch_id <- sch_id[i]
+  med_fit <- lm(smorale ~ free + catholic + coed, data = data_lv2[i, ])
+  new_stud_dat <- lv1_resample(new_sch_id, ...)
+  out_fit <- lmer(late ~ free + smorale + catholic + coed +
+                  gender + income + pared + (1 | SCH_ID), data = new_stud_dat, 
+                  control = lmerControl(calc.derivs = FALSE))
+  a <- unname(coef(med_fit)[nmtx])
+  b <- unname(fixef(out_fit)[nmmed])
+  va <- vcov(med_fit)[nmtx, nmtx]
+  vb <- vcov(out_fit)[nmmed, nmmed]
+  c(ab = a * b, 
+    vab = a^2 * vb + b^2 * va)
+}
+
+system.time(med_boo <- boot(school_sub, ab_resample, 1000))
+boot.ci(med_boo, type = "all")
+```
+
+## Fully Bayesian Approach With `rstan`
+

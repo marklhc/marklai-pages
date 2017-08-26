@@ -1,0 +1,214 @@
+---
+title: Confidence Intervals for Multilevel Mediation (Draft)
+author: Mark Lai
+date: '2017-08-25'
+slug: confidence-intervals-for-multilevel-mediation
+output:
+  blogdown::html_page:
+    toc: true
+draft: true
+categories:
+  - Statistics
+tags:
+  - R
+  - multilevel
+  - mediation
+  - confidence interval
+  - Bayesian
+---
+
+
+<div id="TOC">
+<ul>
+<li><a href="#quasi-bayesianmonte-carlo-ci-with-the-mediation-package">Quasi-Bayesian/Monte Carlo CI With the <code>mediation</code> Package</a></li>
+<li><a href="#analytical-approaches-for-ci-with-the-rmediation-package">Analytical Approaches for CI With the <code>RMediation</code> Package</a><ul>
+<li><a href="#distribution-of-product-of-coefficients">Distribution of Product of Coefficients</a></li>
+<li><a href="#asymptotic-normal-ci">Asymptotic Normal CI</a></li>
+</ul></li>
+<li><a href="#case-bootstrap">Case Bootstrap</a></li>
+<li><a href="#fully-bayesian-approach-with-rstan">Fully Bayesian Approach With <code>rstan</code></a></li>
+</ul>
+</div>
+
+<p>The data are from the <code>mediation</code> package, which are simulated data with the source of the Education Longitudinal Study of 2002. For the interest of time as well as to consider situations where asymptotic normality may not hold, I only select 50 schools (out of 568) from the sample.</p>
+<pre class="r"><code>library(tidyverse)
+library(lme4)
+library(mediation)
+data(&quot;school&quot;, package = &quot;mediation&quot;)
+# Select only a random sample of 24 schools, stratified by 
+# `coed` and `catholic`
+set.seed(827)
+# School-level subsample:
+school_sub &lt;- school %&gt;% sample_n(size = 50) %&gt;% arrange(SCH_ID)
+school_sub %&gt;% as_data_frame()</code></pre>
+<pre><code>## # A tibble: 50 x 5
+##    SCH_ID  coed smorale  free catholic
+##     &lt;int&gt; &lt;int&gt;   &lt;int&gt; &lt;int&gt;    &lt;int&gt;
+##  1     31     1       4     1        0
+##  2     34     1       4     4        0
+##  3     51     1       4     4        0
+##  4     67     1       3     4        0
+##  5     98     1       2     3        0
+##  6    104     1       4     2        0
+##  7    117     1       3     1        0
+##  8    122     1       5     6        0
+##  9    130     1       4     4        1
+## 10    132     1       5     5        0
+## # ... with 40 more rows</code></pre>
+<pre class="r"><code># Student-level subsample:
+student_sub &lt;- student %&gt;% filter(SCH_ID %in% school_sub$SCH_ID)
+student_sub %&gt;% as_data_frame()</code></pre>
+<pre><code>## # A tibble: 806 x 13
+##    fight attachment  work score  late  coed smorale gender income  free
+##    &lt;int&gt;      &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;   &lt;int&gt;  &lt;int&gt;  &lt;int&gt; &lt;int&gt;
+##  1     0          0     0    37     3     1       4      1      7     6
+##  2     0          1     0    38     2     1       4      1     10     6
+##  3     1          1     0    46     2     1       4      0      8     6
+##  4     1          0     1    50     3     1       4      0     10     6
+##  5     0          1     1    40     3     1       4      1      6     6
+##  6     0          1     0    52     3     1       4      1      8     6
+##  7     0          0     1    37     1     1       4      0      9     6
+##  8     0          1     0    41     4     1       4      0      7     6
+##  9     0          1     1    34     3     1       4      0      8     6
+## 10     0          1     1    54     3     1       4      0      7     6
+## # ... with 796 more rows, and 3 more variables: pared &lt;int&gt;,
+## #   catholic &lt;int&gt;, SCH_ID &lt;int&gt;</code></pre>
+<p>The example is taken from <a href="ftp://ftp.gr.vim.org/mirrors/CRAN/web/packages/mediation/vignettes/mediation.pdf">vignette of the package</a> (p. 19), where a school-level poverty indicator (<code>free</code>, “percent of 10th grade students receiving free lunch” with 7 levels) is hypothesized to cause school-level morale (<code>smorale</code> with 4 levels), which in turn causes student-level tardiness (<code>late</code>, “frequency in which the student was late for school” with 5 levels). For the mediator equation, the school-level covariates are <code>catholic</code> and <code>coed</code>; for the outcome equation, in addition to the school-level covariates, student-level covariates are <code>gender</code>, <code>income</code>, <code>pared</code>.</p>
+<div id="quasi-bayesianmonte-carlo-ci-with-the-mediation-package" class="section level2">
+<h2>Quasi-Bayesian/Monte Carlo CI With the <code>mediation</code> Package</h2>
+<p>The <code>mediate()</code> function provides CI for the indirect effect using Quasi-Bayesian method, which I believe is similar to the Monte Carlo method by assuming normality of the <span class="math inline">\(a\)</span> path and the <span class="math inline">\(b\)</span> path. Bootstrapping is not supported when one equation is a multilevel model.</p>
+<pre class="r"><code># Using the mediation package
+# 1. Mediator equation
+med_fit &lt;- lm(smorale ~ free + catholic + coed, data = school_sub)
+# 2. Outcome equation
+out_fit &lt;- lmer(late ~ free + smorale + catholic + coed +
+                  gender + income + pared + (1 | SCH_ID), data = student_sub)
+# Time the output:
+system.time(med_out &lt;- mediate(med_fit, out_fit, treat = &quot;free&quot;, 
+                               mediator = &quot;smorale&quot;,
+                               control.value = 3, treat.value = 4, sims = 500))</code></pre>
+<pre><code>##    user  system elapsed 
+##   5.796   0.020   5.818</code></pre>
+<pre class="r"><code>summary(med_out)  # Summary of mediation analysis</code></pre>
+<pre><code>## 
+## Causal Mediation Analysis 
+## 
+## Quasi-Bayesian Confidence Intervals
+## 
+## Mediator Groups: 
+## 
+## Outcome Groups: SCH_ID 
+## 
+## Output Based on Overall Averages Across Groups 
+## 
+##                Estimate 95% CI Lower 95% CI Upper p-value
+## ACME            0.00779     -0.00720         0.03    0.34
+## ADE             0.01799     -0.03989         0.07    0.53
+## Total Effect    0.02578     -0.03279         0.08    0.39
+## Prop. Mediated  0.14422     -3.00260         3.39    0.52
+## 
+## Sample Size Used: 806 
+## 
+## 
+## Simulations: 500</code></pre>
+</div>
+<div id="analytical-approaches-for-ci-with-the-rmediation-package" class="section level2">
+<h2>Analytical Approaches for CI With the <code>RMediation</code> Package</h2>
+<div id="distribution-of-product-of-coefficients" class="section level3">
+<h3>Distribution of Product of Coefficients</h3>
+<pre class="r"><code># With RMediation
+nmtx &lt;- &quot;free&quot;  # name of treatment variable
+nmmed &lt;- &quot;smorale&quot;  # name of mediator
+a &lt;- coef(med_fit)[nmtx]  # estimate of a path with name removed
+va &lt;- vcov(med_fit)[nmtx, nmtx]  # sampling variance of a path
+b &lt;- fixef(out_fit)[nmmed]  # estimate of b path with name removed
+vb &lt;- vcov(out_fit)[nmmed, nmmed]  # sampling variance of b path
+# Distribution of Product of Coefficients
+(med_dop &lt;- RMediation::medci(mu.x = a, mu.y = b, type = &quot;dop&quot;, 
+                              se.x = sqrt(va), se.y = sqrt(vb)))</code></pre>
+<pre><code>## $`97.5% CI`
+## [1] -0.007804832  0.030636061
+## 
+## $Estimate
+##        free 
+## 0.007047165 
+## 
+## $SE
+##        free 
+## 0.009644314</code></pre>
+</div>
+<div id="asymptotic-normal-ci" class="section level3">
+<h3>Asymptotic Normal CI</h3>
+<pre class="r"><code># Assuming Asymptotic Normality
+(med_asym &lt;- RMediation::medci(mu.x = a, mu.y = b, type = &quot;asymp&quot;, 
+                               se.x = sqrt(va), se.y = sqrt(vb)))</code></pre>
+<pre><code>## $`97.5% CI`
+## [1] -0.01185534  0.02594967
+## 
+## $Estimate
+##        free 
+## 0.007047165 
+## 
+## $SE
+##        free 
+## 0.009644314</code></pre>
+</div>
+</div>
+<div id="case-bootstrap" class="section level2">
+<h2>Case Bootstrap</h2>
+<pre class="r"><code>library(boot)  # load the boot package
+# Get the unique school IDs as a global variable
+sch_id &lt;- school_sub$SCH_ID
+
+lv1_resample &lt;- function(new_lv2_id, data = student_sub, 
+                         group_var = &quot;SCH_ID&quot;) {
+  group &lt;- data[[group_var]]
+  N &lt;- nrow(data)
+  new_lv1_index &lt;- unlist(
+    lapply(new_lv2_id, function(i) seq_len(N)[group == i]))
+  gp_length &lt;- table(group, dnn = NULL)
+  group_length &lt;- gp_length[as.character(new_lv2_id)]
+  new_group &lt;- rep(seq_along(new_lv2_id), group_length)
+  new_data &lt;- data[new_lv1_index, , drop = FALSE]
+  new_data[group_var] &lt;- new_group
+  rownames(new_data) &lt;- NULL
+  new_data
+}
+
+ab_resample &lt;- function(data_lv2, i, ...) {
+  new_sch_id &lt;- sch_id[i]
+  med_fit &lt;- lm(smorale ~ free + catholic + coed, data = data_lv2[i, ])
+  new_stud_dat &lt;- lv1_resample(new_sch_id, ...)
+  out_fit &lt;- lmer(late ~ free + smorale + catholic + coed +
+                  gender + income + pared + (1 | SCH_ID), data = new_stud_dat, 
+                  control = lmerControl(calc.derivs = FALSE))
+  a &lt;- unname(coef(med_fit)[nmtx])
+  b &lt;- unname(fixef(out_fit)[nmmed])
+  va &lt;- vcov(med_fit)[nmtx, nmtx]
+  vb &lt;- vcov(out_fit)[nmmed, nmmed]
+  c(ab = a * b, 
+    vab = a^2 * vb + b^2 * va)
+}
+
+system.time(med_boo &lt;- boot(school_sub, ab_resample, 1000))</code></pre>
+<pre><code>##    user  system elapsed 
+## 202.344   0.024 202.495</code></pre>
+<pre class="r"><code>boot.ci(med_boo, type = &quot;all&quot;)</code></pre>
+<pre><code>## BOOTSTRAP CONFIDENCE INTERVAL CALCULATIONS
+## Based on 1000 bootstrap replicates
+## 
+## CALL : 
+## boot.ci(boot.out = med_boo, type = &quot;all&quot;)
+## 
+## Intervals : 
+## Level      Normal              Basic             Studentized     
+## 95%   (-0.0133,  0.0283 )   (-0.0178,  0.0244 )   (-0.0049,  0.0400 )  
+## 
+## Level     Percentile            BCa          
+## 95%   (-0.0103,  0.0319 )   (-0.0061,  0.0444 )  
+## Calculations and Intervals on Original Scale
+## Some BCa intervals may be unstable</code></pre>
+</div>
+<div id="fully-bayesian-approach-with-rstan" class="section level2">
+<h2>Fully Bayesian Approach With <code>rstan</code></h2>
+</div>
