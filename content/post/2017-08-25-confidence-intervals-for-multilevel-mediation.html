@@ -6,6 +6,7 @@ slug: confidence-intervals-for-multilevel-mediation
 output:
   blogdown::html_page:
     toc: true
+draft: true
 categories:
   - Statistics
 tags:
@@ -74,7 +75,7 @@ student_sub %&gt;% as_data_frame()</code></pre>
 ## 10     0          1     1    54     3     1       4      0      7     6
 ## # ... with 796 more rows, and 3 more variables: pared &lt;int&gt;,
 ## #   catholic &lt;int&gt;, SCH_ID &lt;int&gt;</code></pre>
-<p>The example is taken from <a href="ftp://ftp.gr.vim.org/mirrors/CRAN/web/packages/mediation/vignettes/mediation.pdf">vignette of the package</a> (p. 19), where a school-level poverty indicator (<code>free</code>, “percent of 10th grade students receiving free lunch” with 7 levels) is hypothesized to cause school-level morale (<code>smorale</code> with 4 levels), which in turn causes student-level tardiness (<code>late</code>, “frequency in which the student was late for school” with 5 levels). For the mediator equation, the school-level covariates are <code>catholic</code> and <code>coed</code>; for the outcome equation, in addition to the school-level covariates, student-level covariates are <code>gender</code>, <code>income</code>, <code>pared</code>.</p>
+<p>The example is taken from <a href="ftp://ftp.gr.vim.org/mirrors/CRAN/web/packages/mediation/vignettes/mediation.pdf">the vignette of the <code>mediation</code> package</a> (p. 19), where a school-level poverty indicator (<code>free</code>, “percent of 10th grade students receiving free lunch” with 7 levels) is hypothesized to cause school-level morale (<code>smorale</code> with 4 levels), which in turn causes student-level tardiness (<code>late</code>, “frequency in which the student was late for school” with 5 levels). For the mediator equation, the school-level covariates are <code>catholic</code> and <code>coed</code>; for the outcome equation, in addition to the school-level covariates, student-level covariates are <code>gender</code>, <code>income</code>, <code>pared</code>.</p>
 <div id="quasi-bayesianmonte-carlo-ci-with-the-mediation-package" class="section level2">
 <h2>Quasi-Bayesian/Monte Carlo CI With the <code>mediation</code> Package</h2>
 <p>The <code>mediate()</code> function provides CI for the indirect effect using Quasi-Bayesian method, which I believe is similar to the Monte Carlo method by assuming normality of the <span class="math inline">\(a\)</span> path and the <span class="math inline">\(b\)</span> path. Bootstrapping is not supported when one equation is a multilevel model.</p>
@@ -84,12 +85,12 @@ med_fit &lt;- lm(smorale ~ free + catholic + coed, data = school_sub)
 # 2. Outcome equation
 out_fit &lt;- lmer(late ~ free + smorale + catholic + coed +
                   gender + income + pared + (1 | SCH_ID), data = student_sub)
-# Time the output:
+# Record the time:
 system.time(med_out &lt;- mediate(med_fit, out_fit, treat = &quot;free&quot;, 
                                mediator = &quot;smorale&quot;,
                                control.value = 3, treat.value = 4, sims = 500))</code></pre>
 <pre><code>##    user  system elapsed 
-##   12.12    0.11   12.50</code></pre>
+##   12.56    0.06   12.72</code></pre>
 <pre class="r"><code>summary(med_out)  # Summary of mediation analysis</code></pre>
 <pre><code>## 
 ## Causal Mediation Analysis 
@@ -117,7 +118,11 @@ system.time(med_out &lt;- mediate(med_fit, out_fit, treat = &quot;free&quot;,
 </div>
 <div id="analytical-approaches-for-ci-with-the-rmediation-package" class="section level2">
 <h2>Analytical Approaches for CI With the <code>RMediation</code> Package</h2>
-<p>The two main analytical approaches are: 1. distribution of product of coefficients 2. Asymptotic normal CI (or Wald CI)</p>
+<p>The two main analytical approaches are:</p>
+<ol style="list-style-type: decimal">
+<li>distribution of product of coefficients</li>
+<li>Asymptotic normal CI (or Wald CI)</li>
+</ol>
 <div id="distribution-of-product-of-coefficients" class="section level3">
 <h3>Distribution of Product of Coefficients</h3>
 <p>This approach uses the quantiles of the distribution of <span class="math inline">\(ab\)</span> when <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span> are assumed bivariate normal. Therefore, the Quasi-Bayesian/Monte Carlo approach can be viewed as an approximation of it. It is, however, less flexible as it does not provide distributions of other derived quantities (e.g., proportion mediated).</p>
@@ -146,7 +151,7 @@ vb &lt;- vcov(out_fit)[nmmed, nmmed]  # sampling variance of b path
 <h3>Asymptotic Normal CI</h3>
 <p>The asymptotic <em>SE</em> for the product of two normal variables, as defined in the <code>RMediation</code> package, is: <span class="math display">\[{\textit{SE}}(\hat a \hat b) = \sqrt{a^2 {\textit{SE}}^2(b) + b^2 {\textit{SE}}^2(a) + 
                        2 ab {\textit{SE}}(a) {\textit{SE}}(b) r_{\hat a \hat b} + 
-                       {\textit{SE}}^2(a) {\textit{SE}}^2(b) r_{\hat a \hat b}}\]</span> And we replace the <span class="math inline">\(a\)</span>, <span class="math inline">\(b\)</span>, <span class="math inline">\({\textit{SE}}(a)\)</span>, <span class="math inline">\({\textit{SE}}(b)\)</span> with the corresponding sample estimates. Note that as we use separate equations to obtain <span class="math inline">\(\hat a\)</span> and <span class="math inline">\(\hat b\)</span>, the correlation between them, <span class="math inline">\(r_{\hat a \hat b}\)</span>, is assumed zero, so the asymptotic <em>SE</em> is computed as: <span class="math display">\[{\textit{SE}}(\hat a \hat b) = \sqrt{a^2 {\textit{SE}}^2(b) + b^2 {\textit{SE}}^2(a)}\]</span> and the Asymptotic symmetric CI is <span class="math inline">\(\hat a \hat b \pm 1.96 {\textit{SE}}(\hat a \hat b)\)</span>.</p>
+                       {\textit{SE}}^2(a) {\textit{SE}}^2(b) r_{\hat a \hat b}}\]</span> And we replace <span class="math inline">\(a\)</span>, <span class="math inline">\(b\)</span>, <span class="math inline">\({\textit{SE}}(a)\)</span>, <span class="math inline">\({\textit{SE}}(b)\)</span> with the corresponding sample estimates. Note that as we use separate equations to obtain <span class="math inline">\(\hat a\)</span> and <span class="math inline">\(\hat b\)</span>, the correlation between them, <span class="math inline">\(r_{\hat a \hat b}\)</span>, is assumed zero, so the asymptotic <em>SE</em> is computed as: <span class="math display">\[{\textit{SE}}(\hat a \hat b) = \sqrt{a^2 {\textit{SE}}^2(b) + b^2 {\textit{SE}}^2(a)}\]</span> and the Asymptotic symmetric CI is <span class="math inline">\(\hat a \hat b \pm 1.96 {\textit{SE}}(\hat a \hat b)\)</span>.</p>
 <pre class="r"><code># Assuming Asymptotic Normality
 (med_asym &lt;- RMediation::medci(mu.x = a, mu.y = b, type = &quot;asymp&quot;, 
                                se.x = sqrt(va), se.y = sqrt(vb)))</code></pre>
@@ -237,9 +242,14 @@ ab_resample &lt;- function(data_lv2, i, ...) {
 ## t2* 7.042008e-05  4.327382e-05 9.964896e-05
 ## t3* 6.224259e-03 -3.430022e-04 9.401763e-03
 ## t4* 2.760381e-01  6.292969e-01 1.827176e+01</code></pre>
-<p>The output shows that the indirect effect estimate was biased by -6.1%, whereas the estimated sampling variance was biased by 61%! (or 16 for standard error bias)</p>
+<p>We can plot the bootstrap distributions (Note the non-normality)</p>
+<pre class="r"><code>plot(med_boo, index = 1L)</code></pre>
+<p><img src="/post/2017-08-25-confidence-intervals-for-multilevel-mediation_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p>The output shows that the indirect effect estimate was biased by -6.1%, whereas the estimated sampling variance was biased by 61%! (or 16% for standard error bias)</p>
 <div id="bootstrap-ci" class="section level3">
 <h3>Bootstrap CI</h3>
+<div id="indirect-effect" class="section level4">
+<h4>Indirect effect</h4>
 <pre class="r"><code># For (unstandardized) indirect effect
 (med_bootci &lt;- boot.ci(med_boo, type = &quot;all&quot;, index = 1:2))</code></pre>
 <pre><code>## BOOTSTRAP CONFIDENCE INTERVAL CALCULATIONS
@@ -259,6 +269,12 @@ ab_resample &lt;- function(data_lv2, i, ...) {
 <p>Generally BCa (bias-corrected and accelerated) and studentized CIs are more accurate (see Davison &amp; Hinkley, 1997; Van der Leeden, Meijer, &amp; Busing, 2008). However, the BCa needs the accerlation value (which is used to correct for skewness), which is estimated using the regression method here, and to my knowledge its use for multilevel data has not been tested.</p>
 <p>The studentized CI requires the use of the sampling variance of the statistic to be bootstrapped, which is why I also computed the asymptotic variance of the indirect effect in each bootstrap replication. However, for the <span class="math inline">\(y\)</span>-standardized indirect effect and the proportion mediated it would be more work to obtain the sampling variance estimates (which can be obtained with the delta method or with other resampling method within each bootstrap sample; the former needs some derivation and may not be very accurate and the latter will increase the computation time by a factor of 100 or more, which is not practical), so I did not request for the studentized CI.</p>
 <p>As you can see, for the indirect effect estimate, both BCa and studentized CIs gave results that are closer compared to other types of CIs. The BCa was known to sometimes overcorrect for skewness, and in this case it might seem to be pushing the confidence limits to the right.</p>
+</div>
+<div id="y-standardized-indirect-effect" class="section level4">
+<h4><span class="math inline">\(y\)</span>-standardized indirect effect</h4>
+<p>First look at the bootstrap distribution:</p>
+<pre class="r"><code>plot(med_boo, index = 3L)</code></pre>
+<p><img src="/post/2017-08-25-confidence-intervals-for-multilevel-mediation_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
 <p>We also can get the bootstrap CIs for the indirect effect with <span class="math inline">\(y\)</span> standardized, referred to as <span class="math inline">\(ab_{ps}\)</span> in the literature, which has the interpretation of:</p>
 <blockquote>
 <p>Every unit increase in <span class="math inline">\(x\)</span> (treatment variable) results in a change of <span class="math inline">\(ab_{ps}\)</span> standard deviations in <span class="math inline">\(y\)</span> through the mediator.</p>
@@ -281,6 +297,12 @@ boot.ci(med_boo, type = c(&quot;norm&quot;, &quot;basic&quot;, &quot;perc&quot;,
 ## Calculations and Intervals on Original Scale
 ## Some BCa intervals may be unstable</code></pre>
 <p>As shown in the result, BCa interval is wider but with higher lower and upper confidence limits. For single-level mediation Cheung (2009) showed that the percentile and BCa CIs are better than Wald CI and using the <code>PRODCLIN CI</code> macro. It is still an open question how the different bootstrap CIs perform in multilevel mediation.</p>
+</div>
+<div id="proportion-mediated" class="section level4">
+<h4>Proportion mediated</h4>
+<p>Again, check the bootstrap distribution:</p>
+<pre class="r"><code>plot(med_boo, index = 4L)</code></pre>
+<p><img src="/post/2017-08-25-confidence-intervals-for-multilevel-mediation_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
 <p>Finally, we can get CIs for proportion mediated:</p>
 <pre class="r"><code># For proportion mediated
 boot.ci(med_boo, type = c(&quot;norm&quot;, &quot;basic&quot;, &quot;perc&quot;, &quot;bca&quot;), index = 4L)</code></pre>
@@ -300,6 +322,7 @@ boot.ci(med_boo, type = c(&quot;norm&quot;, &quot;basic&quot;, &quot;perc&quot;,
 ## Calculations and Intervals on Original Scale
 ## Some BCa intervals may be unstable</code></pre>
 <p>The percentile CI (and to a less degree the basic CI) was close to the one given with the <code>mediation</code> package, whereas the normal bootstrap CI and the BCa CI had much wider intervals. After all, I don’t think proportion mediated would be a good measure of effect size, as also pointed out in Miocevic, O’Rourke, MacKinnon, and Brown (2017).</p>
+</div>
 </div>
 </div>
 <div id="summary-table-of-different-cis" class="section level2">
