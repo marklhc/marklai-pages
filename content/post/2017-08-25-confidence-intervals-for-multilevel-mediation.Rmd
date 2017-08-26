@@ -6,6 +6,7 @@ slug: confidence-intervals-for-multilevel-mediation
 output:
   blogdown::html_page:
     toc: true
+draft: true
 categories:
   - Statistics
 tags:
@@ -74,9 +75,31 @@ system.time(med_out <- mediate(med_fit, out_fit, treat = "free",
 summary(med_out)  # Summary of mediation analysis
 ```
 
+The output gives the "ACME" (average causal mediation effect) estimate, which
+equals estimator of $ab$ under a normal model, as well as "ADE" (average direct
+effect), which equals estimator of $c'$ under a normal model, and ACME and ADE
+add up to the "Total Effect", and the proportion mediated as estimating $ab /
+(ab + c')$. The posterior median was used for all the quantities, together 
+with the credible intervals. 
+
+One can use the posterior samples (e.g., `d0.sim` for the posterior samples of 
+the $a$ path) to compute any derived quantities. However, the posterior samples
+for the variance components are not available, so one cannot compute 
+standardized coefficients or effect sizes defined using variance components. 
+
 ## Analytical Approaches for CI With the `RMediation` Package
 
+The two main analytical approaches are:
+1. distribution of product of coefficients
+2. Asymptotic normal CI (or Wald CI)
+
 ### Distribution of Product of Coefficients
+
+This approach uses the quantiles of the distribution of $ab$ when $a$ and $b$
+are assumed bivariate normal. Therefore, the Quasi-Bayesian/Monte Carlo 
+approach can be viewed as an approximation of it. It is, however, less flexible
+as it does not provide distributions of other derived quantities (e.g., 
+proportion mediated). 
 
 ```{r}
 # With RMediation
@@ -93,6 +116,20 @@ vb <- vcov(out_fit)[nmmed, nmmed]  # sampling variance of b path
 
 ### Asymptotic Normal CI
 
+\newcommand{\SE}{\textit{SE}}
+
+The asymptotic *SE* for the product of two normal variables, as defined 
+in the `RMediation` package, is:
+$$\SE(\hat a \hat b) = \sqrt{a^2 \SE^2(b) + b^2 \SE^2(a) + 
+                       2 ab \SE(a) \SE(b) r_{\hat a \hat b} + 
+                       \SE^2(a) \SE^2(b) r_{\hat a \hat b}}$$
+And we replace the $a$, $b$, $\SE(a)$, $\SE(b)$ with the corresponding 
+sample estimates. Note that as we use separate equations to obtain $\hat a$ and 
+$\hat b$, the correlation between them, $r_{\hat a \hat b}$, is assumed zero, 
+so the asymptotic *SE* is computed as:
+$$\SE(\hat a \hat b) = \sqrt{a^2 \SE^2(b) + b^2 \SE^2(a)}$$
+and the Asymptotic symmetric CI is $\hat a \hat b \pm 1.96 \SE(\hat a \hat b)$. 
+
 ```{r}
 # Assuming Asymptotic Normality
 (med_asym <- RMediation::medci(mu.x = a, mu.y = b, type = "asymp", 
@@ -108,13 +145,25 @@ sch_id <- school_sub$SCH_ID
 
 lv1_resample <- function(new_lv2_id, data = student_sub, 
                          group_var = "SCH_ID") {
+  # Return a resampled lv-1 data set given an input of cluster values
+  # 
+  # Args:
+  #   new_lv2_id: A vector (character/numeric) showing the cluster values 
+  #               to be selected. 
+  #   data: The lv-1 data set to be resampled. 
+  #   group_var: A character vector of length 1 indicating the variable name
+  #              for cluster ID
+  # Returns:
+  #   A data.frame object with the resampled data. 
   group <- data[[group_var]]
   N <- nrow(data)
   new_lv1_index <- unlist(
     lapply(new_lv2_id, function(i) seq_len(N)[group == i]))
-  gp_length <- table(group, dnn = NULL)
-  group_length <- gp_length[as.character(new_lv2_id)]
-  new_group <- rep(seq_along(new_lv2_id), group_length)
+  gp_tab <- table(group, dnn = NULL)
+  gp_length <- gp_tab[as.character(new_lv2_id)]
+  # `new_group` make sure that each resampled cluster get a distinct 
+  # cluster ID. 
+  new_group <- rep(seq_along(new_lv2_id), gp_length)
   new_data <- data[new_lv1_index, , drop = FALSE]
   new_data[group_var] <- new_group
   rownames(new_data) <- NULL
@@ -125,20 +174,94 @@ ab_resample <- function(data_lv2, i, ...) {
   new_sch_id <- sch_id[i]
   med_fit <- lm(smorale ~ free + catholic + coed, data = data_lv2[i, ])
   new_stud_dat <- lv1_resample(new_sch_id, ...)
+  # Use `calc.dervis` to skip computing the derivatives and save 
+  # some time for each bootstrap replication
   out_fit <- lmer(late ~ free + smorale + catholic + coed +
                   gender + income + pared + (1 | SCH_ID), data = new_stud_dat, 
                   control = lmerControl(calc.derivs = FALSE))
   a <- unname(coef(med_fit)[nmtx])
   b <- unname(fixef(out_fit)[nmmed])
+  ab <- a * b
   va <- vcov(med_fit)[nmtx, nmtx]
   vb <- vcov(out_fit)[nmmed, nmmed]
-  c(ab = a * b, 
-    vab = a^2 * vb + b^2 * va)
+  # variance components (for standardizing y):
+  sigma_y <- sigma(out_fit)  # level-1 SD
+  tau <- getME(out_fit, "theta") * sigma_y  # random intercept SD
+  # c-prime (for getting proportion mediated)
+  c_prime <- unname(fixef(out_fit)[nmtx])
+  c(ab = ab, 
+    vab = a^2 * vb + b^2 * va, 
+    ab_stdy = ab / sqrt(tau^2 + sigma_y^2), 
+    pm = ab / (ab + c_prime))
 }
 
-system.time(med_boo <- boot(school_sub, ab_resample, 1000))
-boot.ci(med_boo, type = "all")
+system.time(med_boo <- boot(school_sub, ab_resample, 1999))
+med_boo
 ```
 
-## Fully Bayesian Approach With `rstan`
+The output shows that the indirect effect estimate was biased by 
+`r comma((mean(med_boo$t[ , 1]) / med_boo$t0["ab"] - 1) * 100)`%, whereas the 
+estimated sampling variance was biased by 
+`r comma((mean(med_boo$t[ , 2]) / med_boo$t0["vab"] - 1) * 100)`%!
+
+### Bootstrap CI
+
+```{r}
+# For (unstandardized) indirect effect
+boot.ci(med_boo, type = "all", index = 1:2)
+```
+
+Generally BCa (bias-corrected and accelerated) and studentized CIs are more 
+accurate (see Davison & Hinkley, 1997; Van der Leeden, Meijer, & Busing, 2008). 
+However, the BCa needs the accerlation value (which is used to correct for 
+skewness), which is estimated using the regression method here, and to my 
+knowledge its use for multilevel data has not been tested. 
+
+The studentized CI requires the use of the sampling variance of the statistic to
+be bootstrapped, which is why I also computed the asymptotic variance of 
+the indirect effect in each bootstrap replication. However, for the 
+$y$-standardized indirect effect and the proportion mediated it would be 
+more work to obtain the sampling variance estimates (which can be obtained 
+with the delta method or with other resampling method within each bootstrap
+sample; the former needs some derivation and may not be very accurate and the
+latter will increase the computation time by a factor of 100 or more, which is 
+not practical), so I did not request for the studentized CI. 
+
+As you can see, for the indirect effect estimate, both BCa and studentized CIs
+gave results that are closer compared to other types of CIs. The BCa was known
+to sometimes overcorrect for skewness, and in this case it might seem to be 
+pushing the confidence limits to the right. 
+
+We also can get the bootstrap CIs for the indirect effect with $y$ 
+standardized, referred to as $ab_{ps}$ in the literature, 
+which has the interpretation of:
+
+> Every unit increase in $x$ (treatment variable) results in $ab_{ps}$ 
+> standard deviations in $y$ through the mediator. 
+
+```{r}
+# For y-standardized indirect
+boot.ci(med_boo, type = c("norm", "basic", "perc", "bca"), index = 3L)
+```
+
+As shown in the result, BCa interval is wider but with higher lower and upper
+confidence limits. For single-level mediation Cheung (2009) showed that the 
+percentile and BCa CIs are better than Wald CI and using the `PRODCLIN CI` 
+macro. It is still an open question how the different bootstrap CIs perform
+in multilevel mediation. 
+
+Finally, we can get CIs for proportion mediated:
+
+```{r}
+# For proportion mediated
+boot.ci(med_boo, type = c("norm", "basic", "perc", "bca"), index = 4L)
+```
+
+The percentile CI (and to a less degree the basic CI) was close to the one given
+with the `mediation` package, whereas the normal bootstrap CI and the BCa CI had
+much wider intervals. After all, I don't think proportion mediated would be a
+good measure of effect size, as also pointed out in Miocevic, O'Rourke,
+MacKinnon, and Brown (2017).
+
+<!-- ## Fully Bayesian Approach With `rstan` -->
 

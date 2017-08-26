@@ -24,8 +24,9 @@ tags:
 <li><a href="#distribution-of-product-of-coefficients">Distribution of Product of Coefficients</a></li>
 <li><a href="#asymptotic-normal-ci">Asymptotic Normal CI</a></li>
 </ul></li>
-<li><a href="#case-bootstrap">Case Bootstrap</a></li>
-<li><a href="#fully-bayesian-approach-with-rstan">Fully Bayesian Approach With <code>rstan</code></a></li>
+<li><a href="#case-bootstrap">Case Bootstrap</a><ul>
+<li><a href="#bootstrap-ci">Bootstrap CI</a></li>
+</ul></li>
 </ul>
 </div>
 
@@ -87,7 +88,7 @@ system.time(med_out &lt;- mediate(med_fit, out_fit, treat = &quot;free&quot;,
                                mediator = &quot;smorale&quot;,
                                control.value = 3, treat.value = 4, sims = 500))</code></pre>
 <pre><code>##    user  system elapsed 
-##   5.532   0.032   5.567</code></pre>
+##   5.724   0.020   5.741</code></pre>
 <pre class="r"><code>summary(med_out)  # Summary of mediation analysis</code></pre>
 <pre><code>## 
 ## Causal Mediation Analysis 
@@ -110,11 +111,15 @@ system.time(med_out &lt;- mediate(med_fit, out_fit, treat = &quot;free&quot;,
 ## 
 ## 
 ## Simulations: 500</code></pre>
+<p>The output gives the “ACME” (average causal mediation effect) estimate, which equals estimator of <span class="math inline">\(ab\)</span> under a normal model, as well as “ADE” (average direct effect), which equals estimator of <span class="math inline">\(c&#39;\)</span> under a normal model, and ACME and ADE add up to the “Total Effect”, and the proportion mediated as estimating <span class="math inline">\(ab / (ab + c&#39;)\)</span>. The posterior median was used for all the quantities, together with the credible intervals.</p>
+<p>One can use the posterior samples (e.g., <code>d0.sim</code> for the posterior samples of the <span class="math inline">\(a\)</span> path) to compute any derived quantities. However, the posterior samples for the variance components are not available, so one cannot compute standardized coefficients or effect sizes defined using variance components.</p>
 </div>
 <div id="analytical-approaches-for-ci-with-the-rmediation-package" class="section level2">
 <h2>Analytical Approaches for CI With the <code>RMediation</code> Package</h2>
+<p>The two main analytical approaches are: 1. distribution of product of coefficients 2. Asymptotic normal CI (or Wald CI)</p>
 <div id="distribution-of-product-of-coefficients" class="section level3">
 <h3>Distribution of Product of Coefficients</h3>
+<p>This approach uses the quantiles of the distribution of <span class="math inline">\(ab\)</span> when <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span> are assumed bivariate normal. Therefore, the Quasi-Bayesian/Monte Carlo approach can be viewed as an approximation of it. It is, however, less flexible as it does not provide distributions of other derived quantities (e.g., proportion mediated).</p>
 <pre class="r"><code># With RMediation
 nmtx &lt;- &quot;free&quot;  # name of treatment variable
 nmmed &lt;- &quot;smorale&quot;  # name of mediator
@@ -138,6 +143,9 @@ vb &lt;- vcov(out_fit)[nmmed, nmmed]  # sampling variance of b path
 </div>
 <div id="asymptotic-normal-ci" class="section level3">
 <h3>Asymptotic Normal CI</h3>
+<p>The asymptotic <em>SE</em> for the product of two normal variables, as defined in the <code>RMediation</code> package, is: <span class="math display">\[{\textit{SE}}(\hat a \hat b) = \sqrt{a^2 {\textit{SE}}^2(b) + b^2 {\textit{SE}}^2(a) + 
+                       2 ab {\textit{SE}}(a) {\textit{SE}}(b) r_{\hat a \hat b} + 
+                       {\textit{SE}}^2(a) {\textit{SE}}^2(b) r_{\hat a \hat b}}\]</span> And we replace the <span class="math inline">\(a\)</span>, <span class="math inline">\(b\)</span>, <span class="math inline">\({\textit{SE}}(a)\)</span>, <span class="math inline">\({\textit{SE}}(b)\)</span> with the corresponding sample estimates. Note that as we use separate equations to obtain <span class="math inline">\(\hat a\)</span> and <span class="math inline">\(\hat b\)</span>, the correlation between them, <span class="math inline">\(r_{\hat a \hat b}\)</span>, is assumed zero, so the asymptotic <em>SE</em> is computed as: <span class="math display">\[{\textit{SE}}(\hat a \hat b) = \sqrt{a^2 {\textit{SE}}^2(b) + b^2 {\textit{SE}}^2(a)}\]</span> and the Asymptotic symmetric CI is <span class="math inline">\(\hat a \hat b \pm 1.96 {\textit{SE}}(\hat a \hat b)\)</span>.</p>
 <pre class="r"><code># Assuming Asymptotic Normality
 (med_asym &lt;- RMediation::medci(mu.x = a, mu.y = b, type = &quot;asymp&quot;, 
                                se.x = sqrt(va), se.y = sqrt(vb)))</code></pre>
@@ -161,13 +169,25 @@ sch_id &lt;- school_sub$SCH_ID
 
 lv1_resample &lt;- function(new_lv2_id, data = student_sub, 
                          group_var = &quot;SCH_ID&quot;) {
+  # Return a resampled lv-1 data set given an input of cluster values
+  # 
+  # Args:
+  #   new_lv2_id: A vector (character/numeric) showing the cluster values 
+  #               to be selected. 
+  #   data: The lv-1 data set to be resampled. 
+  #   group_var: A character vector of length 1 indicating the variable name
+  #              for cluster ID
+  # Returns:
+  #   A data.frame object with the resampled data. 
   group &lt;- data[[group_var]]
   N &lt;- nrow(data)
   new_lv1_index &lt;- unlist(
     lapply(new_lv2_id, function(i) seq_len(N)[group == i]))
-  gp_length &lt;- table(group, dnn = NULL)
-  group_length &lt;- gp_length[as.character(new_lv2_id)]
-  new_group &lt;- rep(seq_along(new_lv2_id), group_length)
+  gp_tab &lt;- table(group, dnn = NULL)
+  gp_length &lt;- gp_tab[as.character(new_lv2_id)]
+  # `new_group` make sure that each resampled cluster get a distinct 
+  # cluster ID. 
+  new_group &lt;- rep(seq_along(new_lv2_id), gp_length)
   new_data &lt;- data[new_lv1_index, , drop = FALSE]
   new_data[group_var] &lt;- new_group
   rownames(new_data) &lt;- NULL
@@ -178,36 +198,106 @@ ab_resample &lt;- function(data_lv2, i, ...) {
   new_sch_id &lt;- sch_id[i]
   med_fit &lt;- lm(smorale ~ free + catholic + coed, data = data_lv2[i, ])
   new_stud_dat &lt;- lv1_resample(new_sch_id, ...)
+  # Use `calc.dervis` to skip computing the derivatives and save 
+  # some time for each bootstrap replication
   out_fit &lt;- lmer(late ~ free + smorale + catholic + coed +
                   gender + income + pared + (1 | SCH_ID), data = new_stud_dat, 
                   control = lmerControl(calc.derivs = FALSE))
   a &lt;- unname(coef(med_fit)[nmtx])
   b &lt;- unname(fixef(out_fit)[nmmed])
+  ab &lt;- a * b
   va &lt;- vcov(med_fit)[nmtx, nmtx]
   vb &lt;- vcov(out_fit)[nmmed, nmmed]
-  c(ab = a * b, 
-    vab = a^2 * vb + b^2 * va)
+  # variance components (for standardizing y):
+  sigma_y &lt;- sigma(out_fit)  # level-1 SD
+  tau &lt;- getME(out_fit, &quot;theta&quot;) * sigma_y  # random intercept SD
+  # c-prime (for getting proportion mediated)
+  c_prime &lt;- unname(fixef(out_fit)[nmtx])
+  c(ab = ab, 
+    vab = a^2 * vb + b^2 * va, 
+    ab_stdy = ab / sqrt(tau^2 + sigma_y^2), 
+    pm = ab / (ab + c_prime))
 }
 
-system.time(med_boo &lt;- boot(school_sub, ab_resample, 1000))</code></pre>
+system.time(med_boo &lt;- boot(school_sub, ab_resample, 1999))</code></pre>
 <pre><code>##    user  system elapsed 
-## 202.344   0.024 202.495</code></pre>
-<pre class="r"><code>boot.ci(med_boo, type = &quot;all&quot;)</code></pre>
+## 466.092   0.068 466.337</code></pre>
+<pre class="r"><code>med_boo</code></pre>
+<pre><code>## 
+## ORDINARY NONPARAMETRIC BOOTSTRAP
+## 
+## 
+## Call:
+## boot(data = school_sub, statistic = ab_resample, R = 1999)
+## 
+## 
+## Bootstrap Statistics :
+##         original        bias     std. error
+## t1* 7.047165e-03 -6.935819e-04 1.002962e-02
+## t2* 7.042008e-05  4.153497e-05 9.095505e-05
+## t3* 6.224259e-03 -5.572101e-04 8.933171e-03
+## t4* 2.760381e-01 -1.026307e-01 5.683214e+00</code></pre>
+<p>The output shows that the indirect effect estimate was biased by -9.8%, whereas the estimated sampling variance was biased by 59%!</p>
+<div id="bootstrap-ci" class="section level3">
+<h3>Bootstrap CI</h3>
+<pre class="r"><code># For (unstandardized) indirect effect
+boot.ci(med_boo, type = &quot;all&quot;, index = 1:2)</code></pre>
 <pre><code>## BOOTSTRAP CONFIDENCE INTERVAL CALCULATIONS
-## Based on 1000 bootstrap replicates
+## Based on 1999 bootstrap replicates
 ## 
 ## CALL : 
-## boot.ci(boot.out = med_boo, type = &quot;all&quot;)
+## boot.ci(boot.out = med_boo, type = &quot;all&quot;, index = 1:2)
 ## 
 ## Intervals : 
 ## Level      Normal              Basic             Studentized     
-## 95%   (-0.0133,  0.0283 )   (-0.0178,  0.0244 )   (-0.0049,  0.0400 )  
+## 95%   (-0.0119,  0.0274 )   (-0.0163,  0.0242 )   (-0.0050,  0.0339 )  
 ## 
 ## Level     Percentile            BCa          
-## 95%   (-0.0103,  0.0319 )   (-0.0061,  0.0444 )  
+## 95%   (-0.0101,  0.0304 )   (-0.0042,  0.0474 )  
+## Calculations and Intervals on Original Scale</code></pre>
+<p>Generally BCa (bias-corrected and accelerated) and studentized CIs are more accurate (see Davison &amp; Hinkley, 1997; Van der Leeden, Meijer, &amp; Busing, 2008). However, the BCa needs the accerlation value (which is used to correct for skewness), which is estimated using the regression method here, and to my knowledge its use for multilevel data has not been tested.</p>
+<p>The studentized CI requires the use of the sampling variance of the statistic to be bootstrapped, which is why I also computed the asymptotic variance of the indirect effect in each bootstrap replication. However, for the <span class="math inline">\(y\)</span>-standardized indirect effect and the proportion mediated it would be more work to obtain the sampling variance estimates (which can be obtained with the delta method or with other resampling method within each bootstrap sample; the former needs some derivation and may not be very accurate and the latter will increase the computation time by a factor of 100 or more, which is not practical), so I did not request for the studentized CI.</p>
+<p>As you can see, for the indirect effect estimate, both BCa and studentized CIs gave results that are closer compared to other types of CIs. The BCa was known to sometimes overcorrect for skewness, and in this case it might seem to be pushing the confidence limits to the right.</p>
+<p>We also can get the bootstrap CIs for the indirect effect with <span class="math inline">\(y\)</span> standardized, referred to as <span class="math inline">\(ab_{ps}\)</span> in the literature, which has the interpretation of:</p>
+<blockquote>
+<p>Every unit increase in <span class="math inline">\(x\)</span> (treatment variable) results in <span class="math inline">\(ab_{ps}\)</span> standard deviations in <span class="math inline">\(y\)</span> through the mediator.</p>
+</blockquote>
+<pre class="r"><code># For y-standardized indirect
+boot.ci(med_boo, type = c(&quot;norm&quot;, &quot;basic&quot;, &quot;perc&quot;, &quot;bca&quot;), index = 3L)</code></pre>
+<pre><code>## BOOTSTRAP CONFIDENCE INTERVAL CALCULATIONS
+## Based on 1999 bootstrap replicates
+## 
+## CALL : 
+## boot.ci(boot.out = med_boo, type = c(&quot;norm&quot;, &quot;basic&quot;, &quot;perc&quot;, 
+##     &quot;bca&quot;), index = 3)
+## 
+## Intervals : 
+## Level      Normal              Basic         
+## 95%   (-0.0107,  0.0243 )   (-0.0146,  0.0216 )  
+## 
+## Level     Percentile            BCa          
+## 95%   (-0.0091,  0.0270 )   (-0.0038,  0.0406 )  
+## Calculations and Intervals on Original Scale</code></pre>
+<p>As shown in the result, BCa interval is wider but with higher lower and upper confidence limits. For single-level mediation Cheung (2009) showed that the percentile and BCa CIs are better than Wald CI and using the <code>PRODCLIN CI</code> macro. It is still an open question how the different bootstrap CIs perform in multilevel mediation.</p>
+<p>Finally, we can get CIs for proportion mediated:</p>
+<pre class="r"><code># For proportion mediated
+boot.ci(med_boo, type = c(&quot;norm&quot;, &quot;basic&quot;, &quot;perc&quot;, &quot;bca&quot;), index = 4L)</code></pre>
+<pre><code>## BOOTSTRAP CONFIDENCE INTERVAL CALCULATIONS
+## Based on 1999 bootstrap replicates
+## 
+## CALL : 
+## boot.ci(boot.out = med_boo, type = c(&quot;norm&quot;, &quot;basic&quot;, &quot;perc&quot;, 
+##     &quot;bca&quot;), index = 4)
+## 
+## Intervals : 
+## Level      Normal              Basic         
+## 95%   (-10.7602,  11.5176 )   ( -1.7325,   3.8859 )  
+## 
+## Level     Percentile            BCa          
+## 95%   (-3.3338,  2.2846 )   (-0.0773, 87.3555 )  
 ## Calculations and Intervals on Original Scale
 ## Some BCa intervals may be unstable</code></pre>
+<p>The percentile CI (and to a less degree the basic CI) was close to the one given with the <code>mediation</code> package, whereas the normal bootstrap CI and the BCa CI had much wider intervals. After all, I don’t think proportion mediated would be a good measure of effect size, as also pointed out in Miocevic, O’Rourke, MacKinnon, and Brown (2017).</p>
+<!-- ## Fully Bayesian Approach With `rstan` -->
 </div>
-<div id="fully-bayesian-approach-with-rstan" class="section level2">
-<h2>Fully Bayesian Approach With <code>rstan</code></h2>
 </div>
