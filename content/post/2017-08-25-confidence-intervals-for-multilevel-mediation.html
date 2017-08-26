@@ -27,6 +27,7 @@ tags:
 <li><a href="#case-bootstrap">Case Bootstrap</a><ul>
 <li><a href="#bootstrap-ci">Bootstrap CI</a></li>
 </ul></li>
+<li><a href="#summary-table-of-different-cis">Summary Table of Different CIs:</a></li>
 </ul>
 </div>
 
@@ -88,7 +89,7 @@ system.time(med_out &lt;- mediate(med_fit, out_fit, treat = &quot;free&quot;,
                                mediator = &quot;smorale&quot;,
                                control.value = 3, treat.value = 4, sims = 500))</code></pre>
 <pre><code>##    user  system elapsed 
-##   5.724   0.020   5.741</code></pre>
+##   12.12    0.11   12.50</code></pre>
 <pre class="r"><code>summary(med_out)  # Summary of mediation analysis</code></pre>
 <pre><code>## 
 ## Causal Mediation Analysis 
@@ -217,55 +218,55 @@ ab_resample &lt;- function(data_lv2, i, ...) {
     vab = a^2 * vb + b^2 * va, 
     ab_stdy = ab / sqrt(tau^2 + sigma_y^2), 
     pm = ab / (ab + c_prime))
-}
-
-system.time(med_boo &lt;- boot(school_sub, ab_resample, 1999))</code></pre>
+}</code></pre>
+<pre class="r"><code>system.time(med_boo &lt;- boot(school_sub, ab_resample, 1000))</code></pre>
 <pre><code>##    user  system elapsed 
-## 466.092   0.068 466.337</code></pre>
+##  818.86    0.08  821.00</code></pre>
 <pre class="r"><code>med_boo</code></pre>
 <pre><code>## 
 ## ORDINARY NONPARAMETRIC BOOTSTRAP
 ## 
 ## 
 ## Call:
-## boot(data = school_sub, statistic = ab_resample, R = 1999)
+## boot(data = school_sub, statistic = ab_resample, R = 1000)
 ## 
 ## 
 ## Bootstrap Statistics :
 ##         original        bias     std. error
-## t1* 7.047165e-03 -6.935819e-04 1.002962e-02
-## t2* 7.042008e-05  4.153497e-05 9.095505e-05
-## t3* 6.224259e-03 -5.572101e-04 8.933171e-03
-## t4* 2.760381e-01 -1.026307e-01 5.683214e+00</code></pre>
-<p>The output shows that the indirect effect estimate was biased by -9.8%, whereas the estimated sampling variance was biased by 59%!</p>
+## t1* 7.047165e-03 -4.332177e-04 1.060356e-02
+## t2* 7.042008e-05  4.327382e-05 9.964896e-05
+## t3* 6.224259e-03 -3.430022e-04 9.401763e-03
+## t4* 2.760381e-01  6.292969e-01 1.827176e+01</code></pre>
+<p>The output shows that the indirect effect estimate was biased by -6.1%, whereas the estimated sampling variance was biased by 61%! (or 16 for standard error bias)</p>
 <div id="bootstrap-ci" class="section level3">
 <h3>Bootstrap CI</h3>
 <pre class="r"><code># For (unstandardized) indirect effect
-boot.ci(med_boo, type = &quot;all&quot;, index = 1:2)</code></pre>
+(med_bootci &lt;- boot.ci(med_boo, type = &quot;all&quot;, index = 1:2))</code></pre>
 <pre><code>## BOOTSTRAP CONFIDENCE INTERVAL CALCULATIONS
-## Based on 1999 bootstrap replicates
+## Based on 1000 bootstrap replicates
 ## 
 ## CALL : 
 ## boot.ci(boot.out = med_boo, type = &quot;all&quot;, index = 1:2)
 ## 
 ## Intervals : 
 ## Level      Normal              Basic             Studentized     
-## 95%   (-0.0119,  0.0274 )   (-0.0163,  0.0242 )   (-0.0050,  0.0339 )  
+## 95%   (-0.0133,  0.0283 )   (-0.0178,  0.0244 )   (-0.0049,  0.0400 )  
 ## 
 ## Level     Percentile            BCa          
-## 95%   (-0.0101,  0.0304 )   (-0.0042,  0.0474 )  
-## Calculations and Intervals on Original Scale</code></pre>
+## 95%   (-0.0103,  0.0319 )   (-0.0061,  0.0444 )  
+## Calculations and Intervals on Original Scale
+## Some BCa intervals may be unstable</code></pre>
 <p>Generally BCa (bias-corrected and accelerated) and studentized CIs are more accurate (see Davison &amp; Hinkley, 1997; Van der Leeden, Meijer, &amp; Busing, 2008). However, the BCa needs the accerlation value (which is used to correct for skewness), which is estimated using the regression method here, and to my knowledge its use for multilevel data has not been tested.</p>
 <p>The studentized CI requires the use of the sampling variance of the statistic to be bootstrapped, which is why I also computed the asymptotic variance of the indirect effect in each bootstrap replication. However, for the <span class="math inline">\(y\)</span>-standardized indirect effect and the proportion mediated it would be more work to obtain the sampling variance estimates (which can be obtained with the delta method or with other resampling method within each bootstrap sample; the former needs some derivation and may not be very accurate and the latter will increase the computation time by a factor of 100 or more, which is not practical), so I did not request for the studentized CI.</p>
 <p>As you can see, for the indirect effect estimate, both BCa and studentized CIs gave results that are closer compared to other types of CIs. The BCa was known to sometimes overcorrect for skewness, and in this case it might seem to be pushing the confidence limits to the right.</p>
 <p>We also can get the bootstrap CIs for the indirect effect with <span class="math inline">\(y\)</span> standardized, referred to as <span class="math inline">\(ab_{ps}\)</span> in the literature, which has the interpretation of:</p>
 <blockquote>
-<p>Every unit increase in <span class="math inline">\(x\)</span> (treatment variable) results in <span class="math inline">\(ab_{ps}\)</span> standard deviations in <span class="math inline">\(y\)</span> through the mediator.</p>
+<p>Every unit increase in <span class="math inline">\(x\)</span> (treatment variable) results in a change of <span class="math inline">\(ab_{ps}\)</span> standard deviations in <span class="math inline">\(y\)</span> through the mediator.</p>
 </blockquote>
 <pre class="r"><code># For y-standardized indirect
 boot.ci(med_boo, type = c(&quot;norm&quot;, &quot;basic&quot;, &quot;perc&quot;, &quot;bca&quot;), index = 3L)</code></pre>
 <pre><code>## BOOTSTRAP CONFIDENCE INTERVAL CALCULATIONS
-## Based on 1999 bootstrap replicates
+## Based on 1000 bootstrap replicates
 ## 
 ## CALL : 
 ## boot.ci(boot.out = med_boo, type = c(&quot;norm&quot;, &quot;basic&quot;, &quot;perc&quot;, 
@@ -273,17 +274,18 @@ boot.ci(med_boo, type = c(&quot;norm&quot;, &quot;basic&quot;, &quot;perc&quot;,
 ## 
 ## Intervals : 
 ## Level      Normal              Basic         
-## 95%   (-0.0107,  0.0243 )   (-0.0146,  0.0216 )  
+## 95%   (-0.0119,  0.0250 )   (-0.0154,  0.0214 )  
 ## 
 ## Level     Percentile            BCa          
-## 95%   (-0.0091,  0.0270 )   (-0.0038,  0.0406 )  
-## Calculations and Intervals on Original Scale</code></pre>
+## 95%   (-0.0089,  0.0279 )   (-0.0057,  0.0399 )  
+## Calculations and Intervals on Original Scale
+## Some BCa intervals may be unstable</code></pre>
 <p>As shown in the result, BCa interval is wider but with higher lower and upper confidence limits. For single-level mediation Cheung (2009) showed that the percentile and BCa CIs are better than Wald CI and using the <code>PRODCLIN CI</code> macro. It is still an open question how the different bootstrap CIs perform in multilevel mediation.</p>
 <p>Finally, we can get CIs for proportion mediated:</p>
 <pre class="r"><code># For proportion mediated
 boot.ci(med_boo, type = c(&quot;norm&quot;, &quot;basic&quot;, &quot;perc&quot;, &quot;bca&quot;), index = 4L)</code></pre>
 <pre><code>## BOOTSTRAP CONFIDENCE INTERVAL CALCULATIONS
-## Based on 1999 bootstrap replicates
+## Based on 1000 bootstrap replicates
 ## 
 ## CALL : 
 ## boot.ci(boot.out = med_boo, type = c(&quot;norm&quot;, &quot;basic&quot;, &quot;perc&quot;, 
@@ -291,13 +293,63 @@ boot.ci(med_boo, type = c(&quot;norm&quot;, &quot;basic&quot;, &quot;perc&quot;,
 ## 
 ## Intervals : 
 ## Level      Normal              Basic         
-## 95%   (-10.7602,  11.5176 )   ( -1.7325,   3.8859 )  
+## 95%   (-36.1652,  35.4587 )   ( -1.9291,   2.1622 )  
 ## 
 ## Level     Percentile            BCa          
-## 95%   (-3.3338,  2.2846 )   (-0.0773, 87.3555 )  
+## 95%   ( -1.6101,   2.4812 )   ( -0.0772, 485.1805 )  
 ## Calculations and Intervals on Original Scale
 ## Some BCa intervals may be unstable</code></pre>
 <p>The percentile CI (and to a less degree the basic CI) was close to the one given with the <code>mediation</code> package, whereas the normal bootstrap CI and the BCa CI had much wider intervals. After all, I don’t think proportion mediated would be a good measure of effect size, as also pointed out in Miocevic, O’Rourke, MacKinnon, and Brown (2017).</p>
-<!-- ## Fully Bayesian Approach With `rstan` -->
 </div>
+</div>
+<div id="summary-table-of-different-cis" class="section level2">
+<h2>Summary Table of Different CIs:</h2>
+<pre class="r"><code>format_ci &lt;- function(ci) {
+  paste0(&quot;(&quot;, paste(comma(ci), collapse = &quot;,&quot;), &quot;)&quot;)
+}
+data_frame(Method = c(&quot;Quasi-Bayesian&quot;, &quot;DOP&quot;, &quot;Asymptotic&quot;, 
+                      &quot;Boot Studentized&quot;, &quot;Boot Percentile&quot;, 
+                      &quot;Boot BCa&quot;), 
+           `95% CI` = c(format_ci(med_out$d0.ci), 
+                        format_ci(med_dop[[1]]), 
+                        format_ci(med_asym[[1]]), 
+                        format_ci(tail(med_bootci$student[1, ], 2L)), 
+                        format_ci(tail(med_bootci$percent[1, ], 2L)), 
+                        format_ci(tail(med_bootci$bca[1, ], 2L)))) %&gt;%
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Method</th>
+<th align="left">95% CI</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Quasi-Bayesian</td>
+<td align="left">(-0.0072, 0.0316)</td>
+</tr>
+<tr class="even">
+<td align="left">DOP</td>
+<td align="left">(-0.0078, 0.0306)</td>
+</tr>
+<tr class="odd">
+<td align="left">Asymptotic</td>
+<td align="left">(-0.012, 0.026)</td>
+</tr>
+<tr class="even">
+<td align="left">Boot Studentized</td>
+<td align="left">(-0.0049, 0.0400)</td>
+</tr>
+<tr class="odd">
+<td align="left">Boot Percentile</td>
+<td align="left">(-0.010, 0.032)</td>
+</tr>
+<tr class="even">
+<td align="left">Boot BCa</td>
+<td align="left">(-0.0061, 0.0444)</td>
+</tr>
+</tbody>
+</table>
+<!-- ## Fully Bayesian Approach With `rstan` -->
 </div>

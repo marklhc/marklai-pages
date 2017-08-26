@@ -138,7 +138,7 @@ and the Asymptotic symmetric CI is $\hat a \hat b \pm 1.96 \SE(\hat a \hat b)$.
 
 ## Case Bootstrap
 
-```{r, cache=TRUE}
+```{r}
 library(boot)  # load the boot package
 # Get the unique school IDs as a global variable
 sch_id <- school_sub$SCH_ID
@@ -194,21 +194,25 @@ ab_resample <- function(data_lv2, i, ...) {
     ab_stdy = ab / sqrt(tau^2 + sigma_y^2), 
     pm = ab / (ab + c_prime))
 }
+```
 
-system.time(med_boo <- boot(school_sub, ab_resample, 1999))
+```{r, cache=TRUE}
+system.time(med_boo <- boot(school_sub, ab_resample, 1000))
 med_boo
 ```
 
 The output shows that the indirect effect estimate was biased by 
 `r comma((mean(med_boo$t[ , 1]) / med_boo$t0["ab"] - 1) * 100)`%, whereas the 
 estimated sampling variance was biased by 
-`r comma((mean(med_boo$t[ , 2]) / med_boo$t0["vab"] - 1) * 100)`%!
+`r comma((mean(med_boo$t[ , 2]) / med_boo$t0["vab"] - 1) * 100)`%! (or 
+`r comma((mean(sqrt(med_boo$t[ , 2])) / sqrt(med_boo$t0["vab"]) - 1) * 100)` for
+standard error bias)
 
 ### Bootstrap CI
 
 ```{r}
 # For (unstandardized) indirect effect
-boot.ci(med_boo, type = "all", index = 1:2)
+(med_bootci <- boot.ci(med_boo, type = "all", index = 1:2))
 ```
 
 Generally BCa (bias-corrected and accelerated) and studentized CIs are more 
@@ -236,8 +240,8 @@ We also can get the bootstrap CIs for the indirect effect with $y$
 standardized, referred to as $ab_{ps}$ in the literature, 
 which has the interpretation of:
 
-> Every unit increase in $x$ (treatment variable) results in $ab_{ps}$ 
-> standard deviations in $y$ through the mediator. 
+> Every unit increase in $x$ (treatment variable) results in a change of
+$ab_{ps}$ standard deviations in $y$ through the mediator.
 
 ```{r}
 # For y-standardized indirect
@@ -262,6 +266,25 @@ with the `mediation` package, whereas the normal bootstrap CI and the BCa CI had
 much wider intervals. After all, I don't think proportion mediated would be a
 good measure of effect size, as also pointed out in Miocevic, O'Rourke,
 MacKinnon, and Brown (2017).
+
+## Summary Table of Different CIs:
+
+```{r}
+format_ci <- function(ci) {
+  paste0("(", paste(comma(ci), collapse = ","), ")")
+}
+data_frame(Method = c("Quasi-Bayesian", "DOP", "Asymptotic", 
+                      "Boot Studentized", "Boot Percentile", 
+                      "Boot BCa"), 
+           `95% CI` = c(format_ci(med_out$d0.ci), 
+                        format_ci(med_dop[[1]]), 
+                        format_ci(med_asym[[1]]), 
+                        format_ci(tail(med_bootci$student[1, ], 2L)), 
+                        format_ci(tail(med_bootci$percent[1, ], 2L)), 
+                        format_ci(tail(med_bootci$bca[1, ], 2L)))) %>%
+  knitr::kable()
+```
+
 
 <!-- ## Fully Bayesian Approach With `rstan` -->
 
