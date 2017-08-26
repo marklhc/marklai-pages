@@ -292,6 +292,60 @@ much wider intervals. After all, I don't think proportion mediated would be a
 good measure of effect size, as also pointed out in Miocevic, O'Rourke,
 MacKinnon, and Brown (2017).
 
+## Fully Bayesian Approach With `rstan`
+
+```{r}
+library(rstan)
+rstan_options(auto_write = TRUE)
+options(mc.cores = 2L)
+library(coda)
+```
+
+Below is the STAN code for the multilevel mediation model:
+
+```{r, echo=FALSE, comment=NA}
+cat(readLines("stan_mlm_mediate.stan"), sep = '\n')
+```
+
+```{r, results='hide'}
+numeric_id <- function(id) {
+  # Make group ID to be natural numbers from 1, 2, ..., as needed in the 
+  # STAN program
+  match(id, unique(id))
+}
+med_sdata <- list(J = nrow(school_sub), 
+                  M = school_sub$smorale, 
+                  Kw = 4, 
+                  W = cbind(1, school_sub[c("free", "catholic", "coed")]), 
+                  N = nrow(student_sub), 
+                  Y = student_sub$late, 
+                  Kx = 8, 
+                  X = cbind(1, student_sub[c("free", "smorale", "catholic", 
+                                             "coed", "gender", "income", 
+                                             "pared")]), 
+                  gid = numeric_id(student_sub$SCH_ID))
+med_stan <- stan("stan_mlm_mediate.stan", data = med_sdata, 
+                 pars = c("temp_b0_m", "temp_b0_y", "a", "b", 
+                          "sigma_m", "sigma_y", "tau_y", 
+                          "ab", "ab_stdy", "pm"))
+```
+
+### Posterior (Credible) Intervals
+
+We can get the commonly-used equal-tailed interval or the shorter (but maybe
+less stable) highest posterior density interval (HPDI). 
+
+```{r, fig.height=3, fig.width=3, out.width="40%"}
+# Extract the posterior samples
+pars_post <- as.matrix(med_stan, pars = c("ab", "ab_stdy", "pm"))
+# Posterior distribution of ab:
+hist(pars_post[ , 1], xlab = "ab", main = "Posterior distribution of ab")
+# Equal-tailed interval:
+(post_ci <- apply(pars_post, 2, quantile, probs = c(.025, .975)))
+# HPDI
+(post_hpdi <- coda::HPDinterval(as.mcmc(pars_post)))
+```
+
 ## Summary Table of Different CIs:
 
 ```{r}
@@ -300,16 +354,14 @@ format_ci <- function(ci) {
 }
 data_frame(Method = c("Quasi-Bayesian", "DOP", "Asymptotic", 
                       "Boot Studentized", "Boot Percentile", 
-                      "Boot BCa"), 
+                      "Boot BCa", "Bayesian CI", "Bayesian HPDI"), 
            `95% CI` = c(format_ci(med_out$d0.ci), 
                         format_ci(med_dop[[1]]), 
                         format_ci(med_asym[[1]]), 
                         format_ci(tail(med_bootci$student[1, ], 2L)), 
                         format_ci(tail(med_bootci$percent[1, ], 2L)), 
-                        format_ci(tail(med_bootci$bca[1, ], 2L)))) %>%
+                        format_ci(tail(med_bootci$bca[1, ], 2L)), 
+                        format_ci(post_ci[ , "ab"]), 
+                        format_ci(post_hpdi["ab", ]))) %>%
   knitr::kable()
 ```
-
-
-<!-- ## Fully Bayesian Approach With `rstan` -->
-

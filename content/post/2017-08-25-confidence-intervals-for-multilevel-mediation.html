@@ -28,6 +28,9 @@ tags:
 <li><a href="#case-bootstrap">Case Bootstrap</a><ul>
 <li><a href="#bootstrap-ci">Bootstrap CI</a></li>
 </ul></li>
+<li><a href="#fully-bayesian-approach-with-rstan">Fully Bayesian Approach With <code>rstan</code></a><ul>
+<li><a href="#posterior-credible-intervals">Posterior (Credible) Intervals</a></li>
+</ul></li>
 <li><a href="#summary-table-of-different-cis">Summary Table of Different CIs:</a></li>
 </ul>
 </div>
@@ -90,7 +93,7 @@ system.time(med_out &lt;- mediate(med_fit, out_fit, treat = &quot;free&quot;,
                                mediator = &quot;smorale&quot;,
                                control.value = 3, treat.value = 4, sims = 500))</code></pre>
 <pre><code>##    user  system elapsed 
-##   12.56    0.06   12.72</code></pre>
+##   12.61    0.08   12.76</code></pre>
 <pre class="r"><code>summary(med_out)  # Summary of mediation analysis</code></pre>
 <pre><code>## 
 ## Causal Mediation Analysis 
@@ -226,7 +229,7 @@ ab_resample &lt;- function(data_lv2, i, ...) {
 }</code></pre>
 <pre class="r"><code>system.time(med_boo &lt;- boot(school_sub, ab_resample, 1000))</code></pre>
 <pre><code>##    user  system elapsed 
-##  818.86    0.08  821.00</code></pre>
+##  821.11    0.00  821.83</code></pre>
 <pre class="r"><code>med_boo</code></pre>
 <pre><code>## 
 ## ORDINARY NONPARAMETRIC BOOTSTRAP
@@ -325,6 +328,118 @@ boot.ci(med_boo, type = c(&quot;norm&quot;, &quot;basic&quot;, &quot;perc&quot;,
 </div>
 </div>
 </div>
+<div id="fully-bayesian-approach-with-rstan" class="section level2">
+<h2>Fully Bayesian Approach With <code>rstan</code></h2>
+<pre class="r"><code>library(rstan)
+rstan_options(auto_write = TRUE)
+options(mc.cores = 2L)
+library(coda)</code></pre>
+<p>Below is the STAN code for the multilevel mediation model:</p>
+<pre><code>data { 
+  // input for mediator model
+  int&lt;lower=1&gt; J;  // total number of clusters
+  vector[J] M;  // mediator variable (at level-2)
+  int&lt;lower=1&gt; Kw;  // number of effects for the mediator (including intercept)
+  matrix[J, Kw] W;  // level-2 design matrix for the mediator (including intercept)
+  // input for outcome model
+  int&lt;lower=1&gt; N;  // total number of observations 
+  vector[N] Y;  // mediator variable (at level-2)
+  int&lt;lower=1&gt; Kx;  // number of effects for the outcome (including intercept)
+  matrix[N, Kx] X;  // level-1 design matrix for the outcome (including intercept)
+  int&lt;lower=1&gt; gid[N];  // cluster ID
+} 
+transformed data { 
+  int Kwc = Kw - 1; 
+  int Kxc = Kx - 1; 
+  matrix[J, Kwc] Wc;  // centered version of W 
+  matrix[N, Kxc] Xc;  // centered version of X 
+  for (i in 2:Kw) { 
+    Wc[, i - 1] = W[, i] - mean(W[, i]); 
+  } 
+  for (i in 2:Kx) { 
+    Xc[, i - 1] = X[, i] - mean(X[, i]); 
+  } 
+} 
+parameters { 
+  vector[Kwc] a;  // fixed effects for M
+  vector[Kxc] b;  // fixed effects for Y
+  real temp_b0_m;  // intercept for M (with centered predictors)
+  real temp_b0_y;  // intercept for Y (with centered predictors)
+  real&lt;lower=0&gt; sigma_m;  // residual SD for M
+  real&lt;lower=0&gt; tau_y;  // group-level residual SD for Y
+  real&lt;lower=0&gt; sigma_y;  // group-level residual SD for Y
+  vector[J] z_y;  // unscaled group-level effects 
+} 
+transformed parameters { 
+  // group-level effects 
+  vector[J] beta_y = tau_y * z_y; 
+} 
+model { 
+  vector[J] mu_m = temp_b0_m + Wc * a;
+  vector[N] mu_y = temp_b0_y + Xc * b; 
+  for (n in 1:N) { 
+    mu_y[n] = mu_y[n] + beta_y[gid[n]];  // group specific effect
+  } 
+  // prior specifications 
+  a ~ normal(0, 10);
+  b ~ normal(0, 10); 
+  sigma_m ~ student_t(3, 0, 10); 
+  sigma_y ~ student_t(3, 0, 10); 
+  tau_y ~ student_t(3, 0, 10); 
+  z_y ~ normal(0, 1); 
+  // likelihood contribution 
+  M ~ normal(mu_m, sigma_m);
+  Y ~ normal(mu_y, sigma_y); 
+} 
+generated quantities {
+  real ab = a[1] * b[2];  // indirect effect
+  real ab_stdy = ab / sqrt(tau_y^2 + sigma_y^2); 
+  real pm = ab / (ab + b[2]);  // proportion mediated
+}</code></pre>
+<pre class="r"><code>numeric_id &lt;- function(id) {
+  # Make group ID to be natural numbers from 1, 2, ..., as needed in the 
+  # STAN program
+  match(id, unique(id))
+}
+med_sdata &lt;- list(J = nrow(school_sub), 
+                  M = school_sub$smorale, 
+                  Kw = 4, 
+                  W = cbind(1, school_sub[c(&quot;free&quot;, &quot;catholic&quot;, &quot;coed&quot;)]), 
+                  N = nrow(student_sub), 
+                  Y = student_sub$late, 
+                  Kx = 8, 
+                  X = cbind(1, student_sub[c(&quot;free&quot;, &quot;smorale&quot;, &quot;catholic&quot;, 
+                                             &quot;coed&quot;, &quot;gender&quot;, &quot;income&quot;, 
+                                             &quot;pared&quot;)]), 
+                  gid = numeric_id(student_sub$SCH_ID))
+med_stan &lt;- stan(&quot;stan_mlm_mediate.stan&quot;, data = med_sdata, 
+                 pars = c(&quot;temp_b0_m&quot;, &quot;temp_b0_y&quot;, &quot;a&quot;, &quot;b&quot;, 
+                          &quot;sigma_m&quot;, &quot;sigma_y&quot;, &quot;tau_y&quot;, 
+                          &quot;ab&quot;, &quot;ab_stdy&quot;, &quot;pm&quot;))</code></pre>
+<div id="posterior-credible-intervals" class="section level3">
+<h3>Posterior (Credible) Intervals</h3>
+<p>We can get the commonly-used equal-tailed interval or the shorter (but maybe less stable) highest posterior density interval (HPDI).</p>
+<pre class="r"><code># Extract the posterior samples
+pars_post &lt;- as.matrix(med_stan, pars = c(&quot;ab&quot;, &quot;ab_stdy&quot;, &quot;pm&quot;))
+# Posterior distribution of ab:
+hist(pars_post[ , 1], xlab = &quot;ab&quot;, main = &quot;Posterior distribution of ab&quot;)</code></pre>
+<p><img src="/post/2017-08-25-confidence-intervals-for-multilevel-mediation_files/figure-html/unnamed-chunk-16-1.png" width="40%" /></p>
+<pre class="r"><code># Equal-tailed interval:
+(post_ci &lt;- apply(pars_post, 2, quantile, probs = c(.025, .975)))</code></pre>
+<pre><code>##        parameters
+##                   ab     ab_stdy         pm
+##   2.5%  -0.008760216 -0.00761549 -0.2975376
+##   97.5%  0.031320613  0.02757498  0.0376768</code></pre>
+<pre class="r"><code># HPDI
+(post_hpdi &lt;- coda::HPDinterval(as.mcmc(pars_post)))</code></pre>
+<pre><code>##                lower      upper
+## ab      -0.010734393 0.02922747
+## ab_stdy -0.009220888 0.02598859
+## pm      -0.282189649 0.04457961
+## attr(,&quot;Probability&quot;)
+## [1] 0.95</code></pre>
+</div>
+</div>
 <div id="summary-table-of-different-cis" class="section level2">
 <h2>Summary Table of Different CIs:</h2>
 <pre class="r"><code>format_ci &lt;- function(ci) {
@@ -332,13 +447,15 @@ boot.ci(med_boo, type = c(&quot;norm&quot;, &quot;basic&quot;, &quot;perc&quot;,
 }
 data_frame(Method = c(&quot;Quasi-Bayesian&quot;, &quot;DOP&quot;, &quot;Asymptotic&quot;, 
                       &quot;Boot Studentized&quot;, &quot;Boot Percentile&quot;, 
-                      &quot;Boot BCa&quot;), 
+                      &quot;Boot BCa&quot;, &quot;Bayesian CI&quot;, &quot;Bayesian HPDI&quot;), 
            `95% CI` = c(format_ci(med_out$d0.ci), 
                         format_ci(med_dop[[1]]), 
                         format_ci(med_asym[[1]]), 
                         format_ci(tail(med_bootci$student[1, ], 2L)), 
                         format_ci(tail(med_bootci$percent[1, ], 2L)), 
-                        format_ci(tail(med_bootci$bca[1, ], 2L)))) %&gt;%
+                        format_ci(tail(med_bootci$bca[1, ], 2L)), 
+                        format_ci(post_ci[ , &quot;ab&quot;]), 
+                        format_ci(post_hpdi[&quot;ab&quot;, ]))) %&gt;%
   knitr::kable()</code></pre>
 <table>
 <thead>
@@ -372,7 +489,14 @@ data_frame(Method = c(&quot;Quasi-Bayesian&quot;, &quot;DOP&quot;, &quot;Asympto
 <td align="left">Boot BCa</td>
 <td align="left">(-0.0061, 0.0444)</td>
 </tr>
+<tr class="odd">
+<td align="left">Bayesian CI</td>
+<td align="left">(-0.0088, 0.0313)</td>
+</tr>
+<tr class="even">
+<td align="left">Bayesian HPDI</td>
+<td align="left">(-0.011, 0.029)</td>
+</tr>
 </tbody>
 </table>
-<!-- ## Fully Bayesian Approach With `rstan` -->
 </div>
