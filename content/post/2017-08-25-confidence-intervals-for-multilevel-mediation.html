@@ -6,7 +6,6 @@ slug: confidence-intervals-for-multilevel-mediation
 output:
   blogdown::html_page:
     toc: true
-draft: true
 categories:
   - Statistics
 tags:
@@ -88,7 +87,7 @@ system.time(med_out &lt;- mediate(med_fit, out_fit, treat = &quot;free&quot;,
                                mediator = &quot;smorale&quot;,
                                control.value = 3, treat.value = 4, sims = 500))</code></pre>
 <pre><code>##    user  system elapsed 
-##   5.796   0.020   5.818</code></pre>
+##   5.532   0.032   5.567</code></pre>
 <pre class="r"><code>summary(med_out)  # Summary of mediation analysis</code></pre>
 <pre><code>## 
 ## Causal Mediation Analysis 

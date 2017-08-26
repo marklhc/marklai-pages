@@ -6,7 +6,6 @@ slug: confidence-intervals-for-multilevel-mediation
 output:
   blogdown::html_page:
     toc: true
-draft: true
 categories:
   - Statistics
 tags:
