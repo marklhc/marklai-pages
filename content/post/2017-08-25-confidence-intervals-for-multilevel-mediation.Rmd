@@ -197,7 +197,7 @@ ab_resample <- function(data_lv2, i, ...) {
 }
 ```
 
-```{r, cache=TRUE}
+```{r}
 system.time(med_boo <- boot(school_sub, ab_resample, 1000))
 med_boo
 ```

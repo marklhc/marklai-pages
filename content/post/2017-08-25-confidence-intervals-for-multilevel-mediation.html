@@ -93,7 +93,7 @@ system.time(med_out &lt;- mediate(med_fit, out_fit, treat = &quot;free&quot;,
                                mediator = &quot;smorale&quot;,
                                control.value = 3, treat.value = 4, sims = 500))</code></pre>
 <pre><code>##    user  system elapsed 
-##   6.928   0.028   6.961</code></pre>
+##   7.556   0.052   7.626</code></pre>
 <pre class="r"><code>summary(med_out)  # Summary of mediation analysis</code></pre>
 <pre><code>## 
 ## Causal Mediation Analysis 
@@ -229,7 +229,7 @@ ab_resample &lt;- function(data_lv2, i, ...) {
 }</code></pre>
 <pre class="r"><code>system.time(med_boo &lt;- boot(school_sub, ab_resample, 1000))</code></pre>
 <pre><code>##    user  system elapsed 
-## 282.160   0.020 283.396</code></pre>
+## 270.420   0.060 272.141</code></pre>
 <pre class="r"><code>med_boo</code></pre>
 <pre><code>## 
 ## ORDINARY NONPARAMETRIC BOOTSTRAP
