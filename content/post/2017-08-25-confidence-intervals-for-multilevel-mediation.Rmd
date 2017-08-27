@@ -3,10 +3,11 @@ title: Confidence Intervals for Multilevel Mediation (Draft)
 author: Mark Lai
 date: '2017-08-25'
 slug: confidence-intervals-for-multilevel-mediation
+bibliography: references.bib
+draft: true
 output:
   blogdown::html_page:
     toc: true
-draft: true
 categories:
   - Statistics
 tags:
@@ -89,7 +90,7 @@ standardized coefficients or effect sizes defined using variance components.
 
 ## Analytical Approaches for CI With the `RMediation` Package
 
-The two main analytical approaches are:
+The two main analytical approaches are [see @MacKinnon2004]:
 
 1. distribution of product of coefficients
 2. Asymptotic normal CI (or Wald CI)
@@ -138,6 +139,28 @@ and the Asymptotic symmetric CI is $\hat a \hat b \pm 1.96 \SE(\hat a \hat b)$.
 ```
 
 ## Case Bootstrap
+
+All the above approaches involve normality assumptions: the quasi-Bayesian and
+the distribution of product approaches assume the sampling distribution of $\hat
+a$ and $\hat b$ are jointly normal, whereas the asymptotic CI assumes that the
+sampling distribution of $\hat a \hat b$ is normal. In small sample and/or with
+non-normal data, such assumptions may not hold. That is one of the reasons that
+resampling methods, in particular the bootstrap, is popular for single-level
+mediation analysis.
+
+There are many methods to do bootstrapping with multilevel analysis [see
+@VanderLeeden2008 for an overview]. However, to my knowledge most of them are
+not directly built in multilevel software, especially for mediation models. A
+relatively simple bootstrapping method is the *case bootstrap*, which resample
+intact clusters with replacement. The advantage is that it basically makes no
+assumption about the data, such as the specification of the functional form and
+the distribution of the random effects. Therefore the results should be robust.
+The drawback, however, is that when the cluster sizes are not balanced, as in
+our example, it results in bootstrap samples with different level-1 sample
+sizes. And based on my experience it is generally less efficient and requires a
+relatively large number of clusters to perform well. Below is my implementation
+of the case bootstrap for this example, which include the indirect effect and 
+some derived quantities. 
 
 ```{r}
 library(boot)  # load the boot package
@@ -219,26 +242,20 @@ for standard error bias)
 
 #### Indirect effect
 
+Generally BCa (bias-corrected and accelerated) and studentized CIs (also called
+bootstrap-$t$) are more accurate [see @Davison1997, @VanderLeeden2008,
+@Cheung2008]. However, the BCa needs the accerlation value (which is used to
+correct for skewness), which is estimated using the regression estimation here,
+and to my knowledge its use for multilevel data has not been tested.
+
+The studentized CI requires the use of the sampling variance of the statistic to
+be bootstrapped, which is why I also computed the asymptotic variance of 
+the indirect effect in each bootstrap replication. 
+
 ```{r}
 # For (unstandardized) indirect effect
 (med_bootci <- boot.ci(med_boo, type = "all", index = 1:2))
 ```
-
-Generally BCa (bias-corrected and accelerated) and studentized CIs are more 
-accurate (see Davison & Hinkley, 1997; Van der Leeden, Meijer, & Busing, 2008). 
-However, the BCa needs the accerlation value (which is used to correct for 
-skewness), which is estimated using the regression method here, and to my 
-knowledge its use for multilevel data has not been tested. 
-
-The studentized CI requires the use of the sampling variance of the statistic to
-be bootstrapped, which is why I also computed the asymptotic variance of 
-the indirect effect in each bootstrap replication. However, for the 
-$y$-standardized indirect effect and the proportion mediated it would be 
-more work to obtain the sampling variance estimates (which can be obtained 
-with the delta method or with other resampling method within each bootstrap
-sample; the former needs some derivation and may not be very accurate and the
-latter will increase the computation time by a factor of 100 or more, which is 
-not practical), so I did not request for the studentized CI. 
 
 As you can see, for the indirect effect estimate, both BCa and studentized CIs
 gave results that are closer compared to other types of CIs. The BCa was known
@@ -247,18 +264,28 @@ pushing the confidence limits to the right.
 
 #### $y$-standardized indirect effect
 
+We also can get study the the indirect effect with $y$ standardized, referred to
+as $ab_{ps}$ in the literature, defined as 
+$$ab_{ps} = \frac{ab}{\sqrt{\tau^2_y + \sigma^2_y}},$$
+where $\tau^2_y + \sigma^2_y$ is the total variance of $y$. $ab_{ps}$ has the 
+interpretation of:
+
+> Every unit increase in $x$ (treatment variable) results in a change of
+$ab_{ps}$ standard deviations in $y$ through the mediator.
+
 First look at the bootstrap distribution:
 
 ```{r}
 plot(med_boo, index = 3L)
 ```
 
-We also can get the bootstrap CIs for the indirect effect with $y$ 
-standardized, referred to as $ab_{ps}$ in the literature, 
-which has the interpretation of:
-
-> Every unit increase in $x$ (treatment variable) results in a change of
-$ab_{ps}$ standard deviations in $y$ through the mediator.
+It's easy to get the bootstrap CIs. However, for the $y$-standardized indirect
+effect and the proportion mediated it would be more work to obtain the sampling
+variance estimates (which can be obtained with the delta method or with other
+resampling method within each bootstrap sample; the former needs some derivation
+and may not be very accurate and the latter will increase the computation time
+by a factor of 100 or more, which is not practical), so I did not request for
+the studentized CI.
 
 ```{r}
 # For y-standardized indirect
@@ -266,7 +293,7 @@ boot.ci(med_boo, type = c("norm", "basic", "perc", "bca"), index = 3L)
 ```
 
 As shown in the result, BCa interval is wider but with higher lower and upper
-confidence limits. For single-level mediation Cheung (2009) showed that the 
+confidence limits. For single-level mediation @Cheung2009 showed that the 
 percentile and BCa CIs are better than Wald CI and using the `PRODCLIN CI` 
 macro. It is still an open question how the different bootstrap CIs perform
 in multilevel mediation. 
@@ -289,10 +316,26 @@ boot.ci(med_boo, type = c("norm", "basic", "perc", "bca"), index = 4L)
 The percentile CI (and to a less degree the basic CI) was close to the one given
 with the `mediation` package, whereas the normal bootstrap CI and the BCa CI had
 much wider intervals. After all, I don't think proportion mediated would be a
-good measure of effect size, as also pointed out in Miocevic, O'Rourke,
-MacKinnon, and Brown (2017).
+good measure of effect size, as also pointed out in @Miocevic2017.
+
+Note that I only illustrated case bootstrap in this post. For clustered data, 
+in @Davison1997, it was found that residual bootstrap may result in better 
+coverage. I may implement residual bootstrap for mediation in the R package
+I am working on, `bootmlm`. 
 
 ## Fully Bayesian Approach With `rstan`
+
+Brad Efron said the bootstrap can be an approximation of Bayesian estimation. So
+we can actually do a fully Bayesian model, which actually is not complicated to
+fit. It is basically putting a Bayesian multiple regression and a random
+intercept model together. Given that the scales of the variables are quite
+similar and generally with SD = 0.5 to 2, I used weakly informative priors with
+$N(0, 10)$ for the fixed effects and $t_3(0, 10)$ for the random effect 
+standard deviations (i.e., $\sigma_m$, $\tau_y$, $\sigma_y$).
+
+The Bayesian model here assumes normality in the random effects but not 
+asymptotic normality of the posterior distributions of $a$ and $b$ and other 
+parameters. 
 
 ```{r}
 library(rstan)
@@ -335,7 +378,7 @@ med_stan <- stan("stan_mlm_mediate.stan", data = med_sdata,
 We can get the commonly-used equal-tailed interval or the shorter (but maybe
 less stable) highest posterior density interval (HPDI). 
 
-```{r, fig.height=3, fig.width=3, out.width="40%"}
+```{r, fig.height=3, fig.width=3, out.width="50%"}
 # Extract the posterior samples
 pars_post <- as.matrix(med_stan, pars = c("ab", "ab_stdy", "pm"))
 # Posterior distribution of ab:
@@ -365,3 +408,9 @@ data_frame(Method = c("Quasi-Bayesian", "DOP", "Asymptotic",
                         format_ci(post_hpdi["ab", ]))) %>%
   knitr::kable()
 ```
+
+The CIs across methods are somewhat similar, with the exception of BCa and
+studentized bootstrap CIs and the asymptotic CI, with the two bootstrap CIs
+having wider intervals. Further studies are needed to compare their performance.
+
+## Bibliography
