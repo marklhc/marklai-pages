@@ -6,6 +6,7 @@ slug: confidence-intervals-for-multilevel-mediation
 output:
   blogdown::html_page:
     toc: true
+draft: true
 categories:
   - Statistics
 tags:
@@ -92,7 +93,7 @@ system.time(med_out &lt;- mediate(med_fit, out_fit, treat = &quot;free&quot;,
                                mediator = &quot;smorale&quot;,
                                control.value = 3, treat.value = 4, sims = 500))</code></pre>
 <pre><code>##    user  system elapsed 
-##   12.61    0.08   12.76</code></pre>
+##   6.928   0.028   6.961</code></pre>
 <pre class="r"><code>summary(med_out)  # Summary of mediation analysis</code></pre>
 <pre><code>## 
 ## Causal Mediation Analysis 
@@ -228,7 +229,7 @@ ab_resample &lt;- function(data_lv2, i, ...) {
 }</code></pre>
 <pre class="r"><code>system.time(med_boo &lt;- boot(school_sub, ab_resample, 1000))</code></pre>
 <pre><code>##    user  system elapsed 
-##  821.11    0.00  821.83</code></pre>
+## 282.160   0.020 283.396</code></pre>
 <pre class="r"><code>med_boo</code></pre>
 <pre><code>## 
 ## ORDINARY NONPARAMETRIC BOOTSTRAP
@@ -240,10 +241,10 @@ ab_resample &lt;- function(data_lv2, i, ...) {
 ## 
 ## Bootstrap Statistics :
 ##         original        bias     std. error
-## t1* 7.047165e-03 -4.332177e-04 1.060356e-02
+## t1* 7.047165e-03 -4.332176e-04 1.060356e-02
 ## t2* 7.042008e-05  4.327382e-05 9.964896e-05
-## t3* 6.224259e-03 -3.430022e-04 9.401763e-03
-## t4* 2.760381e-01  6.292969e-01 1.827176e+01</code></pre>
+## t3* 6.224259e-03 -3.430021e-04 9.401763e-03
+## t4* 2.760381e-01  6.292983e-01 1.827180e+01</code></pre>
 <p>We can plot the bootstrap distributions (Note the non-normality)</p>
 <pre class="r"><code>plot(med_boo, index = 1L)</code></pre>
 <p><img src="/post/2017-08-25-confidence-intervals-for-multilevel-mediation_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
@@ -317,10 +318,10 @@ boot.ci(med_boo, type = c(&quot;norm&quot;, &quot;basic&quot;, &quot;perc&quot;,
 ## 
 ## Intervals : 
 ## Level      Normal              Basic         
-## 95%   (-36.1652,  35.4587 )   ( -1.9291,   2.1622 )  
+## 95%   (-36.1653,  35.4588 )   ( -1.9291,   2.1622 )  
 ## 
 ## Level     Percentile            BCa          
-## 95%   ( -1.6101,   2.4812 )   ( -0.0772, 485.1805 )  
+## 95%   ( -1.6101,   2.4812 )   ( -0.0772, 485.1820 )  
 ## Calculations and Intervals on Original Scale
 ## Some BCa intervals may be unstable</code></pre>
 <p>The percentile CI (and to a less degree the basic CI) was close to the one given with the <code>mediation</code> package, whereas the normal bootstrap CI and the BCa CI had much wider intervals. After all, I don’t think proportion mediated would be a good measure of effect size, as also pointed out in Miocevic, O’Rourke, MacKinnon, and Brown (2017).</p>
@@ -426,15 +427,15 @@ hist(pars_post[ , 1], xlab = &quot;ab&quot;, main = &quot;Posterior distribution
 <pre class="r"><code># Equal-tailed interval:
 (post_ci &lt;- apply(pars_post, 2, quantile, probs = c(.025, .975)))</code></pre>
 <pre><code>##        parameters
-##                   ab     ab_stdy         pm
-##   2.5%  -0.008760216 -0.00761549 -0.2975376
-##   97.5%  0.031320613  0.02757498  0.0376768</code></pre>
+##                   ab      ab_stdy          pm
+##   2.5%  -0.008151854 -0.007044092 -0.30283639
+##   97.5%  0.031221201  0.027443106  0.03963151</code></pre>
 <pre class="r"><code># HPDI
 (post_hpdi &lt;- coda::HPDinterval(as.mcmc(pars_post)))</code></pre>
 <pre><code>##                lower      upper
-## ab      -0.010734393 0.02922747
-## ab_stdy -0.009220888 0.02598859
-## pm      -0.282189649 0.04457961
+## ab      -0.009445723 0.02952051
+## ab_stdy -0.008202395 0.02586034
+## pm      -0.295873928 0.04255318
 ## attr(,&quot;Probability&quot;)
 ## [1] 0.95</code></pre>
 </div>
@@ -490,11 +491,11 @@ data_frame(Method = c(&quot;Quasi-Bayesian&quot;, &quot;DOP&quot;, &quot;Asympto
 </tr>
 <tr class="odd">
 <td align="left">Bayesian CI</td>
-<td align="left">(-0.0088, 0.0313)</td>
+<td align="left">(-0.0082, 0.0312)</td>
 </tr>
 <tr class="even">
 <td align="left">Bayesian HPDI</td>
-<td align="left">(-0.011, 0.029)</td>
+<td align="left">(-0.0094, 0.0295)</td>
 </tr>
 </tbody>
 </table>
