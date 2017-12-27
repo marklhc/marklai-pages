@@ -1,0 +1,313 @@
+<!-- BLOGDOWN-HEAD -->
+<!-- /BLOGDOWN-HEAD -->
+
+<div id="TOC">
+<ul>
+<li><a href="#complexity-of-mlm">Complexity of MLM</a></li>
+<li><a href="#information-criteria">Information Criteria</a><ul>
+<li><a href="#example">Example</a></li>
+</ul></li>
+<li><a href="#selecting-fixed-effects">Selecting Fixed Effects</a><ul>
+<li><a href="#how-to-choose-between-aic-and-bic">How to Choose Between AIC and BIC?</a></li>
+<li><a href="#including-lv-2-predictors">Including Lv-2 Predictors</a></li>
+<li><a href="#workflow">Workflow</a></li>
+</ul></li>
+<li><a href="#regularization">Regularization</a></li>
+<li><a href="#bibliography">Bibliography</a></li>
+</ul>
+</div>
+
+<p>In social sciences, many times we use statistical methods to answer well-defined research questions that are derived from some theory or previous research. For example, theory may suggest that interventions to improve students’ self-efficacy may help benefit their academic performance, so we would like to test a mediation model of intervention –&gt; self-efficacy –&gt; academic performance. We may also learn from previous studies that the intervention may work differently for different genders, so we would like to include a intervention <span class="math inline">\(\times\)</span> gender interaction.</p>
+<p>However, innovations often arise from <em>exploratory data analysis</em> where existing theory may provide only partial or little guidance to understand our data. This is especially true for multilevel modeling (MLM), as theories that are truly multilevel are relatively rare. The additional model choices in MLM also contribute to this, as theories seldom tell whether a relationship between two variables are the same or different in different levels, or whether there are heterogeneity of level-1 relationship across level-2 units, or whether there are specific cross-level interactions. One takeaway from this of course is we need better theories in our disciplines. But for research with a more exploratory focus and in the absence of established theories, we want to fully explore our data while having some measures to save us from over-interpreting the <em>noise</em> in a single data set.</p>
+<div id="complexity-of-mlm" class="section level2">
+<h2>Complexity of MLM</h2>
+<p>With single-level analyses, if one has one predictor, call it <span class="math inline">\(X\)</span>, one only needs to estimate the coefficient of that predictor and perhaps evaluates whether there is statistical evidence that the predictor has predictive power (e.g., with hypothesis tests), assuming the assumptions of the statistical model is satisfied. However, with a two-level analyses, especially if the predictor is at level 1, then things can already get complicated. For example, one can ask these questions:</p>
+<ol style="list-style-type: decimal">
+<li>Is <span class="math inline">\(X\)</span> related to the outcome overall?</li>
+<li>Does <span class="math inline">\(X\)</span> has both a lv-1 effect and a lv-2 effect?</li>
+<li>If yes, are the effects at different levels the same or different?</li>
+<li>If <span class="math inline">\(X\)</span> has a lv-1 effect, is there a random slope?</li>
+</ol>
+<p>Just imagine the complexity with more predictors and the potential for different interactions and cross-level interaction effects. Such complexity has two major consequences:</p>
+<ul>
+<li>If we were to do a statistical test for all of the fixed and random effects, we run into risks of huge Type I error inflation (just like post hoc testing in ANOVA). <strong><span class="math inline">\(P\)</span>-values are not trustworthy!</strong></li>
+<li>Perhaps more importantly, unless one has a very large sample size, the parameter estimates are highly unstable with a complex model and <strong>can be completely not reproducible</strong>.</li>
+</ul>
+</div>
+<div id="information-criteria" class="section level2">
+<h2>Information Criteria</h2>
+<p>If statistical significance and <span class="math inline">\(p\)</span>-values cannot do the job, what can? How about effect size like <span class="math inline">\(R^2\)</span> we discussed before? Unfortunately, <span class="math inline">\(R^2\)</span> is not designed for that purpose, and choosing models that have the largest <span class="math inline">\(R^2\)</span> will generally also result in models that are unstable and not reproducible.</p>
+<p>In statistics, there are indices that are specifically designed for comparing different models and evaluating their reproducibility, and by far two of the most common indices are the <strong>Akaike Information Criterion (AIC)</strong> and the so called <strong>Bayesian Information Criterion (BIC)</strong> (also called the Schwarz Criterion).</p>
+<p>There are different ways to understand these information criteria, and AIC and BIC are actually developed with very different motivation and background, despite how commonly they are mentioned together. Nevertheless, the most classic way, at least for AIC, is that it is a measure of the fit of the model to a <strong>different and independent</strong> sample. In other words, if you come up with a model using the data you have now, you then collect a new sample, how good can your model describe what is happening in the new sample? <em>The smaller the AIC/BIC, the better the fit of the model to a new sample.</em> All information criteria follow a general form:</p>
+<p><span class="math display">\[\mathrm{IC} = \text{Deviance} + \text{Penalty}\]</span></p>
+<p>The Penalty term is always a function of the complexity of the model, usually measured by the number of parameters estimated. Remember that</p>
+<ol style="list-style-type: decimal">
+<li>The smaller the deviance, the better the model fit, and</li>
+<li>A more complex model almost always gives a smaller deviance.</li>
+</ol>
+Therefore, without the Penalty one always selects the most complex model, which may be never reproducible in an independent sample. Instead, AIC and BIC usually are formulated as
+<span class="math display">\[\begin{align*}
+  \mathrm{AIC} &amp; = \text{Deviance} + 2 q \\
+  \mathrm{BIC} &amp; = \text{Deviance} + q \log N, 
+\end{align*}\]</span>
+<p>where <span class="math inline">\(q\)</span> is the number of estimated parameters (both fixed and random). Note, however, that the computation of AIC and BIC may be different for different software, especially for BIC as most software packages define <span class="math inline">\(N\)</span> as the number of groups, but some other packages define <span class="math inline">\(N\)</span> as the number of units at the lowest level. Nevertheless, regardless of the definitions, they tend to work fine for the general purpose of comparing models, and are generally better than using deviance or other significance tests. We will look at the models we have previously fitted in the HSB data set with <code>SES</code> and <code>SECTOR</code> to predict <code>MATHACH</code>.</p>
+<div id="example" class="section level3">
+<h3>Example</h3>
+<pre class="r"><code>library(tidyverse)
+library(haven)
+library(lme4)</code></pre>
+<pre class="r"><code>hsb &lt;- haven::read_sas(&#39;https://stats.idre.ucla.edu/wp-content/uploads/2016/02/hsb.sas7bdat&#39;)</code></pre>
+<p>The following models are fitted:</p>
+<ul>
+<li>M0: Random-intercept only</li>
+<li>M1: Adding <code>SES</code></li>
+<li>M2: M1 + random slope of <code>SES</code></li>
+<li>M3: M2 + <code>MEANSES</code></li>
+<li>M4: M3 + <code>SECTOR</code></li>
+<li>M5: M4 + <code>SECTOR</code> <span class="math inline">\(\times\)</span> <code>SES</code> interaction</li>
+<li>M6: M5 + <code>SECTOR</code> <span class="math inline">\(\times\)</span> <code>MEANSES</code> interaction</li>
+</ul>
+<pre class="r"><code># It&#39;s generally recommended to use ML instead of REML to get ICs
+m0 &lt;- lmer(MATHACH ~ (1 | ID), data = hsb, REML = FALSE)
+# You can use the `update` function to add terms
+m1 &lt;- update(m0, . ~ . + SES)
+# To add random slope, replace the original random intercept term
+m2 &lt;- update(m1, . ~ . - (1 | ID) + (SES | ID))
+m3 &lt;- update(m2, . ~ . + MEANSES)
+m4 &lt;- update(m3, . ~ . + SECTOR)
+m5 &lt;- update(m4, . ~ . + SES:SECTOR)
+m6 &lt;- update(m5, . ~ . + MEANSES:SECTOR)</code></pre>
+<!-- Below is one way to ask R to extract the information criteria for each model: -->
+<!-- ```{r ics_m0_to_m6} -->
+<!-- AIC(m0, m1, m2, m3, m4, m5, m6)  # AIC values -->
+<!-- BIC(m0, m1, m2, m3, m4, m5, m6)  # BIC values -->
+<!-- ``` -->
+<!-- So both AIC and BIC would suggest M5 is the best model. Below is a quick way to  -->
+<!-- print the parameter estimates: -->
+<!-- ```{r params_m0_to_m6, results='asis'} -->
+<!-- library(texreg)  # a handy package to summarize multiple models -->
+<!-- # Note: they rename m0 as 'Model 1', m1 as 'Model 2', etc -->
+<!-- htmlreg(list(m0, m1, m2, m3, m4, m5, m6)) -->
+<!-- ``` -->
+<!-- Use the `texreg::screenreg()` function as below if you are not using HTML -->
+<!-- output: -->
+<!-- ```{r screenreg_m0_to_m6} -->
+<!-- screenreg(list(m0, m1, m2, m3, m4, m5, m6)) -->
+<!-- ``` -->
+<!-- You may also check out the `sjPlot::sjt.lmer` function as described in https://cran.r-project.org/web/packages/sjPlot/vignettes/sjtlmer.html -->
+</div>
+</div>
+<div id="selecting-fixed-effects" class="section level2">
+<h2>Selecting Fixed Effects</h2>
+<p>As a starting point, one can usually first compare models with different fixed effects, especially those that are at level 1. For example, if one has three predictors: <code>MINORITY</code>, <code>FEMALE</code>, and <code>SES</code>, and wonder whether there are main and interaction effects from them in predicting <code>MATHACH1</code> without strong prior theory, one can easily run all of the possible models without random slopes and level-2 effects by first defining the most complex model:</p>
+<pre class="r"><code># Need ML
+m_3wayinter &lt;- lmer(MATHACH ~ MINORITY * FEMALE * SES + (1 | ID), data = hsb, 
+                    REML = FALSE)</code></pre>
+<p>and then with the help of the <code>MuMIn</code> package in R:</p>
+<pre class="r"><code>library(MuMIn)
+options(na.action = &quot;na.fail&quot;)  # set the missing data handling method
+dd &lt;- dredge(m_3wayinter)
+model.sel(dd, rank = AIC)</code></pre>
+<pre><code>## Global model call: lmer(formula = MATHACH ~ MINORITY * FEMALE * SES + (1 | ID), 
+##     data = hsb, REML = FALSE)
+## ---
+## Model selection table 
+##     (Int)    FEM    MIN   SES FEM:MIN FEM:SES MIN:SES FEM:MIN:SES df
+## 56  14.07 -1.211 -3.084 2.152          0.3740 -0.8009              8
+## 64  14.12 -1.300 -3.272 2.119  0.3651  0.4258 -0.7901              9
+## 40  14.06 -1.214 -3.075 2.343                 -0.7846              7
+## 128 14.12 -1.300 -3.271 2.119  0.3642  0.4273 -0.7875   -0.004688 10
+## 48  14.08 -1.255 -3.161 2.340  0.1675         -0.7785              8
+## 24  14.13 -1.228 -2.967 1.909          0.3458                      7
+## 32  14.18 -1.332 -3.191 1.874  0.4312  0.4074                      8
+## 8   14.11 -1.230 -2.962 2.091                                      6
+## 16  14.14 -1.289 -3.086 2.089  0.2410                              7
+## 39  13.42        -3.058 2.395                 -0.8286              6
+## 7   13.47        -2.938 2.129                                      5
+## 22  13.29 -1.185        2.197          0.3079                      6
+## 6   13.28 -1.188        2.358                                      5
+## 5   12.66               2.391                                      4
+## 4   14.38 -1.390 -3.702                                            5
+## 12  14.43 -1.483 -3.900        0.3860                              6
+## 3   13.65        -3.688                                            4
+## 2   13.35 -1.359                                                   4
+## 1   12.64                                                          3
+##        logLik     AIC  delta weight
+## 56  -23184.72 46385.4   0.00  0.413
+## 64  -23184.20 46386.4   0.96  0.256
+## 40  -23186.63 46387.3   1.83  0.166
+## 128 -23184.20 46388.4   2.96  0.094
+## 48  -23186.51 46389.0   3.59  0.069
+## 24  -23191.78 46397.6  12.13  0.001
+## 32  -23191.06 46398.1  12.68  0.001
+## 8   -23193.42 46398.8  13.40  0.001
+## 16  -23193.17 46400.3  14.92  0.000
+## 39  -23214.30 46440.6  55.17  0.000
+## 7   -23221.82 46453.6  68.20  0.000
+## 22  -23293.61 46599.2 213.79  0.000
+## 6   -23294.87 46599.7 214.31  0.000
+## 5   -23320.50 46649.0 263.57  0.000
+## 4   -23377.51 46765.0 379.58  0.000
+## 12  -23376.92 46765.8 380.40  0.000
+## 3   -23411.65 46831.3 445.86  0.000
+## 2   -23526.66 47061.3 675.89  0.000
+## 1   -23557.90 47121.8 736.38  0.000
+## Models ranked by AIC(x) 
+## Random terms (all models): 
+## &#39;1 | ID&#39;</code></pre>
+<p>The above commands rank all possible models by their AIC values in ascending orders, as shown in the column <code>AIC</code>. As you can see, all of the best models have the main effects of <code>FEMALE</code>, <code>MINORITY</code>, and <code>SES</code>, and the best model also has <code>FEMALE</code> <span class="math inline">\(\times\)</span> <code>MINORITY</code> and <code>MINORITY</code> <span class="math inline">\(\times\)</span> <code>SES</code> interactions.</p>
+<p>You can use BIC for the same purpose (results not shown):</p>
+<pre class="r"><code>model.sel(dd, rank = BIC)</code></pre>
+<p>However, the best model according to BIC does not contain the <code>FEMALE</code> <span class="math inline">\(\times\)</span> <code>MINORITY</code> interaction.</p>
+<div id="how-to-choose-between-aic-and-bic" class="section level3">
+<h3>How to Choose Between AIC and BIC?</h3>
+<p>This is one of the most debatable issue in the field of education. The (not so) short answer is that, although AIC and BIC may give different orderings of candidate models, the set of models with lowest AIC and BIC should be similar. Indeed, it is never a good practice to only select one model out of all models, especially when two or more models have very similar AIC/BIC values. Ultimately, AIC and BIC should be used to suggest a few “best” models, and the researcher is responsible to select the one that they feel more inline with theory/literature based on their subjective judgement.</p>
+<p>More technically, AIC and BIC are based on different motivations, with AIC an index based on what is called <em>Information Theory</em>, which has a focus on predictive accuracy, and BIC an index derived as an approximation of the <em>Bayes Factor</em>, which is used to find the <em>true model</em> if it ever exists. Practically, AIC tends to select a model that maybe slightly more complex but has optimal predictive ability, whereas BIC tends to select a model that is more parsimonius but may sometimes be too simple. Therefore, if the goal is to have a model that can predict future samples well, AIC should be used; if the goal is to get a model as simple as possible, BIC should be used. For more technical discussion, please read <span class="citation">Vrieze (2012)</span>.</p>
+</div>
+<div id="including-lv-2-predictors" class="section level3">
+<h3>Including Lv-2 Predictors</h3>
+<p>One can also add the contextual effects or level-2 effects of all the level-1 predictors. For example, adding <code>MEANSES</code> will increase the number of possible models quite a bit. The following code will select a model with all main effects, the two-way interactions of <code>SES</code> and <code>FEMALE</code>, <code>MINORITY</code>, and <code>MEANSES</code>, the <code>MEANSES</code> <span class="math inline">\(\times\)</span> <code>MINORITY</code> interaction, and the <code>MEANSES</code> <span class="math inline">\(\times\)</span> <code>MINORITY</code> <span class="math inline">\(\times\)</span> <code>SES</code> three-way interaction. BIC, on the other hand, would select a much simpler model with only the four main effects and the <code>MINORITY</code> <span class="math inline">\(\times\)</span> <code>SES</code> interaction. You may verify the results yourself.</p>
+<pre class="r"><code>m_4wayinter &lt;- lmer(MATHACH ~ MINORITY * FEMALE * SES * MEANSES + (1 | ID), 
+                    data = hsb, REML = FALSE)
+dd &lt;- dredge(m_4wayinter)
+model.sel(dd, rank = AIC)</code></pre>
+</div>
+<div id="workflow" class="section level3">
+<h3>Workflow</h3>
+<p>As recommended in <span class="citation">Hox, Moerbeek, and Van de Schoot (2018)</span>, with exploratory multilevel modeling, one proceeds with the following workflow:</p>
+<ol style="list-style-type: decimal">
+<li>Select level-1 predictors</li>
+<li>Select level-1 random slopes</li>
+<li>Select lv-2 effects of lv-1 predictors as well as level-2 predictors</li>
+<li>Select cross-level interactions</li>
+</ol>
+<pre class="r"><code>m_bic &lt;- lmer(MATHACH ~ MINORITY + FEMALE + SES + MINORITY * SES + (1 | ID), 
+              data = hsb, REML = FALSE)
+m_bic_rs1 &lt;- update(m_bic, . ~ . - (1 | ID) + (MINORITY | ID))
+m_bic_rs2 &lt;- update(m_bic, . ~ . - (1 | ID) + (FEMALE | ID))
+m_bic_rs3 &lt;- update(m_bic, . ~ . - (1 | ID) + (SES | ID))
+# BIC suggests adding the random slope for MINORITY
+BIC(m_bic, m_bic_rs1, m_bic_rs2, m_bic_rs3)
+# Now add the MEANSES, SIZE, and SECTOR variable, as well as their interactions
+# Note: because of the scale of the SIZE variable is huge, I will divide the
+#   values by 1000 so that it is measured in thousand students
+hsb &lt;- mutate(hsb, SIZE1000 = SIZE / 1000)
+m_bic_rs1_lv2 &lt;- update(m_bic_rs1, . ~ . + MEANSES * SIZE1000 * SECTOR)</code></pre>
+<pre class="r"><code>dd &lt;- dredge(m_bic_rs1_lv2, 
+             fixed = ~ MINORITY + FEMALE + SES + MINORITY * SES + 
+               (MINORITY | ID))
+model.sel(dd, rank = BIC)</code></pre>
+<pre class="r"><code># The best model will add MEANSES and SECTOR main effects
+# Finally, let&#39;s add the possible two-way cross-level interactions:
+m_bic_rs1_lv2_cross &lt;- update(m_bic_rs1, . ~ . + MEANSES * SIZE1000 * SECTOR + 
+                                MEANSES * (MINORITY + FEMALE + SES) + 
+                                SIZE1000 * (MINORITY + FEMALE + SES) + 
+                                SES * (MINORITY + FEMALE + SES))</code></pre>
+<pre class="r"><code>dd &lt;- dredge(m_bic_rs1_lv2_cross, 
+             fixed = ~ MINORITY + FEMALE + SES + MINORITY * SES + 
+               (MINORITY | ID))
+model.sel(dd, rank = BIC)
+# Using BIC, none of the cross-level interactions should be included. A more 
+# complex model will be selected using AIC</code></pre>
+</div>
+</div>
+<div id="regularization" class="section level2">
+<h2>Regularization</h2>
+<p>In many areas research, the goal of inference is more about getting good predictive performance, and less about finding a “true” model. For example, instead of identifying whether gender and SES are true determinant of math achievement, a school administrator may instead be more interested in a predictive equation to identify which students may perform the best based on their background information. In such cases, therefore, finding the “true” model is not as important as finding a model with good predictive performance.</p>
+<p>However, a more complex model does not guarantee good predictive performance. It may be at first strange to you why adding more predictors may actually give <em>worse predictions</em>. The reason is that the performance of a predictive equation depends on the parameter estimates (e.g., fixed effects, random effects), and with a more complex model, one needs a much larger sample to obtain good parameter estimates. That’s why if you have a small sample size, a linear model with one or two predictors may actually give you the most stable parameter estimates with maximized predictive performance, and would be much better than some of the advanced models and analytic techniques.</p>
+<p>However, a more advanced technique generally called <em>regularization</em> would allow you to “simplify” a more complex model by shrinking some of the coefficients to closer to zero, which is actually the same motivation of using multilevel models as opposed to including dummy group indicators. Two methods to do regularization in R is to use <em>model averaging</em> and <em>Bayesian shrinkage priors</em>. As this is somehow beyond the scope of this course, I simply show two examples below:</p>
+<pre class="r"><code># Start with a complex model without cross-level interactions
+dd_complex &lt;- dredge(m_bic_rs1_lv2, 
+                     fixed = ~ MINORITY + FEMALE + SES + MINORITY * SES + 
+                       (MINORITY | ID), beta = &quot;sd&quot;)
+# Model Averaging
+model.avg(dd_complex)  # by default it used AICc</code></pre>
+<pre><code>## 
+## Call:
+## model.avg(object = dd_complex)
+## 
+## Component models: 
+## &#39;1/2/3/4/5/6/7/8/9&#39;       &#39;1/2/3/4/5/6/7/8/9/10&#39;    
+## &#39;1/2/3/4/5/6/7/8/9/10/11&#39; &#39;1/2/3/4/5/6/9&#39;           
+## &#39;1/2/3/4/5/6/7/9&#39;         &#39;1/2/3/4/5/6/8/9&#39;         
+## &#39;1/2/3/4/5/6/9/10&#39;        &#39;1/2/3/4/5/6/7/9/10&#39;      
+## &#39;1/2/3/4/5/6/8/9/10&#39;      &#39;1/2/3/4/5/7/9&#39;           
+## &#39;1/2/3/4/5/9&#39;             &#39;1/3/4/5/6/9&#39;             
+## &#39;1/2/3/5/9&#39;               &#39;1/2/3/5/6/8/9&#39;           
+## &#39;1/3/4/5/6/9/10&#39;          &#39;1/2/3/5/6/9&#39;             
+## &#39;1/3/4/5/9&#39;               &#39;1/3/5/9&#39;                 
+## &#39;1/3/5/6/9&#39;              
+## 
+## Coefficients: 
+##        (Intercept)   MEANSES    SECTOR   SIZE1000      FEMALE   MINORITY
+## full             0 0.2340744 0.1165949 0.03516000 -0.09056026 -0.2040834
+## subset           0 0.2340744 0.1165949 0.03546712 -0.09056026 -0.2040834
+##              SES MEANSES:SECTOR MEANSES:SIZE1000 MINORITY:SES
+## full   0.2476739    -0.06486431      -0.07578412  -0.06400729
+## subset 0.2476739    -0.08518852      -0.10423177  -0.06400729
+##        SECTOR:SIZE1000 MEANSES:SECTOR:SIZE1000
+## full        0.02279586             0.006670173
+## subset      0.04641762             0.046988827</code></pre>
+<pre class="r"><code># It is usually recommended to scale the variables to have SD = 1 when doing 
+#   regularization. 
+hsb_s &lt;- mutate_at(hsb, 
+                   vars(MATHACH, MINORITY, FEMALE, SES, MEANSES, SIZE, SECTOR), 
+                   funs(. / sd(.)))
+library(rstanarm)  # Bayesian multilevel modeling
+options(mc.cores = 2L)
+m_reg &lt;- stan_lmer(MATHACH ~ MINORITY + FEMALE + SES + MINORITY * SES + 
+                     MEANSES * SIZE * SECTOR + 
+                     (MINORITY + FEMALE + SES | ID), 
+                   data = hsb_s, prior = hs(global_scale = 0.05), 
+                   prior_covariance = decov(3), iter = 800L, 
+                   adapt_delta = 0.99)
+print(m_reg, digits = 2)</code></pre>
+<pre><code>## stan_lmer
+##  family:       gaussian [identity]
+##  formula:      MATHACH ~ MINORITY + FEMALE + SES + MINORITY * SES + MEANSES * 
+##     SIZE * SECTOR + (MINORITY + FEMALE + SES | ID)
+##  observations: 7185
+## ------
+##                     Median MAD_SD
+## (Intercept)          1.92   0.06 
+## MINORITY            -0.20   0.02 
+## FEMALE              -0.09   0.01 
+## SES                  0.24   0.01 
+## MEANSES              0.22   0.07 
+## SIZE                 0.01   0.02 
+## SECTOR               0.07   0.05 
+## MINORITY:SES        -0.04   0.01 
+## MEANSES:SIZE        -0.03   0.03 
+## MEANSES:SECTOR      -0.03   0.04 
+## SIZE:SECTOR          0.03   0.02 
+## MEANSES:SIZE:SECTOR  0.00   0.01 
+## sigma                0.87   0.01 
+## 
+## Error terms:
+##  Groups   Name        Std.Dev. Corr             
+##  ID       (Intercept) 0.2059                    
+##           MINORITY    0.0937   -0.08            
+##           FEMALE      0.0612   -0.68  0.11      
+##           SES         0.0528    0.09 -0.20 -0.09
+##  Residual             0.8654                    
+## Num. levels: ID 160 
+## 
+## Sample avg. posterior predictive distribution of y:
+##          Median MAD_SD
+## mean_PPD 1.85   0.02  
+## 
+## ------
+## For info on the priors used see help(&#39;prior_summary.stanreg&#39;).</code></pre>
+<p>You can see that the coefficients were quite similar using both methods. If you are to run a model using the regular MLM using <code>lme4</code> or other software, you should see that the coefficients are less closer to zero in regular MLM than the ones reported here with regularization.</p>
+</div>
+<div id="bibliography" class="section level2 unnumbered">
+<h2>Bibliography</h2>
+<div id="refs" class="references">
+<div id="ref-Hox2018">
+<p>Hox, Joop J., Mirjam Moerbeek, and Rens Van de Schoot. 2018. <em>Multilevel analysis: Techniques and applications</em>. 3rd ed. New York, NY: Routledge.</p>
+</div>
+<div id="ref-Vrieze2012">
+<p>Vrieze, Scott I. 2012. “Model selection and psychological theory: A discussion of the differences between the Akaike information criterion (AIC) and the Bayesian information criterion (BIC).” <em>Psychological Methods</em> 17 (2): 228–43. doi:<a href="https://doi.org/10.1037/a0027127">10.1037/a0027127</a>.</p>
+</div>
+</div>
+</div>

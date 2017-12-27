@@ -1,0 +1,369 @@
+---
+title: Model Selection for Multilevel Modeling
+author: Mark Lai
+date: '2017-12-26'
+slug: model-selection-for-multilevel-modeling
+bibliography: references.bib
+output:
+  blogdown::html_page:
+    toc: true
+categories:
+  - Statistics
+tags:
+  - multilevel
+  - R
+  - Bayesian
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+comma <- function(x) format(x, digits = 2, big.mark = ",")
+```
+
+
+In social sciences, many times we use statistical methods to answer well-defined
+research questions that are derived from some theory or previous research. For
+example, theory may suggest that interventions to improve students'
+self-efficacy may help benefit their academic performance, so we would like to
+test a mediation model of intervention --> self-efficacy --> academic
+performance. We may also learn from previous studies that the intervention may
+work differently for different genders, so we would like to include a
+intervention $\times$ gender interaction.
+
+However, innovations often arise from *exploratory data analysis* where existing
+theory may provide only partial or little guidance to understand our data. This
+is especially true for multilevel modeling (MLM), as theories that are truly 
+multilevel are relatively rare. The additional model choices in MLM also 
+contribute to this, as theories seldom tell whether a relationship between two
+variables are the same or different in different levels, or whether there are 
+heterogeneity of level-1 relationship across level-2 units, or whether there
+are specific cross-level interactions. One takeaway from this of course is we
+need better theories in our disciplines. But for research with a more 
+exploratory focus and in the absence of established theories, we want to fully
+explore our data while having some measures to save us from over-interpreting
+the *noise* in a single data set. 
+
+## Complexity of MLM
+
+With single-level analyses, if one has one predictor, call it $X$, one only
+needs to estimate the coefficient of that predictor and perhaps evaluates
+whether there is statistical evidence that the predictor has predictive power
+(e.g., with hypothesis tests), assuming the assumptions of the statistical model
+is satisfied. However, with a two-level analyses, especially if the predictor is
+at level 1, then things can already get complicated. For example, one can ask
+these questions:
+
+1. Is $X$ related to the outcome overall?
+2. Does $X$ has both a lv-1 effect and a lv-2 effect?
+3. If yes, are the effects at different levels the same or different?
+4. If $X$ has a lv-1 effect, is there a random slope?
+
+Just imagine the complexity with more predictors and the potential for different
+interactions and cross-level interaction effects. Such complexity has two 
+major consequences:
+
+- If we were to do a statistical test for all of the fixed and random effects,
+we run into risks of huge Type I error inflation (just like post hoc testing in
+ANOVA). **$P$-values are not trustworthy!**
+- Perhaps more importantly, unless one has a very large sample size, the 
+parameter estimates are highly unstable with a complex model and **can be 
+completely not reproducible**. 
+
+## Information Criteria
+
+If statistical significance and $p$-values cannot do the job, what can? How
+about effect size like $R^2$ we discussed before? Unfortunately, $R^2$ is not 
+designed for that purpose, and choosing models that have the largest $R^2$ will
+generally also result in models that are unstable and not reproducible. 
+
+In statistics, there are indices that are specifically designed for comparing
+different models and evaluating their reproducibility, and by far two of the
+most common indices are the **Akaike Information Criterion (AIC)** and the so
+called **Bayesian Information Criterion (BIC)** (also called the Schwarz
+Criterion).
+
+There are different ways to understand these information criteria, and AIC and
+BIC are actually developed with very different motivation and background,
+despite how commonly they are mentioned together. Nevertheless, the most classic
+way, at least for AIC, is that it is a measure of the fit of the model to a
+**different and independent** sample. In other words, if you come up with a
+model using the data you have now, you then collect a new sample, how good can
+your model describe what is happening in the new sample? *The smaller the
+AIC/BIC, the better the fit of the model to a new sample.* All information
+criteria follow a general form:
+
+$$\mathrm{IC} = \text{Deviance} + \text{Penalty}$$
+
+The Penalty term is always a function of the complexity of the model, usually
+measured by the number of parameters estimated. Remember that 
+
+1. The smaller the deviance, the better the model fit, and 
+2. A more complex model almost always gives a smaller deviance.
+
+Therefore, without the Penalty one always selects the most complex model, which
+may be never reproducible in an independent sample. Instead, AIC and BIC usually
+are formulated as
+\begin{align*}
+  \mathrm{AIC} & = \text{Deviance} + 2 q \\
+  \mathrm{BIC} & = \text{Deviance} + q \log N, 
+\end{align*}
+where $q$ is the number of estimated parameters (both fixed and random). Note,
+however, that the computation of AIC and BIC may be different for different 
+software, especially for BIC as most software packages define $N$ as the 
+number of groups, but some other packages define $N$ as the number of units 
+at the lowest level. Nevertheless, regardless of the definitions, they tend to 
+work fine for the general purpose of comparing models, and are generally better
+than using deviance or other significance tests. We will look at the models we 
+have previously fitted in the HSB data set with `SES` and `SECTOR` to 
+predict `MATHACH`.
+
+### Example
+
+```{r}
+library(tidyverse)
+library(haven)
+library(lme4)
+```
+
+```{r read_data}
+hsb <- haven::read_sas('https://stats.idre.ucla.edu/wp-content/uploads/2016/02/hsb.sas7bdat')
+```
+
+The following models are fitted:
+
++ M0: Random-intercept only
++ M1: Adding `SES`
++ M2: M1 + random slope of `SES`
++ M3: M2 + `MEANSES`
++ M4: M3 + `SECTOR`
++ M5: M4 + `SECTOR` $\times$ `SES` interaction
++ M6: M5 + `SECTOR` $\times$ `MEANSES` interaction
+
+```{r m0_to_m6}
+# It's generally recommended to use ML instead of REML to get ICs
+m0 <- lmer(MATHACH ~ (1 | ID), data = hsb, REML = FALSE)
+# You can use the `update` function to add terms
+m1 <- update(m0, . ~ . + SES)
+# To add random slope, replace the original random intercept term
+m2 <- update(m1, . ~ . - (1 | ID) + (SES | ID))
+m3 <- update(m2, . ~ . + MEANSES)
+m4 <- update(m3, . ~ . + SECTOR)
+m5 <- update(m4, . ~ . + SES:SECTOR)
+m6 <- update(m5, . ~ . + MEANSES:SECTOR)
+```
+
+<!-- Below is one way to ask R to extract the information criteria for each model: -->
+
+<!-- ```{r ics_m0_to_m6} -->
+<!-- AIC(m0, m1, m2, m3, m4, m5, m6)  # AIC values -->
+<!-- BIC(m0, m1, m2, m3, m4, m5, m6)  # BIC values -->
+<!-- ``` -->
+
+<!-- So both AIC and BIC would suggest M5 is the best model. Below is a quick way to  -->
+<!-- print the parameter estimates: -->
+
+<!-- ```{r params_m0_to_m6, results='asis'} -->
+<!-- library(texreg)  # a handy package to summarize multiple models -->
+<!-- # Note: they rename m0 as 'Model 1', m1 as 'Model 2', etc -->
+<!-- htmlreg(list(m0, m1, m2, m3, m4, m5, m6)) -->
+<!-- ``` -->
+
+<!-- Use the `texreg::screenreg()` function as below if you are not using HTML -->
+<!-- output: -->
+
+<!-- ```{r screenreg_m0_to_m6} -->
+<!-- screenreg(list(m0, m1, m2, m3, m4, m5, m6)) -->
+<!-- ``` -->
+
+<!-- You may also check out the `sjPlot::sjt.lmer` function as described in https://cran.r-project.org/web/packages/sjPlot/vignettes/sjtlmer.html -->
+
+## Selecting Fixed Effects
+
+As a starting point, one can usually first compare models with different fixed
+effects, especially those that are at level 1. For example, if one has three
+predictors: `MINORITY`, `FEMALE`, and `SES`, and wonder whether there are main
+and interaction effects from them in predicting `MATHACH1` without strong prior
+theory, one can easily run all of the possible models without random slopes and 
+level-2 effects by first defining the most complex model:
+
+```{r m_3wayinter}
+# Need ML
+m_3wayinter <- lmer(MATHACH ~ MINORITY * FEMALE * SES + (1 | ID), data = hsb, 
+                    REML = FALSE)
+```
+
+and then with the help of the `MuMIn` package in R:
+
+```{r dredge_m_3wayinter}
+library(MuMIn)
+options(na.action = "na.fail")  # set the missing data handling method
+dd <- dredge(m_3wayinter)
+model.sel(dd, rank = AIC)
+```
+
+The above commands rank all possible models by their AIC values in ascending 
+orders, as shown in the column `AIC`. As you can see, all of the best models 
+have the main effects of `FEMALE`, `MINORITY`, and `SES`, and the best model
+also has `FEMALE` $\times$ `MINORITY` and `MINORITY` $\times$ `SES` 
+interactions.
+
+You can use BIC for the same purpose (results not shown):
+
+```{r, eval=FALSE}
+model.sel(dd, rank = BIC)
+```
+
+However, the best model according to BIC does not contain the `FEMALE` 
+$\times$ `MINORITY` interaction. 
+
+### How to Choose Between AIC and BIC?
+
+This is one of the most debatable issue in the field of education. The (not so)
+short answer is that, although AIC and BIC may give different orderings of
+candidate models, the set of models with lowest AIC and BIC should be similar.
+Indeed, it is never a good practice to only select one model out of all models,
+especially when two or more models have very similar AIC/BIC values. Ultimately,
+AIC and BIC should be used to suggest a few "best" models, and the researcher is
+responsible to select the one that they feel more inline with theory/literature
+based on their subjective judgement.
+
+More technically, AIC and BIC are based on different motivations, with AIC an 
+index based on what is called *Information Theory*, which has a focus on 
+predictive accuracy, and BIC an index derived as an approximation of the *Bayes
+Factor*, which is used to find the *true model* if it ever exists. Practically,
+AIC tends to select a model that maybe slightly more complex but has optimal
+predictive ability, whereas BIC tends to select a model that is more parsimonius
+but may sometimes be too simple. Therefore, if the goal is to have a model that
+can predict future samples well, AIC should be used; if the goal is to get a 
+model as simple as possible, BIC should be used. For more technical discussion,
+please read @Vrieze2012. 
+
+### Including Lv-2 Predictors
+
+One can also add the contextual effects or level-2 effects of all the level-1
+predictors. For example, adding `MEANSES` will increase the number of possible
+models quite a bit. The following code will select a model with all main 
+effects, the two-way interactions of `SES` and `FEMALE`, `MINORITY`, and 
+`MEANSES`, the `MEANSES` $\times$ `MINORITY` interaction, and the 
+`MEANSES` $\times$ `MINORITY` $\times$ `SES` three-way interaction. BIC, on the
+other hand, would select a much simpler model with only the four main effects 
+and the `MINORITY` $\times$ `SES` interaction. You may verify the results 
+yourself. 
+
+```{r, eval=FALSE}
+m_4wayinter <- lmer(MATHACH ~ MINORITY * FEMALE * SES * MEANSES + (1 | ID), 
+                    data = hsb, REML = FALSE)
+dd <- dredge(m_4wayinter)
+model.sel(dd, rank = AIC)
+```
+
+### Workflow
+
+As recommended in @Hox2018, with exploratory multilevel modeling, one
+proceeds with the following workflow:
+
+1. Select level-1 predictors
+2. Select level-1 random slopes
+3. Select lv-2 effects of lv-1 predictors as well as level-2 predictors
+4. Select cross-level interactions
+
+```{r select_random, results='hide'}
+m_bic <- lmer(MATHACH ~ MINORITY + FEMALE + SES + MINORITY * SES + (1 | ID), 
+              data = hsb, REML = FALSE)
+m_bic_rs1 <- update(m_bic, . ~ . - (1 | ID) + (MINORITY | ID))
+m_bic_rs2 <- update(m_bic, . ~ . - (1 | ID) + (FEMALE | ID))
+m_bic_rs3 <- update(m_bic, . ~ . - (1 | ID) + (SES | ID))
+# BIC suggests adding the random slope for MINORITY
+BIC(m_bic, m_bic_rs1, m_bic_rs2, m_bic_rs3)
+# Now add the MEANSES, SIZE, and SECTOR variable, as well as their interactions
+# Note: because of the scale of the SIZE variable is huge, I will divide the
+#   values by 1000 so that it is measured in thousand students
+hsb <- mutate(hsb, SIZE1000 = SIZE / 1000)
+m_bic_rs1_lv2 <- update(m_bic_rs1, . ~ . + MEANSES * SIZE1000 * SECTOR)
+```
+
+```{r select_random2, eval=FALSE}
+dd <- dredge(m_bic_rs1_lv2, 
+             fixed = ~ MINORITY + FEMALE + SES + MINORITY * SES + 
+               (MINORITY | ID))
+model.sel(dd, rank = BIC)
+```
+
+```{r select_random3, results='hide'}
+# The best model will add MEANSES and SECTOR main effects
+# Finally, let's add the possible two-way cross-level interactions:
+m_bic_rs1_lv2_cross <- update(m_bic_rs1, . ~ . + MEANSES * SIZE1000 * SECTOR + 
+                                MEANSES * (MINORITY + FEMALE + SES) + 
+                                SIZE1000 * (MINORITY + FEMALE + SES) + 
+                                SES * (MINORITY + FEMALE + SES))
+```
+
+```{r select_random4, eval=FALSE}
+dd <- dredge(m_bic_rs1_lv2_cross, 
+             fixed = ~ MINORITY + FEMALE + SES + MINORITY * SES + 
+               (MINORITY | ID))
+model.sel(dd, rank = BIC)
+# Using BIC, none of the cross-level interactions should be included. A more 
+# complex model will be selected using AIC
+```
+
+## Regularization
+
+In many areas research, the goal of inference is more about getting good
+predictive performance, and less about finding a "true" model. For example,
+instead of identifying whether gender and SES are true determinant of math
+achievement, a school administrator may instead be more interested in a
+predictive equation to identify which students may perform the best based on
+their background information. In such cases, therefore, finding the "true" model
+is not as important as finding a model with good predictive performance.
+
+However, a more complex model does not guarantee good predictive performance. It
+may be at first strange to you why adding more predictors may actually give
+*worse predictions*. The reason is that the performance of a predictive equation
+depends on the parameter estimates (e.g., fixed effects, random effects), and
+with a more complex model, one needs a much larger sample to obtain good
+parameter estimates. That's why if you have a small sample size, a linear model
+with one or two predictors may actually give you the most stable parameter
+estimates with maximized predictive performance, and would be much better than
+some of the advanced models and analytic techniques.
+
+However, a more advanced technique generally called *regularization* would allow
+you to "simplify" a more complex model by shrinking some of the coefficients to
+closer to zero, which is actually the same motivation of using multilevel models
+as opposed to including dummy group indicators. Two methods to do regularization
+in R is to use *model averaging* and *Bayesian shrinkage priors*. As 
+this is somehow beyond the scope of this course, I simply show two examples
+below:
+
+```{r bma, cache=TRUE}
+# Start with a complex model without cross-level interactions
+dd_complex <- dredge(m_bic_rs1_lv2, 
+                     fixed = ~ MINORITY + FEMALE + SES + MINORITY * SES + 
+                       (MINORITY | ID), beta = "sd")
+# Model Averaging
+model.avg(dd_complex)  # by default it used AICc
+```
+
+```{r stan_lmer, cache=TRUE}
+# It is usually recommended to scale the variables to have SD = 1 when doing 
+#   regularization. 
+hsb_s <- mutate_at(hsb, 
+                   vars(MATHACH, MINORITY, FEMALE, SES, MEANSES, SIZE, SECTOR), 
+                   funs(. / sd(.)))
+library(rstanarm)  # Bayesian multilevel modeling
+options(mc.cores = 2L)
+m_reg <- stan_lmer(MATHACH ~ MINORITY + FEMALE + SES + MINORITY * SES + 
+                     MEANSES * SIZE * SECTOR + 
+                     (MINORITY + FEMALE + SES | ID), 
+                   data = hsb_s, prior = hs(global_scale = 0.05), 
+                   prior_covariance = decov(3), iter = 800L, 
+                   adapt_delta = 0.99)
+print(m_reg, digits = 2)
+```
+
+You can see that the coefficients were quite similar using both methods. If you
+are to run a model using the regular MLM using `lme4` or other software, you 
+should see that the coefficients are less closer to zero in regular MLM than 
+the ones reported here with regularization. 
+
+## Bibliography
