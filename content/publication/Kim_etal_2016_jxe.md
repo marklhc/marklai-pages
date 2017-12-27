@@ -6,7 +6,7 @@ image_preview = ""
 math = false
 publication_types = ["2"]
 publication = "In *The Journal of Experimental Education*"
-publication_short = "*J EXP EDUC*"
+publication_short = "In *J EXP EDUC*"
 selected = false
 title = "Specification Search for Identifying the Correct Mean Trajectory in Polynomial Latent Growth Models"
 url_code = ""
@@ -16,9 +16,7 @@ url_project = ""
 url_slides = ""
 url_video = ""
 
-[[url_custom]]
-name = "View Journal Article"
-url = "https://doi.org/10.1080/00220973.2014.984831"
+url_custom = [{name = "View Journal Article", url = "https://doi.org/10.1080/00220973.2014.984831"}]
 
 # Optional featured image (relative to `static/img/` folder).
 [header]

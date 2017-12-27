@@ -6,7 +6,7 @@ image_preview = ""
 math = true
 publication_types = ["2"]
 publication = "In *The Journal of Experimental Education*"
-publication_short = "*J EXP EDUC*"
+publication_short = "In *J EXP EDUC*"
 selected = false
 title = "Examining the Rule of Thumb of Not Using Multilevel Modeling: The “Design Effect Smaller Than Two” Rule"
 url_code = ""
@@ -16,9 +16,7 @@ url_project = ""
 url_slides = ""
 url_video = ""
 
-[[url_custom]]
-name = "View Journal Article"
-url = "https://doi.org/10.1080/00220973.2014.907229"
+url_custom = [{name = "View Journal Article", url = "https://doi.org/10.1080/00220973.2014.907229"}]
 
 # Optional featured image (relative to `static/img/` folder).
 [header]

@@ -6,7 +6,7 @@ image_preview = ""
 math = true
 publication_types = ["2"]
 publication = "In *Journal of Educational and Behavioral Statistics*"
-publication_short = "*J EDUC BEHAV STAT*"
+publication_short = "In *J EDUC BEHAV STAT*"
 selected = false
 title = "Standardized Mean Differences in Two-Level Cross-Classified Random Effects Models"
 url_code = ""
@@ -16,13 +16,7 @@ url_project = ""
 url_slides = ""
 url_video = ""
 
-[[url_custom]]
-name = "View Journal Article"
-url = "https://doi.org/10.3102/1076998614532950"
-
-[[url_custom]]
-name = "Supplemental Information"
-url = "https://journals.sagepub.com/doi/suppl/10.3102/1076998614532950"
+url_custom = [{name = "View Journal Article", url = "https://doi.org/10.3102/1076998614532950"}, {name = "Supplemental Information", url = "https://journals.sagepub.com/doi/suppl/10.3102/1076998614532950"}]
 
 # Optional featured image (relative to `static/img/` folder).
 [header]

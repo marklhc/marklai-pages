@@ -1,13 +1,11 @@
 +++
 # About/Biography widget.
-
-date = "2016-04-20T00:00:00"
-draft = false
-
 widget = "about"
+active = true
+date = "2016-04-20T00:00:00"
 
 # Order that this section will appear in.
-weight = 1
+weight = 5
 
 # List your academic interests.
 [interests]
@@ -58,3 +56,4 @@ in other areas such as special education, evolutionary psychology, health
 sciences, etc.
 
 [Click here for a PDF version of my CV](/files/Vita_Lai.pdf)
+
