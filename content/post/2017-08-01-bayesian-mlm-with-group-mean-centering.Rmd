@@ -24,8 +24,8 @@ modeling (MLM) at UC, where I discussed the use of group mean centering to
 decompose level-1 and level-2 effects of a predictor. In that session I ended
 by noting alternative approaches that reduce bias [mainly from @Ludtke2008]. 
 That lead me also consider the use of Bayesian methods for group mean centering,
-which will be demonstrated in this post. (Turns out @Zitzmann2015 has already
-discussed something similar, but still a good exercise. )
+which will be demonstrated in this post. [Turns out @Zitzmann2015 has already
+discussed something similar, but still a good exercise.]
 
 ## The Problem
 

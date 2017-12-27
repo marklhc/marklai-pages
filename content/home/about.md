@@ -41,7 +41,7 @@ Program](http://cech.uc.edu/education/programs/educational-studies/phd-in-edst/c
 in the School of Education at the University of Cincinnati. I received my Ph.D. 
 in Educational Psychology at Texas A&M University.
 
-I come from [Macau](https://en.wikipedia.org/?title=Macau) and speaks Cantonese 
+I am from [Macau](https://en.wikipedia.org/?title=Macau) and speaks Cantonese 
 as my native language. Mathematics has always been a favorite subject to me, but
 my growing interest in understanding the human mind lead me to pursue a bachelor
 degree in Psychology at the University of Macau, where I discovered that a
