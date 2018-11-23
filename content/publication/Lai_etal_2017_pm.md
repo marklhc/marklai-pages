@@ -16,6 +16,10 @@ url_project = ""
 url_slides = ""
 url_video = ""
 
+[[url_custom]]
+name = "View Journal Article"
+url = "http://psycnet.apa.org/record/2017-12025-001"
+
 # Optional featured image (relative to `static/img/` folder).
 [header]
 image = ""
