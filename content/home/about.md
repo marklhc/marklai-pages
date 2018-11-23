@@ -33,6 +33,13 @@ weight = 5
  
 +++
 
+## Note
+
+I am taking a Ph.D. student interested in quantitative methods (including but
+not limited to: multilevel modeling, structural equation modeling, effect size
+estimation, psychometrics) in the 2019-2020 academic year. Feel free to contact
+me regarding fit. Please apply at https://dornsife.usc.edu/psyc/admissions/
+
 # Biography
 
 I am an Assistant Professor of Quantitative Methods in the [Department of
