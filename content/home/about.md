@@ -47,9 +47,9 @@ Feel free to contact me regarding fit. Please apply at
 
 # Biography
 
-I am an Assistant Professor of Quantitative Methods in the [Department of
-Psychology](https://dornsife.usc.edu/psyc/) at the University of Southern
-California. I received my Ph.D. in Educational Psychology at Texas A&M
+I am an Assistant Professor of Psychology (Quantitative Methods) in the
+[Department of Psychology](https://dornsife.usc.edu/psyc/) at the University of
+Southern California. I received my Ph.D. in Educational Psychology at Texas A&M
 University, and worked as an Assistant Professor at the University of Cincinnati
 prior to joining USC.
 
