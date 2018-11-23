@@ -1,6 +1,6 @@
 baseurl = "https://marklai.netlify.com/"  # End your URL with a `/` trailing slash, e.g. `https://example.com/`.
 title = "Mark Lai"
-copyright = "&copy; 2017 Hok Chio (Mark) Lai"
+copyright = "&copy; 2018 Hok Chio (Mark) Lai"
 theme = "hugo-academic"
 enableEmoji = true
 footnotereturnlinkcontents = "<sup>^</sup>"
@@ -44,16 +44,16 @@ defaultContentLanguageInSubdir = false
 
   # Your details.
   name = "Mark Lai"
-  role = "Assistant Professor of Quantitative Research Methodology"
+  role = "Assistant Professor of Quantitative Methods"
 
   # Organizations/Affiliations.
   #   Separate multiple entries with a comma, using the form: `[ {name="Org1", url=""}, {name="Org2", url=""} ]`.
-  organizations = [ { name = "University of Cincinnati", url = "" } ]
+  organizations = [ { name = "University of Southern California", url = "" } ]
 
   gravatar = false  # Get your avatar from Gravatar.com? (true/false)
   avatar = "ml-uc-pic.jpg"  # Specify an avatar image (in `static/img/` folder) or delete value to disable avatar.
-  email = "mark.lai@uc.edu"
-  address = "School of Education, College of Education, Criminal Justice, and Human Services, University of Cincinnati, OH 45221-0022, USA"
+  email = "hokchiol@usc.edu"
+  address = "Department of Psychology, University of Southern California, 3620 S McClintock Ave., CA 90089-1061, USA"
   office_hours = ""
   phone = ""
   skype = ""
@@ -209,7 +209,7 @@ defaultContentLanguageInSubdir = false
   [[params.social]]
     icon = "envelope"
     icon_pack = "fa"
-    link = "mailto:laihc@ucmail.uc.edu"
+    link = "mailto:hokchiol@usc.edu"
 
   [[params.social]]
     icon = "twitter"
