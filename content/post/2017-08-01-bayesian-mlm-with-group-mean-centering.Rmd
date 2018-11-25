@@ -14,6 +14,9 @@ tags:
   - R
 ---
 
+This post is updated on `r Sys.Date()` with cleaner and more efficient `STAN`
+code. 
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE)
 comma <- function(x) format(x, digits = 2, big.mark = ",")
@@ -190,13 +193,14 @@ And to run it in `rstan`:
 ```{r, results='hide'}
 hsb_sdata <- with(hsb_sub, 
                   list(N = nrow(hsb_sub), 
-                       Y = MATHACH, 
+                       y = MATHACH, 
                        K = 2, 
                        X = cbind(1, SES), 
                        q = 2, 
                        gid = match(ID, unique(ID)), 
                        J = length(unique(ID))))
 m2_stan <- stan("stan_gpc_pv.stan", data = hsb_sdata, 
+                chains = 2L, iter = 1000L, 
                 pars = c("b0", "b", "bm", "b_contextual", "sigma_y", "tau_y", 
                          "sigma_x", "tau_x"))
 ```
@@ -240,13 +244,14 @@ And to run it in `rstan`:
 ```{r, results='hide'}
 hsb_sdata <- with(hsb_sub, 
                   list(N = nrow(hsb_sub), 
-                       Y = MATHACH, 
+                       y = MATHACH, 
                        K = 2, 
                        X = cbind(1, SES), 
                        q = 2, 
                        gid = match(ID, unique(ID)), 
                        J = length(unique(ID))))
 m3_stan <- stan("stan_gpc_pv_ran_slp.stan", data = hsb_sdata, 
+                chains = 2L, iter = 1000L, 
                 pars = c("b0", "b", "bm", "b_contextual", "sigma_y", "tau_y", 
                          "sigma_x", "tau_x"))
 ```
@@ -272,7 +277,7 @@ summary(mfull_mer)
 ```{r, results='hide'}
 hsb_sdata <- with(hsb, 
                   list(N = nrow(hsb), 
-                       Y = MATHACH, 
+                       y = MATHACH, 
                        K = 2, 
                        X = cbind(1, SES), 
                        q = 2, 
@@ -280,6 +285,7 @@ hsb_sdata <- with(hsb,
                        J = length(unique(ID))))
 # This takes about 4 minutes on my computer
 m2full_stan <- stan("stan_gpc_pv.stan", data = hsb_sdata, 
+                    chains = 2L, iter = 1000L, 
                     pars = c("b0", "b", "bm", "b_contextual", 
                             "sigma_y", "tau_y", "sigma_x", "tau_x"))
 ```
