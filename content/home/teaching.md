@@ -15,7 +15,12 @@ weight = 60
 
 +++
 
-Courses I am teaching or have taught at UC:
+Courses I am and will be teaching at USC:
+
+- PSYC 314: Experimental Research Methods
+- PSYC 621: Seminar in Quantitative Psychology (Multilevel Modeling)
+
+Courses I have taught at UC:
 
 - EDST 7010: Statistical Data Analysis I
 - EDST 7011: Statistical Data Analysis II

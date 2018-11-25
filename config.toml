@@ -251,8 +251,8 @@ defaultContentLanguageInSubdir = false
   weight = 3
 
 [[menu.main]]
-  name = "Software"
-  url = "#software"
+  name = "Talks"
+  url = "#talks"
   weight = 4
 
 [[menu.main]]
