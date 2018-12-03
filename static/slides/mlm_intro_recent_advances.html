@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Multilevel Modeling</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Mark Lai" />
+    <link href="libs/remark-css/metropolis-fonts.css" rel="stylesheet" />
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/metropolis.css" rel="stylesheet" />
+    <script src="libs/htmlwidgets/htmlwidgets.js"></script>
+    <script src="libs/viz/viz.js"></script>
+    <link href="libs/DiagrammeR-styles/styles.css" rel="stylesheet" />
+    <script src="libs/grViz-binding/grViz.js"></script>
+    <link rel="stylesheet" href="slide-font.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Multilevel Modeling
+## Introduction and Recent Advances for Behavioral Research
+<html>
+<div style="float:left">
+
+</div>
+<hr color='#EB811B' size=1px width=796px>
+</html>
+### Mark Lai
+### 2018/12/04
+
+---
+
+
+
+
+
+
+
+
+# Different Names
+
+Hierarchical linear model (HLM; Raudenbush and Bryk, 2002)
+
+Mixed/Mixed-effects model (Littell, Milliken, Stroup, and Wolfinger, 1996)
+
+Random coefficient model (de
+Leeuw and Kreft, 1986)
+
+Variance component model (Aitkin and Longford, 1986)
+
+---
+
+# Roadmap
+
+What are multilevel data?
+
+Why use MLM?
+- Avoid underestimated _SE_
+- Cluster-specific (or person-specific) regression lines
+- Avoid Ecological Fallacy
+
+Recent advances
+
+---
+
+class: clear, inverse, center, middle
+
+# What Are Multilevel Data?
+
+---
+
+# Multilevel Data
+
+Nested Data
+- Students in classrooms/schools
+- Siblings in families
+- Clients in therapy groups/therapists/clinics
+- Employees in organizations in countries
+
+.center[
+![](images/students_in_schools.png)
+]
+
+---
+
+# Multilevel Data
+
+- Repeated measures in individuals
+
+.center[
+![](images/rm_in_persons.png)
+]
+
+### Network Graph
+
+<div id="htmlwidget-71b661779347da6b7b80" style="width:100%;height:25%;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-71b661779347da6b7b80">{"x":{"diagram":"\ndigraph boxes_and_circles {\n  graph [overlap = true, fontsize = 24]\n\n  node [penwidth = 0, fontname = \"Helvetica\"]\n  # Schools\n  A; B; C; D\n  # Students\n  1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11\n\n  # edges\n  edge [dir = \"none\"]\n  A -> {1; 2; 3}\n  B -> {4; 5}\n  C -> {6; 7; 8; 9}\n  D -> {10; 11}\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+
+???
+Talk about level 1 and level 2
+
+---
+
+class: clear
+
+.center[
+&lt;img src="images/Bronfenbrenner.svg" width="60%", align="middle"&gt;
+]
+
+.font50[
+Salvor [CC0], from Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Vistfr%C3%A6%C3%B0ikenning.svg
+]
+
+---
+
+# Applications of MLM
+
+Psychotherapy
+- Heterogeneity of treatment effectiveness across therapists
+
+Educational research
+- teacher expectations on students' performance
+
+Organizational research
+- Job strain and ambulatory blood pressure
+
+---
+
+# Applications of MLM (cont'd)
+
+Cross-national/neighborhood research
+- Sociopolitical influence on psychological processes (e.g., age and generalized trust)
+- Post-materialism, locus of control, and concern for global warming
+
+Longitudinal analysis/repeated measures
+- Aging, self-esteem, and stress appraisal
+
+---
+
+# Example Data
+
+
+
+Sample simulated data on students' popularity from Hox, Moerbeek, 
+&amp; van de Schoot (2018)
+- 2000 pupils (level 1) in 100 classrooms
+(level 2)
+
+Main outcome:
+- `popular`: popularity teacher evaluation (0 to 10)
+
+---
+
+# Intraclass Correlation
+
+.font80[ICC = ave _r_ between 2 obs (students) in same cluster (class)]
+
+.center[
+![](images/overlap_circles_icc.png)
+]
+
+---
+
+class: clear
+
+Larger ICC = more information encoded at the class level
+
+&lt;img src="mlm_intro_recent_advances_files/figure-html/unnamed-chunk-3-1.svg" style="display: block; margin: auto;" /&gt;
+
+
+
+---
+
+class: clear, inverse, middle
+
+.right-column[
+## Why Use MLM?
+- &lt;span style="color:black"&gt;Avoid underestimated _SE_&lt;/span&gt;
+- &lt;span style="color:black"&gt;Cluster-specific (or person-specific) regression lines&lt;/span&gt;
+- &lt;span style="color:black"&gt;Avoid Ecological Fallacy&lt;/span&gt;
+]
+
+---
+
+# Dependent (Correlated) Observations
+
+With clustered data, an assumption of OLS regression is violated
+
+One score inform another score in the same cluster
+
+Overlap: reduces effective information (\\(N_\text{eff}\\)) in data
+
+.center[
+![](images/overlap_circles2.png)
+]
+
+???
+
+Two students in the same class give less than two pieces of information
+
+---
+
+# Consequences
+
+Assuming independent obs, OLS understates the uncertainty in the estimates
+- _SE_ too small; CI too narrow
+
+`$${\uparrow}\, t = \frac{\hat\beta}{\mathit{SE}(\hat \beta)\, \downarrow}$$`
+
+---
+
+# Comparing OLS with MLM
+
+<div id="htmlwidget-8e5e7fbfa36c5c124e66" style="width:100%;height:30%;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-8e5e7fbfa36c5c124e66">{"x":{"diagram":"\ndigraph path1 {\n  graph [layout = neato, fontsize = 24]\n\n  node [shape = rectangle, fontname = \"Helvetica\"]\n  # Schools\n  texp [pos = \"-1,0.5!\"]\n  # Students\n  popular [pos = \"1,-0.5!\"]\n\n  # edges\n  texp -> popular\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+
+.font80[
+
+&lt;table cellspacing="0" align="center" style="border: none;"&gt;
+&lt;tr&gt;
+&lt;th style="text-align: left; border-top: 2px solid black; border-bottom: 1px solid black; padding-right: 12px;"&gt;&lt;b&gt;&lt;/b&gt;&lt;/th&gt;
+&lt;th style="text-align: left; border-top: 2px solid black; border-bottom: 1px solid black; padding-right: 12px;"&gt;&lt;b&gt;OLS&lt;/b&gt;&lt;/th&gt;
+&lt;th style="text-align: left; border-top: 2px solid black; border-bottom: 1px solid black; padding-right: 12px;"&gt;&lt;b&gt;MLM&lt;/b&gt;&lt;/th&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="padding-right: 12px; border: none;"&gt;(Intercept)&lt;/td&gt;
+&lt;td style="padding-right: 12px; border: none;"&gt;4.205 (0.071)&lt;/td&gt;
+&lt;td style="padding-right: 12px; border: none;"&gt;4.197 (0.186)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="padding-right: 12px; border: none;"&gt;texp&lt;/td&gt;
+&lt;td style="padding-right: 12px; border: none;"&gt;0.061 (0.005)&lt;/td&gt;
+&lt;td style="padding-right: 12px; border: none;"&gt;0.062 (0.012)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="border-top: 1px solid black;"&gt;Num. obs.&lt;/td&gt;
+&lt;td style="border-top: 1px solid black;"&gt;2000&lt;/td&gt;
+&lt;td style="border-top: 1px solid black;"&gt;2000&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="border-bottom: 2px solid black;"&gt;Num. groups: class&lt;/td&gt;
+&lt;td style="border-bottom: 2px solid black;"&gt;&lt;/td&gt;
+&lt;td style="border-bottom: 2px solid black;"&gt;100&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="padding-right: 12px; border: none;" colspan="4"&gt;&lt;span style="font-size:0.8em"&gt;&lt;/span&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+]
+
+---
+
+class: clear
+
+.pull-left[
+![](mlm_intro_recent_advances_files/figure-html/unnamed-chunk-6-1.svg)&lt;!-- --&gt;
+OLS:  
+95% CI [0.052, 
+        0.070]. 
+]
+
+.pull-right[
+![](mlm_intro_recent_advances_files/figure-html/unnamed-chunk-7-1.svg)&lt;!-- --&gt;
+MLM:  
+95% CI [0.038, 
+        0.085]. 
+]
+
+---
+
+# Type I Error Inflation
+
+.center[
+![](images/Barcikowski_1983.png)
+]
+
+Depends on &lt;span style="color:red"&gt;_design effect_&lt;/span&gt;: 1 + (cluster size -
+1) × ICC
+
+---
+
+class: clear
+
+Lai and Kwok (2015): MLM needed when __design effect &gt; 1.1__
+
+For the popularity data, design effect  
+= 1 + (20 - 1) × .365 = 
+7.934
+
+\\(N_\text{eff}\\) reduces by almost 8 times: 2000 → 
+252
+---
+
+class: clear, inverse, middle
+
+.right-column[
+## Why Use MLM?
+- Avoid underestimated _SE_
+- &lt;span style="color:black"&gt;Cluster-specific (or person-specific) regression lines&lt;/span&gt;
+- &lt;span style="color:black"&gt;Avoid Ecological Fallacy&lt;/span&gt;
+]
+
+---
+
+# Random Coefficient Model
+
+Lv-1 predictor: not just problem on _SE_, OLS also ignore potential 
+heterogeneity in regression lines
+
+Consider `extrav` --&gt; `popular` (with `extrav` mean centered)
+<div id="htmlwidget-1cd0939d9322e9f3c07c" style="width:100%;height:25%;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1cd0939d9322e9f3c07c">{"x":{"diagram":"\ndigraph path1 {\n  graph [layout = neato, fontsize = 24]\n\n  node [shape = rectangle, fontname = \"Helvetica\"]\n  # Students\n  extravc [pos = \"-1,0!\"]\n  popular [pos = \"1,0!\"]\n\n  # edges\n  extravc -> popular\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+
+---
+
+# OLS With All Data
+
+&lt;img src="mlm_intro_recent_advances_files/figure-html/p-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Think About Just One Classroom
+
+`$$\texttt{popular}_i = \beta_0 + \beta_1 \texttt{extrav}_i + e_i$$`
+
+&lt;img src="mlm_intro_recent_advances_files/figure-html/p1-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Think About Just One Classroom
+
+`$$\texttt{popular}_{i\color{red}{1}} = \beta_{0\color{red}{1}} + \beta_{1\color{red}{1}} \texttt{extrav}_{i\color{red}{1}} + e_{i\color{red}{1}}$$`
+
+&lt;img src="mlm_intro_recent_advances_files/figure-html/unnamed-chunk-9-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Think About Classroom 35
+
+`$$\texttt{popular}_{i\color{blue}{35}} = \beta_{0\color{blue}{35}} + \beta_{1\color{blue}{35}} \texttt{extrav}_{i\color{blue}{35}} + e_{i\color{blue}{35}}$$`
+
+&lt;img src="mlm_intro_recent_advances_files/figure-html/p2-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Classroom 14
+
+`$$\texttt{popular}_{i\color{green}{14}} = \beta_{0\color{green}{14}} + \beta_{1\color{green}{14}} \texttt{extrav}_{i\color{green}{14}} + e_{i\color{green}{14}}$$`
+
+&lt;img src="mlm_intro_recent_advances_files/figure-html/p3-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+class: clear
+
+### MLM: efficiently get cluster-specific regression lines
+
+`$$\texttt{popular}_{i\color{purple}{j}} = \beta_{0\color{purple}{j}} + \beta_{1\color{purple}{j}} \texttt{extrav}_{i\color{purple}{j}} + e_{i\color{purple}{j}}$$`
+
+
+
+&lt;img src="mlm_intro_recent_advances_files/figure-html/unnamed-chunk-10-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Fixed Effect Estimates
+
+.font70[
+
+&lt;table cellspacing="0" align="center" style="border: none;"&gt;
+&lt;tr&gt;
+&lt;th style="text-align: left; border-top: 2px solid black; border-bottom: 1px solid black; padding-right: 12px;"&gt;&lt;b&gt;&lt;/b&gt;&lt;/th&gt;
+&lt;th style="text-align: left; border-top: 2px solid black; border-bottom: 1px solid black; padding-right: 12px;"&gt;&lt;b&gt;&lt;/b&gt;&lt;/th&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="padding-right: 12px; border: none;"&gt;(intercept)&lt;/td&gt;
+&lt;td style="padding-right: 12px; border: none;"&gt;5.031 (0.097)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="padding-right: 12px; border: none;"&gt;extravc&lt;/td&gt;
+&lt;td style="padding-right: 12px; border: none;"&gt;0.493 (0.025)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="border-top: 1px solid black;"&gt;Var(intercept)&lt;/td&gt;
+&lt;td style="border-top: 1px solid black;"&gt;0.892&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="padding-right: 12px; border: none;"&gt;Var(slope)&lt;/td&gt;
+&lt;td style="padding-right: 12px; border: none;"&gt;0.026&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="padding-right: 12px; border: none;"&gt;Cov(int, slope)&lt;/td&gt;
+&lt;td style="padding-right: 12px; border: none;"&gt;-0.134&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="border-bottom: 2px solid black;"&gt;Var(residual)&lt;/td&gt;
+&lt;td style="border-bottom: 2px solid black;"&gt;0.895&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="padding-right: 12px; border: none;" colspan="3"&gt;&lt;span style="font-size:0.8em"&gt;&lt;/span&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+]
+
+
+
+
+Average slope of `extrav` = 0.493, 95% CI 
+[0.442, 0.543]. 
+
+---
+
+# Random Effect __Variance__ Estimates
+
+.font70[
+
+&lt;table cellspacing="0" align="center" style="border: none;"&gt;
+&lt;tr&gt;
+&lt;th style="text-align: left; border-top: 2px solid black; border-bottom: 1px solid black; padding-right: 12px;"&gt;&lt;b&gt;&lt;/b&gt;&lt;/th&gt;
+&lt;th style="text-align: left; border-top: 2px solid black; border-bottom: 1px solid black; padding-right: 12px;"&gt;&lt;b&gt;&lt;/b&gt;&lt;/th&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="padding-right: 12px; border: none;"&gt;(intercept)&lt;/td&gt;
+&lt;td style="padding-right: 12px; border: none;"&gt;5.031 (0.097)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="padding-right: 12px; border: none;"&gt;extravc&lt;/td&gt;
+&lt;td style="padding-right: 12px; border: none;"&gt;0.493 (0.025)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="border-top: 1px solid black;"&gt;Var(intercept)&lt;/td&gt;
+&lt;td style="border-top: 1px solid black;"&gt;0.892&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="padding-right: 12px; border: none;"&gt;Var(slope)&lt;/td&gt;
+&lt;td style="padding-right: 12px; border: none;"&gt;0.026&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="padding-right: 12px; border: none;"&gt;Cov(int, slope)&lt;/td&gt;
+&lt;td style="padding-right: 12px; border: none;"&gt;-0.134&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="border-bottom: 2px solid black;"&gt;Var(residual)&lt;/td&gt;
+&lt;td style="border-bottom: 2px solid black;"&gt;0.895&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="padding-right: 12px; border: none;" colspan="3"&gt;&lt;span style="font-size:0.8em"&gt;&lt;/span&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+]
+
+
+
+&lt;!-- Variance of intercepts = 0.892 (_SD_ = 0.944) --&gt;
+
+Variance of slopes = 0.026 (_SD_ = 0.161)
+- For a majority of schools (within +/- 1 _SD_), slope expected in the range
+[0.332, 0.654]. 
+
+???
+for linear relations, only need to know the intercept and the slope; 
+
+---
+
+class: clear
+
+With heterogeneity in slopes, OLS gives underestimated _SE_ (Lai and Kwok, 2015)
+
+.pull-left[
+.font80[
+Detecting and explaining heterogeneity in slopes (i.e.,
+cross-level interaction)
+]
+]
+
+.pull-right[
+&lt;img src="mlm_intro_recent_advances_files/figure-html/unnamed-chunk-14-1.svg" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+class: clear, inverse, middle
+
+.right-column[
+## Why Use MLM?
+- &lt;span style="color:black"&gt;Avoid underestimated _SE_&lt;/span&gt;
+- Cluster-specific (or person-specific) regression lines
+- &lt;span style="color:black"&gt;Avoid Ecological Fallacy&lt;/span&gt;
+]
+
+---
+
+# Ecological Fallacy
+
+Association between two variables can be different across levels
+
+<div id="htmlwidget-5117994e36cc944f0475" style="width:100%;height:25%;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-5117994e36cc944f0475">{"x":{"diagram":"\ndigraph path1 {\n  graph [layout = neato, fontsize = 24]\n\n  node [shape = rectangle, fontname = \"Helvetica\"]\n  # Students\n  stu_ach [pos = \"-1.5,0!\", label = \"Student \\nacademic achievement\"]\n  # sch_ach [pos = \"0,-1.5!\", label = \"School average \\nacademic achievement\"]\n  stu_asc [pos = \"1.5,0!\", label = \"Student academic \\nself-concept\"]\n\n  # edges\n  # stu_ach -> sch_ach; \n  stu_ach -> stu_asc [label = \"+ve\"];\n  # sch_ach -> stu_asc;\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+
+???
+students' self-perception in academics
+---
+
+# Ecological Fallacy
+
+Association between two variables can be different across levels
+
+<div id="htmlwidget-35bbb56a5425ac9e0b4d" style="width:100%;height:70%;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-35bbb56a5425ac9e0b4d">{"x":{"diagram":"\ndigraph path1 {\n  graph [layout = neato, fontsize = 24]\n\n  node [shape = rectangle, fontname = \"Helvetica\"]\n  # Students\n  stu_ach [pos = \"-1.5,0!\", label = \"Student \\nacademic achievement\"]\n  sch_ach [pos = \"0,-1.5!\", label = \"School average \\nacademic achievement\"]\n  stu_asc [pos = \"1.5,0!\", label = \"Student academic \\nself-concept\"]\n\n  # edges\n  stu_ach -> sch_ach; \n  stu_ach -> stu_asc [label = \"+ve\"];\n  # sch_ach -> stu_asc;\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+
+---
+
+# Ecological Fallacy
+
+Association between two variables can be different across levels
+
+<div id="htmlwidget-7ad9dcddbbbc48c63cc7" style="width:100%;height:70%;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-7ad9dcddbbbc48c63cc7">{"x":{"diagram":"\ndigraph path1 {\n  graph [layout = neato, fontsize = 24]\n\n  node [shape = rectangle, fontname = \"Helvetica\"]\n  # Students\n  stu_ach [pos = \"-1.5,0!\", label = \"Student \\nacademic achievement\"]\n  sch_ach [pos = \"0,-1.5!\", label = \"School average \\nacademic achievement\"]\n  stu_asc [pos = \"1.5,0!\", label = \"Student academic \\nself-concept\"]\n\n  # edges\n  stu_ach -> sch_ach; \n  stu_ach -> stu_asc [label = \"+ve\"];\n  sch_ach -> stu_asc [label = \"-ve\", color = \"red\", fontcolor = \"red\"];\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+
+---
+
+# Big Fish Small Fond Effect
+
+Ignoring clustering
+
+&lt;img src="mlm_intro_recent_advances_files/figure-html/unnamed-chunk-18-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Big Fish Small Fond Effect
+
++ve at student level
+
+&lt;img src="mlm_intro_recent_advances_files/figure-html/unnamed-chunk-19-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Big Fish Small Fond Effect
+
+-ve contextual effect in a more competitive school
+
+&lt;img src="mlm_intro_recent_advances_files/figure-html/unnamed-chunk-20-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+class: clear, inverse, middle
+
+.right-column[
+## Why Use MLM?
+- &lt;span style="color:black"&gt;Avoid underestimated _SE_&lt;/span&gt;
+- &lt;span style="color:black"&gt;Cluster-specific (or person-specific) regression lines&lt;/span&gt;
+- Avoid Ecological Fallacy
+]
+
+---
+
+# Growth Curve Analysis
+
+Individual as "cluster"
+
+&lt;img src="mlm_intro_recent_advances_files/figure-html/unnamed-chunk-21-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+class: clear, inverse, center, middle
+
+# Recent Advances
+
+---
+
+# Other Forms of Clustering
+
+Three-level 
+
+<div id="htmlwidget-46528e2aa4eedea71564" style="width:100%;height:35%;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-46528e2aa4eedea71564">{"x":{"diagram":"\ndigraph boxes_and_circles {\n  graph [overlap = true, fontsize = 30]\n\n  node [penwidth = 0, fontname = \"Helvetica\"]\n  # District\n  AB [label=\"Therapist 1\"]\n  CD [label=\"Therapist 2\"]\n  # Schools\n  A [label=\"Therapy group A\"]\n  B [label=\"Therapy group B\"] \n  C [label=\"Therapy group C\"]\n  D [label=\"Therapy group D\"]\n  # Students\n  1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11\n\n  # edges\n  edge [dir = \"none\"]\n  AB -> {A; B}\n  CD -> {C; D}\n  A -> {1; 2; 3}\n  B -> {4; 5}\n  C -> {6; 7; 8; 9}\n  D -> {10; 11}\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+
+---
+
+# Other Forms of Clustering
+
+Cross-classification
+
+<div id="htmlwidget-e0f42c0f3b74328709e0" style="width:100%;height:35%;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-e0f42c0f3b74328709e0">{"x":{"diagram":"\ndigraph boxes_and_circles {\n  graph [overlap = true, fontsize = 30]\n\n  node [penwidth = 0, fontname = \"Helvetica\"]\n  # District\n  n1 [label=\"Neighborhood 1\"]\n  n2 [label=\"Neighborhood 2\"]\n  n3 [label=\"Neighborhood 3\"]\n  # Schools\n  A [label=\"School A\"]\n  B [label=\"School B\"] \n  C [label=\"School C\"]\n  D [label=\"School D\"]\n  # Students\n  1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11\n\n  # edges\n  edge [dir = \"none\"]\n  A -> {1; 2; 3}\n  B -> {4; 5}\n  C -> {6; 7; 8; 9}\n  D -> {10; 11}\n  {1; 4; 5} -> n1\n  {2; 3; 6; 7} -> n2\n  {8; 9; 10; 11} -> n3\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+
+Partial Nesting
+
+<div id="htmlwidget-8ff3e6d5f24e8d83a759" style="width:100%;height:25%;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-8ff3e6d5f24e8d83a759">{"x":{"diagram":"\ndigraph boxes_and_circles {\n  graph [overlap = true, fontsize = 30]\n\n  node [penwidth = 0, fontname = \"Helvetica\"]\n  # Schools\n  A [label=\"Therapy group A\"]\n  B [label=\"Therapy group B\"] \n  C [label=\"Therapy group C\"]\n  D [label=\"Individual therapy\"]\n  # Students\n  1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11\n\n  # edges\n  edge [dir = \"none\"]\n  A -> {1; 2; 3}\n  B -> {4; 5}\n  C -> {6; 7} \n  D -> {8; 9; 10; 11} [style = invis]\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+
+---
+
+# Effect Size for Multilevel Trials
+
+Effect size (e.g., Cohen's _d_) required by many reporting standards
+- Little guidance on how to compute them
+
+Two-level trials: Hedges (2007)
+
+Lai and Kwok (2014): (partially) cross-classified
+
+Lai and Kwok (2016): partially nested
+
+Rights and Sterba (2018): Defining `\(R^2\)` for MLM
+
+---
+
+# Stice, Shaw, Burton, and Wade (2006)
+
+Eating disorder prevention  
+Outcome: Thin-ideal internalization (TII)
+
+.font60[
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; Dissonance-based (Treatment) &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Expressive writing (Control) &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; \(N^T\) = 114 females &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; \(N^C\) = 126 females &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 17 groups &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt;  &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; \(n\) = 6 to 10 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt;  &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; ICC = .08, \(\mathit{deff}\) = 1.5 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt;  &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+]
+
+<div id="htmlwidget-a94dc4434111b15c2abe" style="width:100%;height:25%;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-a94dc4434111b15c2abe">{"x":{"diagram":"\ndigraph boxes_and_circles {\n  graph [overlap = true, fontsize = 30]\n\n  node [penwidth = 0, fontname = \"Helvetica\"]\n  # Schools\n  A [label=\"Treatment group A\"]\n  B [label=\"Treatment group B\"] \n  C [label=\"Treatment group C\"]\n  D [label=\"Control\"]\n  # Students\n  1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11\n\n  # edges\n  edge [dir = \"none\"]\n  A -> {1; 2; 3}\n  B -> {4; 5}\n  C -> {6; 7} \n  D -> {8; 9; 10; 11} [style = invis]\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+
+---
+
+class: clear
+
+`\(\hat \beta_\text{TREAT}\)` = -0.44, _SE_ = 0.09&lt;sup&gt;[1]&lt;/sup&gt;
+
+How many *SD*s does that correspond to?
+
+.footnote[
+[1] OLS underestimates _SE_ by 25%; falsely assuming full clustering estimates
+_SE_ by 15%. 
+]
+
+---
+
+# Lai and Kwok (2016)
+
+`$$\hat \delta = \frac{\hat \beta_\text{TREAT}}{\hat \sigma^2_\text{person}}$$`
+
+`$$V(\hat \delta) = \frac{V(\hat \beta_\text{TREAT})}{\hat \sigma^2_\text{person}} + 
+                   \frac{\hat \delta^2 V(\hat \sigma^2_\text{person})}{4 (\hat \sigma^2_\text{person})^2}$$`
+                   
+For Stice, Shaw, Burton, et al. (2006), `\(\hat \delta\)` = -0.98, 95% CI = [-1.4, -0.6]
+
+---
+
+# Multilevel Bootstrapping
+
+Useful for
+- CI for effect size
+- testing multilevel mediation
+
+`bootmlm` R package: currently implements 6 flavors of bootstrapping and 5 types
+of CI estimates
+
+---
+
+class: clear, top
+
+<div id="htmlwidget-a54a030664761dea9da2" style="width:100%;height:25%;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-a54a030664761dea9da2">{"x":{"diagram":"\ndigraph path1 {\n  graph [layout = neato, fontsize = 24]\n\n  node [shape = rectangle, fontname = \"Helvetica\"]\n  # Students\n  free [pos = \"-1.5,0!\", label = \"School \\npoverty\"]\n  smorale [pos = \"0,0!\", label = \"School \\nmorale\"]\n  late [pos = \"1.5,-1!\", label = \"Student \\ntardiness\"]\n\n  # edges\n  free -> smorale\n  free -> late\n  smorale -> late\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+
+.center[
+&lt;img src="images/mlm_boot_cis.png" width="90%"&gt;
+]
+
+---
+
+# Accounting for Survey Design
+
+Lai, Kwok, Hsiao, and Cao (2018)
+- Apply finite population correction for cross-cultural research to obtain
+more accurate _SE_ (and improved power)
+
+Wen &amp; Lai (in preparation)
+- A multilevel Bayesian semi-parametric bootstrap procedure to handle sampling 
+weights with unequal probability samples
+
+---
+
+class: clear, top
+
+.font50[
+(Lai, Kwok, Hsiao, et al., 2018, Figure 5)
+]
+
+.center[
+&lt;img src="images/Lai2018_fig5.png" width="70%"&gt;
+]
+
+---
+
+# MLM of Non-Normal Outcomes
+
+Ordinal? Counts? Zero-inflated? Proportions? Response time? Survival? 
+
+These are made easy with Bayesian estimation and the `brms` 
+(Bürkner, 2018). 
+
+.center[
+&lt;img src="images/Guo2018_outcome_dist.png" width="100%"&gt;
+]
+
+---
+
+# Final Remarks
+
+Reasons for MLM: correct _SE_, model heterogeneity, avoid ecological fallacy
+
+Methodological research: translate methods in single-level research + methods
+for new RQ
+
+More truly multilevel theories
+
+---
+
+# Bibliography
+
+.font70[
+Aitkin, M. and N. Longford (1986). "Statistical modelling issues
+in school effectiveness studies". In: _Journal of the Royal
+Statistical Society. Series A (General)_ 149, pp. 1-43. DOI:
+[10.2307/2981882](https://doi.org/10.2307/2981882).
+
+Bürkner, P. (2018). "Advanced Bayesian Multilevel Modeling with
+the R Package brms". In: _The R Journal_ 10.1, pp. 395-411.
+
+Hedges, L. V. (2007). "Effect sizes in cluster-randomized
+designs". In: _Journal of Educational and Behavioral Statistics_
+32, pp. 341-370. DOI:
+[10.3102/1076998606298043](https://doi.org/10.3102/1076998606298043).
+
+Lai, M. H. C. and O. Kwok (2016). "Estimating standardized effect
+sizes for two- and three-level partially nested data". In:
+_Multivariate Behavioral Research_, pp. 1-17. DOI:
+[10.1080/00273171.2016.1231606](https://doi.org/10.1080/00273171.2016.1231606).
+]
+
+---
+
+class: clear
+
+.font70[
+Lai, M. H. C. and O. Kwok (2014). "Standardized mean differences
+in two-level cross-classified random effects models". In: _Journal
+of Educational and Behavioral Statistics_ 39.4, pp. 282-302. DOI:
+[10.3102/1076998614532950](https://doi.org/10.3102/1076998614532950).
+
+Lai, M. H. C. and O. Kwok (2015). "Examining the rule of thumb of
+not using multilevel modeling: The “design effect smaller than
+two” rule". En. In: _The Journal of Experimental Education_ 83.3,
+pp. 423-438. DOI:
+[10.1080/00220973.2014.907229](https://doi.org/10.1080/00220973.2014.907229).
+
+Lai, M. H. C, O. Kwok, Y. Hsiao, et al. (2018). "Finite population
+correction for two-level hierarchical linear models.". In:
+_Psychological Methods_ 23.1, pp. 94-112. DOI:
+[10.1037/met0000137](https://doi.org/10.1037/met0000137).
+
+Leeuw, J. de and I. Kreft (1986). "Random coefficient models for
+multilevel analysis". In: _Journal of Educational Statistics_ 11,
+pp. 57-85. DOI:
+[10.2307/1164848](https://doi.org/10.2307/1164848).
+
+Littell, R. C, G. A. Milliken, W. W. Stroup, et al. (1996). _SAS
+System for mixed models_. Cary, NC: SAS.
+]
+
+---
+
+class: clear
+
+.font70[
+Raudenbush, S. W. and A. S. Bryk (2002). _Hierarchical linear
+models: Applications and data analysis methods_. 2nd ed. Thousand
+Oaks, CA: Sage.
+
+Rights, J. D. and S. K. Sterba (2018). "Quantifying explained
+variance in multilevel models: An integrative framework for
+defining R-squared measures.". In: _Psychological Methods_. ISSN:
+1939-1463. DOI:
+[10.1037/met0000184](https://doi.org/10.1037/met0000184). URL:
+[http://doi.apa.org/getdoi.cfm?doi=10.1037/met0000184](http://doi.apa.org/getdoi.cfm?doi=10.1037/met0000184).
+
+Stice, E, H. Shaw, E. Burton, et al. (2006). "Dissonance and
+healthy weight eating disorder prevention programs: A randomized
+efficacy trial.". In: _Journal of Consulting and Clinical
+Psychology_ 74, pp. 263-275. DOI:
+[10.1037/0022-006X.74.2.263](https://doi.org/10.1037/0022-006X.74.2.263).
+]
+
+---
+
+class: clear, center, middle, inverse
+
+# Thanks!
+
+Slides created via the R package [**xaringan**](https://github.com/yihui/xaringan).
+    </textarea>
+<script src="libs/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script>
+(function() {
+  var i, text, code, codes = document.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+})();
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
