@@ -33,7 +33,7 @@ weight = 5
  
 +++
 
-<!––
+<!––-
 
 ## Note
 
@@ -47,7 +47,7 @@ Feel free to contact me regarding fit. Please apply at
 
 </div>
 
--->
+--->
 
 # Biography
 
