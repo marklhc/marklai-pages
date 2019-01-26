@@ -33,6 +33,8 @@ weight = 5
  
 +++
 
+<!––
+
 ## Note
 
 <div style="background-color:LemonChiffon">
@@ -44,6 +46,8 @@ Feel free to contact me regarding fit. Please apply at
 <a href="https://dornsife.usc.edu/psyc/admissions/">https://dornsife.usc.edu/psyc/admissions/</a>
 
 </div>
+
+-->
 
 # Biography
 
