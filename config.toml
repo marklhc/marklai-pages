@@ -1,6 +1,6 @@
-baseurl = "https://marklai.netlify.com/"  # End your URL with a `/` trailing slash, e.g. `https://example.com/`.
+baseurl = "https://quantscience.rbind.io/"  # End your URL with a `/` trailing slash, e.g. `https://example.com/`.
 title = "Mark Lai"
-copyright = "&copy; 2018 Hok Chio (Mark) Lai"
+copyright = "&copy; 2019 Hok Chio (Mark) Lai"
 theme = "hugo-academic"
 enableEmoji = true
 footnotereturnlinkcontents = "<sup>^</sup>"
