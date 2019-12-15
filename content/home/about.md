@@ -35,6 +35,8 @@ weight = 5
 
 ## Note
 
+<!---
+
 <div style="background-color:LemonChiffon">
 
 I am taking a Ph.D. student interested in quantitative
@@ -44,6 +46,8 @@ Feel free to contact me regarding fit. Please apply at
 <a href="https://dornsife.usc.edu/psyc/admissions/">https://dornsife.usc.edu/psyc/admissions/</a>
 
 </div>
+
+--->
 
 # Biography
 
