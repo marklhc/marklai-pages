@@ -37,6 +37,8 @@ weight = 5
 
 ## Note
 
+<!---
+
 <div style="background-color:LemonChiffon">
 
 I am taking a Ph.D. student interested in quantitative
