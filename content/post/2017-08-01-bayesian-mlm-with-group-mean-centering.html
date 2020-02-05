@@ -1,7 +1,7 @@
 ---
 title: Bayesian MLM With Group Mean Centering
 author: Mark Lai
-date: '2017-08-01, revised on 2020-01-04'
+date: '2020-02-04'
 slug: bayesian-mlm-with-group-mean-centering
 bibliography: references.bib
 output:
@@ -205,17 +205,17 @@ summary(m1_brm)</code></pre>
 ## Group-Level Effects: 
 ## ~ID (Number of levels: 160) 
 ##               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## sd(Intercept)     1.70      0.39     0.82     2.40 1.01      978     1024
+## sd(Intercept)     1.71      0.41     0.73     2.42 1.00      720      656
 ## 
 ## Population-Level Effects: 
 ##           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## Intercept    12.87      0.25    12.38    13.38 1.00     3642     3135
-## SES_gpm       4.65      0.49     3.71     5.61 1.00     5002     3193
-## SES_gpc       2.42      0.35     1.72     3.10 1.00     8394     2710
+## Intercept    12.87      0.26    12.37    13.37 1.00     4424     2992
+## SES_gpm       4.66      0.49     3.69     5.64 1.00     3771     3075
+## SES_gpc       2.42      0.33     1.78     3.07 1.00     7839     3164
 ## 
 ## Family Specific Parameters: 
 ##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## sigma     6.01      0.17     5.69     6.35 1.00     2731     2959
+## sigma     6.00      0.17     5.68     6.36 1.00     2265     2441
 ## 
 ## Samples were drawn using sampling(NUTS). For each parameter, Bulk_ESS
 ## and Tail_ESS are effective sample size measures, and Rhat is the potential
@@ -227,7 +227,7 @@ post_contextual &lt;- with(post_fixef, b_SES_gpm - b_SES_gpc)
 c(mean = mean(post_contextual), median = median(post_contextual), 
   quantile(post_contextual, c(.025, .975)))</code></pre>
 <pre><code>##     mean   median     2.5%    97.5% 
-## 2.228642 2.231255 1.054655 3.424198</code></pre>
+## 2.237795 2.220666 1.066570 3.424391</code></pre>
 <pre class="r"><code>ggplot(aes(x = post_contextual), data = data_frame(post_contextual)) + 
     geom_density(bw = &quot;SJ&quot;)</code></pre>
 <pre><code>## Warning: `data_frame()` is deprecated, use `tibble()`.
@@ -346,7 +346,7 @@ m2_stan &lt;- stan(&quot;stan_gpc_pv.stan&quot;, data = hsb_sdata,
 ## sigma_x       0.68    0.00 0.02  0.65  0.67  0.68  0.69  0.72  1347 1.00
 ## tau_x         0.43    0.00 0.04  0.36  0.40  0.43  0.45  0.51   377 1.00
 ## 
-## Samples were drawn using NUTS(diag_e) at Tue Feb  4 22:12:50 2020.
+## Samples were drawn using NUTS(diag_e) at Tue Feb  4 23:10:18 2020.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).</code></pre>
@@ -405,21 +405,21 @@ summary(m1_brm_lm)</code></pre>
 ## Group-Level Effects: 
 ## ~ID (Number of levels: 160) 
 ##               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## sd(Intercept)     1.40      0.52     0.16     2.27 1.01      515      476
+## sd(Intercept)     1.37      0.51     0.20     2.21 1.01      644      773
 ## 
 ## Population-Level Effects: 
 ##                                Estimate Est.Error l-95% CI u-95% CI Rhat
-## Intercept                         12.87      0.26    12.36    13.38 1.00
-## SES                                2.41      0.35     1.75     3.10 1.00
-## meSES_gpmsdxEQSES_gpm_segrEQID     3.45      0.93     1.66     5.33 1.00
+## Intercept                         12.87      0.25    12.39    13.36 1.00
+## SES                                2.40      0.36     1.70     3.09 1.00
+## meSES_gpmsdxEQSES_gpm_segrEQID     3.45      0.94     1.60     5.28 1.00
 ##                                Bulk_ESS Tail_ESS
-## Intercept                          6885     2950
-## SES                                3285     3136
-## meSES_gpmsdxEQSES_gpm_segrEQID     1591     2273
+## Intercept                          7160     2855
+## SES                                4088     3419
+## meSES_gpmsdxEQSES_gpm_segrEQID     1882     2787
 ## 
 ## Family Specific Parameters: 
 ##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## sigma     6.01      0.17     5.69     6.36 1.00     2784     2781
+## sigma     6.02      0.17     5.69     6.35 1.00     2810     2306
 ## 
 ## Samples were drawn using sampling(NUTS). For each parameter, Bulk_ESS
 ## and Tail_ESS are effective sample size measures, and Rhat is the potential
@@ -443,23 +443,23 @@ summary(m2_brm)</code></pre>
 ## Group-Level Effects: 
 ## ~ID (Number of levels: 160) 
 ##                        Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS
-## sd(Intercept)              1.76      0.37     0.96     2.44 1.00     1223
-## sd(SES_gpc)                0.98      0.63     0.04     2.32 1.00     1022
-## cor(Intercept,SES_gpc)     0.26      0.48    -0.83     0.95 1.00     3094
+## sd(Intercept)              1.72      0.41     0.78     2.42 1.01      832
+## sd(SES_gpc)                1.02      0.65     0.04     2.39 1.00      867
+## cor(Intercept,SES_gpc)     0.27      0.48    -0.82     0.96 1.00     2433
 ##                        Tail_ESS
-## sd(Intercept)              1466
-## sd(SES_gpc)                1672
-## cor(Intercept,SES_gpc)     2839
+## sd(Intercept)               847
+## sd(SES_gpc)                1304
+## cor(Intercept,SES_gpc)     2385
 ## 
 ## Population-Level Effects: 
 ##           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## Intercept    12.87      0.25    12.37    13.36 1.00     6026     3721
-## SES_gpm       4.65      0.48     3.74     5.60 1.00     6096     3103
-## SES_gpc       2.41      0.37     1.68     3.13 1.00     7981     3203
+## Intercept    12.86      0.26    12.38    13.37 1.00     4287     2749
+## SES_gpm       4.66      0.48     3.69     5.60 1.00     3508     2608
+## SES_gpc       2.42      0.38     1.67     3.20 1.00     5437     2252
 ## 
 ## Family Specific Parameters: 
 ##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## sigma     5.96      0.17     5.64     6.31 1.00     3012     3314
+## sigma     5.97      0.18     5.64     6.33 1.00     1977     2753
 ## 
 ## Samples were drawn using sampling(NUTS). For each parameter, Bulk_ESS
 ## and Tail_ESS are effective sample size measures, and Rhat is the potential
@@ -568,7 +568,7 @@ m3_stan &lt;- stan(&quot;stan_gpc_pv_ran_slp.stan&quot;, data = hsb_sdata,
 ## sigma_x       0.68    0.00 0.02  0.64  0.67  0.68  0.69  0.72  1489 1.00
 ## tau_x         0.43    0.00 0.04  0.36  0.40  0.43  0.46  0.51   334 1.00
 ## 
-## Samples were drawn using NUTS(diag_e) at Tue Feb  4 22:16:38 2020.
+## Samples were drawn using NUTS(diag_e) at Tue Feb  4 23:14:19 2020.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).</code></pre>
@@ -591,27 +591,27 @@ summary(m3_brm_lm)</code></pre>
 ## Group-Level Effects: 
 ## ~ID (Number of levels: 160) 
 ##                        Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS
-## sd(Intercept)              1.42      0.51     0.20     2.26 1.01      434
-## sd(SES_gpc)                1.01      0.65     0.05     2.37 1.00      781
-## cor(Intercept,SES_gpc)     0.25      0.49    -0.84     0.96 1.00     1742
+## sd(Intercept)              1.39      0.49     0.26     2.20 1.00      477
+## sd(SES_gpc)                1.00      0.65     0.04     2.35 1.01      715
+## cor(Intercept,SES_gpc)     0.22      0.51    -0.85     0.96 1.00     1383
 ##                        Tail_ESS
-## sd(Intercept)               592
-## sd(SES_gpc)                1526
-## cor(Intercept,SES_gpc)     1974
+## sd(Intercept)               516
+## sd(SES_gpc)                1136
+## cor(Intercept,SES_gpc)     1805
 ## 
 ## Population-Level Effects: 
 ##                                Estimate Est.Error l-95% CI u-95% CI Rhat
-## Intercept                         12.87      0.26    12.36    13.38 1.00
-## SES                                2.40      0.36     1.69     3.13 1.00
-## meSES_gpmsdxEQSES_gpm_segrEQID     3.46      0.97     1.61     5.37 1.00
+## Intercept                         12.87      0.26    12.38    13.37 1.00
+## SES                                2.38      0.36     1.66     3.09 1.00
+## meSES_gpmsdxEQSES_gpm_segrEQID     3.54      0.94     1.70     5.40 1.00
 ##                                Bulk_ESS Tail_ESS
-## Intercept                          4277     3016
-## SES                                1966     2517
-## meSES_gpmsdxEQSES_gpm_segrEQID     1239     2208
+## Intercept                          4398     2982
+## SES                                2489     3025
+## meSES_gpmsdxEQSES_gpm_segrEQID     1388     2199
 ## 
 ## Family Specific Parameters: 
 ##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-## sigma     5.98      0.17     5.66     6.32 1.00     1805     2642
+## sigma     5.98      0.17     5.65     6.33 1.00     2014     2502
 ## 
 ## Samples were drawn using sampling(NUTS). For each parameter, Bulk_ESS
 ## and Tail_ESS are effective sample size measures, and Rhat is the potential
@@ -686,7 +686,7 @@ m2full_stan &lt;- stan(&quot;stan_gpc_pv.stan&quot;, data = hsb_sdata,
 ## sigma_x       0.67    0.00 0.01  0.66  0.66  0.67  0.67  0.68  1741 1.00
 ## tau_x         0.40    0.00 0.03  0.35  0.38  0.40  0.42  0.46   101 1.02
 ## 
-## Samples were drawn using NUTS(diag_e) at Tue Feb  4 22:19:57 2020.
+## Samples were drawn using NUTS(diag_e) at Tue Feb  4 23:17:16 2020.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).</code></pre>
