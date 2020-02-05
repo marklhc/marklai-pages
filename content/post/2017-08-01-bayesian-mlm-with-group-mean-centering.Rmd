@@ -1,7 +1,7 @@
 ---
 title: Bayesian MLM With Group Mean Centering
 author: Mark Lai
-date: '2017-08-01'
+date: '2017-08-01, revised on 2020-01-04'
 slug: bayesian-mlm-with-group-mean-centering
 bibliography: references.bib
 output:
@@ -141,7 +141,7 @@ I use the `brms` package with the default priors:
 
 ```{r}
 m1_brm <- brm(MATHACH ~ SES_gpm + SES_gpc + (1 | ID), data = hsb_sub, 
-              control = list(max_treedepth = 15, adapt_delta = .90))
+              control = list(adapt_delta = .90))
 summary(m1_brm)
 ```
 
@@ -222,7 +222,40 @@ Note that the coefficient of `SES` at level-2 now has a posterior mean of
 of `r comma(mean(bcon))` with a posterior *SD* of 
 `r comma(sd(bcon))`
 
-### With Random Slopes
+#### Two-step approach using `brms`
+
+##### Step 1: estimating measurement error in observed means
+
+```{r}
+m_ses <- lmer(SES ~ (1 | ID), data = hsb_sub)
+summary(m_ses)
+```
+
+Extract measurement estimates:
+
+```{r}
+# sigma_x
+sigmax <- sigma(m_ses)
+# Add to data
+hsb_sub <- hsb_sub %>% 
+  group_by(ID) %>% 
+  mutate(SES_gpm_se = sigmax / sqrt(n())) %>% 
+  ungroup()
+```
+
+Fit MLM, incorporating measurement error in latent group means:
+
+```{r}
+m1_brm_lm <- brm(MATHACH ~ me(SES_gpm, sdx = SES_gpm_se, gr = ID) + 
+                   SES + (1 | ID), 
+                 data = hsb_sub, 
+                 control = list(adapt_delta = .99, 
+                                max_treedepth = 15))
+summary(m1_brm_lm)
+```
+
+
+### With random slopes
 
 With `brms`, we have
 
@@ -252,6 +285,7 @@ hsb_sdata <- with(hsb_sub,
                        J = length(unique(ID))))
 m3_stan <- stan("stan_gpc_pv_ran_slp.stan", data = hsb_sdata, 
                 chains = 2L, iter = 1000L, 
+                control = list(adapt_delta = .99, max_treedepth = 15), 
                 pars = c("b0", "b", "bm", "b_contextual", "sigma_y", "tau_y", 
                          "sigma_x", "tau_x"))
 ```
@@ -261,6 +295,19 @@ The results are shown below:
 ```{r}
 print(m3_stan, pars = "lp__", include = FALSE)
 ```
+
+#### Using two-step with `brms`
+
+```{r}
+m3_brm_lm <- brm(MATHACH ~ me(SES_gpm, sdx = SES_gpm_se, gr = ID) + 
+                   SES + 
+                   (SES_gpc | ID), 
+                 data = hsb_sub, 
+                 control = list(adapt_delta = .99, 
+                                max_treedepth = 15))
+summary(m3_brm_lm)
+```
+
 
 ## Using the Full Data
 

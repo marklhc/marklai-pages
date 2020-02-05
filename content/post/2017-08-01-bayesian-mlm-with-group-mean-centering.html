@@ -1,7 +1,7 @@
 ---
 title: Bayesian MLM With Group Mean Centering
 author: Mark Lai
-date: '2017-08-01'
+date: '2017-08-01, revised on 2020-01-04'
 slug: bayesian-mlm-with-group-mean-centering
 bibliography: references.bib
 output:
@@ -22,7 +22,7 @@ tags:
 <li><a href="#group-mean-centering-with-lme4">Group mean centering with <code>lme4</code></a></li>
 <li><a href="#same-analyses-with-bayesian-using-brms">Same analyses with Bayesian using <code>brms</code></a></li>
 <li><a href="#group-mean-centering-treating-group-means-as-latent-variables">Group mean centering treating group means as latent variables</a></li>
-<li><a href="#with-random-slopes">With Random Slopes</a></li>
+<li><a href="#with-random-slopes">With random slopes</a></li>
 </ul></li>
 <li><a href="#using-the-full-data">Using the Full Data</a><ul>
 <li><a href="#with-lme4">With <code>lme4</code></a></li>
@@ -32,7 +32,7 @@ tags:
 </ul>
 </div>
 
-<p>This post is updated on 2018-11-24 with cleaner and more efficient <code>STAN</code>
+<p>This post is updated on 2020-02-04 with cleaner and more efficient <code>STAN</code>
 code.</p>
 <p>In the past week I was teaching a one-and-a-half-day workshop on multilevel
 modeling (MLM) at UC, where I discussed the use of group mean centering to
@@ -86,18 +86,17 @@ hsb_sub</code></pre>
 ## # Groups:   ID [160]
 ##    ID     SIZE SECTOR PRACAD DISCLIM HIMINTY MEANSES MINORITY FEMALE    SES
 ##    &lt;chr&gt; &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;
-##  1 1224    842      0   0.35   1.60        0  -0.428        0      1 -0.988
-##  2 1224    842      0   0.35   1.60        0  -0.428        0      0 -0.548
-##  3 1224    842      0   0.35   1.60        0  -0.428        0      1  0.042
-##  4 1224    842      0   0.35   1.60        0  -0.428        0      1  0.972
-##  5 1224    842      0   0.35   1.60        0  -0.428        1      0 -1.66 
-##  6 1288   1855      0   0.27   0.174       0   0.128        1      0 -0.328
-##  7 1288   1855      0   0.27   0.174       0   0.128        0      1 -0.678
-##  8 1288   1855      0   0.27   0.174       0   0.128        0      0  0.032
-##  9 1288   1855      0   0.27   0.174       0   0.128        0      0  0.322
-## 10 1288   1855      0   0.27   0.174       0   0.128        0      0  0.682
-## # ... with 790 more rows, and 2 more variables: MATHACH &lt;dbl&gt;,
-## #   `_MERGE` &lt;dbl&gt;</code></pre>
+##  1 1224    842      0   0.35   1.60        0  -0.428        0      1 -0.478
+##  2 1224    842      0   0.35   1.60        0  -0.428        0      0  0.332
+##  3 1224    842      0   0.35   1.60        0  -0.428        0      1 -0.988
+##  4 1224    842      0   0.35   1.60        0  -0.428        0      0 -0.528
+##  5 1224    842      0   0.35   1.60        0  -0.428        0      1 -1.07 
+##  6 1288   1855      0   0.27   0.174       0   0.128        0      1  0.692
+##  7 1288   1855      0   0.27   0.174       0   0.128        0      0 -0.118
+##  8 1288   1855      0   0.27   0.174       0   0.128        0      0  1.26 
+##  9 1288   1855      0   0.27   0.174       0   0.128        1      1 -1.47 
+## 10 1288   1855      0   0.27   0.174       0   0.128        0      0  0.222
+## # … with 790 more rows, and 2 more variables: MATHACH &lt;dbl&gt;, `_MERGE` &lt;dbl&gt;</code></pre>
 <p>With the subsample, let’s study the association of socioeconomic status (<code>SES</code>)
 with math achievement (<code>MATHACH</code>) at the student level and the school level.
 The conventional way is to do group mean centering of <code>SES</code>, by computing the
@@ -117,32 +116,32 @@ summary(m1_mer)</code></pre>
 ## Formula: MATHACH ~ SES_gpm + SES_gpc + (1 | ID)
 ##    Data: hsb_sub
 ## 
-## REML criterion at convergence: 5177.8
+## REML criterion at convergence: 5188.7
 ## 
 ## Scaled residuals: 
 ##      Min       1Q   Median       3Q      Max 
-## -2.86505 -0.72680  0.03405  0.69500  2.84485 
+## -2.74545 -0.75449  0.04934  0.75875  2.64005 
 ## 
 ## Random effects:
 ##  Groups   Name        Variance Std.Dev.
-##  ID       (Intercept)  3.285   1.813   
-##  Residual             35.190   5.932   
+##  ID       (Intercept)  3.13    1.769   
+##  Residual             35.81    5.984   
 ## Number of obs: 800, groups:  ID, 160
 ## 
 ## Fixed effects:
 ##             Estimate Std. Error t value
-## (Intercept)  12.7090     0.2546  49.922
-## SES_gpm       4.5859     0.5305   8.645
-## SES_gpc       2.0566     0.3573   5.756
+## (Intercept)  12.8714     0.2536   50.75
+## SES_gpm       4.6564     0.4840    9.62
+## SES_gpc       2.4229     0.3481    6.96
 ## 
 ## Correlation of Fixed Effects:
 ##         (Intr) SES_gpm
-## SES_gpm 0.067         
-## SES_gpc 0.000  0.000</code></pre>
+## SES_gpm -0.005        
+## SES_gpc  0.000  0.000</code></pre>
 <p>So the results suggested that one unit difference <code>SES</code> is associated with
-4.6 (<em>SE</em> = 0.53) units
+4.7 (<em>SE</em> = 0.48) units
 difference in mean <code>MATHACH</code> at the school level, but
-2.1 (<em>SE</em> = 0.36) units
+2.4 (<em>SE</em> = 0.35) units
 difference in mean <code>MATHACH</code> at the student level.</p>
 <p>We can get the contextual effect by substracting the fixed effect coefficient
 of <code>SES_gpm</code> from that of <code>SES_gpc</code>, or by using the original <code>SES</code> variable
@@ -153,35 +152,35 @@ summary(m1_mer2)</code></pre>
 ## Formula: MATHACH ~ SES_gpm + SES + (1 | ID)
 ##    Data: hsb_sub
 ## 
-## REML criterion at convergence: 5177.8
+## REML criterion at convergence: 5188.7
 ## 
 ## Scaled residuals: 
 ##      Min       1Q   Median       3Q      Max 
-## -2.86505 -0.72680  0.03405  0.69500  2.84485 
+## -2.74545 -0.75449  0.04934  0.75875  2.64005 
 ## 
 ## Random effects:
 ##  Groups   Name        Variance Std.Dev.
-##  ID       (Intercept)  3.285   1.813   
-##  Residual             35.190   5.932   
+##  ID       (Intercept)  3.13    1.769   
+##  Residual             35.81    5.984   
 ## Number of obs: 800, groups:  ID, 160
 ## 
 ## Fixed effects:
 ##             Estimate Std. Error t value
-## (Intercept)  12.7090     0.2546  49.922
-## SES_gpm       2.5292     0.6396   3.954
-## SES           2.0566     0.3573   5.756
+## (Intercept)  12.8714     0.2536  50.750
+## SES_gpm       2.2336     0.5962   3.746
+## SES           2.4229     0.3481   6.960
 ## 
 ## Correlation of Fixed Effects:
 ##         (Intr) SES_gp
-## SES_gpm  0.055       
-## SES      0.000 -0.559</code></pre>
+## SES_gpm -0.004       
+## SES      0.000 -0.584</code></pre>
 <p>The coefficient for <code>SES_gpm</code> is now the contextual effect. We can get a
 95% confidence interval:</p>
 <pre class="r"><code>confint(m1_mer2, parm = &quot;beta_&quot;)</code></pre>
 <pre><code>##                 2.5 %    97.5 %
-## (Intercept) 12.210145 13.207796
-## SES_gpm      1.277615  3.780835
-## SES          1.355781  2.757512</code></pre>
+## (Intercept) 12.374410 13.368315
+## SES_gpm      1.066932  3.400232
+## SES          1.740067  3.105664</code></pre>
 </div>
 <div id="same-analyses-with-bayesian-using-brms" class="section level3">
 <h3>Same analyses with Bayesian using <code>brms</code></h3>
@@ -194,7 +193,7 @@ summary(m1_mer2)</code></pre>
   \tau &amp; \sim t_3(0, 10)
 \end{align*}\]</span></p>
 <pre class="r"><code>m1_brm &lt;- brm(MATHACH ~ SES_gpm + SES_gpc + (1 | ID), data = hsb_sub, 
-              control = list(max_treedepth = 15, adapt_delta = .90))
+              control = list(adapt_delta = .90))
 summary(m1_brm)</code></pre>
 <pre><code>##  Family: gaussian 
 ##   Links: mu = identity; sigma = identity 
@@ -205,21 +204,21 @@ summary(m1_brm)</code></pre>
 ## 
 ## Group-Level Effects: 
 ## ~ID (Number of levels: 160) 
-##               Estimate Est.Error l-95% CI u-95% CI Eff.Sample Rhat
-## sd(Intercept)     1.75      0.37     0.95     2.43        942 1.00
+##               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sd(Intercept)     1.70      0.39     0.82     2.40 1.01      978     1024
 ## 
 ## Population-Level Effects: 
-##           Estimate Est.Error l-95% CI u-95% CI Eff.Sample Rhat
-## Intercept    12.71      0.25    12.21    13.20       3781 1.00
-## SES_gpm       4.59      0.53     3.55     5.66       4319 1.00
-## SES_gpc       2.06      0.36     1.36     2.76       6769 1.00
+##           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## Intercept    12.87      0.25    12.38    13.38 1.00     3642     3135
+## SES_gpm       4.65      0.49     3.71     5.61 1.00     5002     3193
+## SES_gpc       2.42      0.35     1.72     3.10 1.00     8394     2710
 ## 
 ## Family Specific Parameters: 
-##       Estimate Est.Error l-95% CI u-95% CI Eff.Sample Rhat
-## sigma     5.96      0.17     5.65     6.30       3136 1.00
+##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sigma     6.01      0.17     5.69     6.35 1.00     2731     2959
 ## 
-## Samples were drawn using sampling(NUTS). For each parameter, Eff.Sample 
-## is a crude measure of effective sample size, and Rhat is the potential 
+## Samples were drawn using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
 ## scale reduction factor on split chains (at convergence, Rhat = 1).</code></pre>
 <p>With Bayesian, the results are similar to those with <code>lme4</code>.</p>
 <p>We can summarize the posterior of the contextual effect:</p>
@@ -228,9 +227,11 @@ post_contextual &lt;- with(post_fixef, b_SES_gpm - b_SES_gpc)
 c(mean = mean(post_contextual), median = median(post_contextual), 
   quantile(post_contextual, c(.025, .975)))</code></pre>
 <pre><code>##     mean   median     2.5%    97.5% 
-## 2.527341 2.522303 1.276933 3.812801</code></pre>
+## 2.228642 2.231255 1.054655 3.424198</code></pre>
 <pre class="r"><code>ggplot(aes(x = post_contextual), data = data_frame(post_contextual)) + 
     geom_density(bw = &quot;SJ&quot;)</code></pre>
+<pre><code>## Warning: `data_frame()` is deprecated, use `tibble()`.
+## This warning is displayed once per session.</code></pre>
 <p><img src="/post/2017-08-01-bayesian-mlm-with-group-mean-centering_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
 </div>
 <div id="group-mean-centering-treating-group-means-as-latent-variables" class="section level3">
@@ -323,6 +324,12 @@ m2_stan &lt;- stan(&quot;stan_gpc_pv.stan&quot;, data = hsb_sdata,
                 chains = 2L, iter = 1000L, 
                 pars = c(&quot;b0&quot;, &quot;b&quot;, &quot;bm&quot;, &quot;b_contextual&quot;, &quot;sigma_y&quot;, &quot;tau_y&quot;, 
                          &quot;sigma_x&quot;, &quot;tau_x&quot;))</code></pre>
+<pre><code>## Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
+## Running the chains for more iterations may help. See
+## http://mc-stan.org/misc/warnings.html#bulk-ess</code></pre>
+<pre><code>## Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
+## Running the chains for more iterations may help. See
+## http://mc-stan.org/misc/warnings.html#tail-ess</code></pre>
 <p>The results are shown below:</p>
 <pre class="r"><code>print(m2_stan, pars = &quot;lp__&quot;, include = FALSE)</code></pre>
 <pre><code>## Inference for Stan model: stan_gpc_pv.
@@ -330,27 +337,98 @@ m2_stan &lt;- stan(&quot;stan_gpc_pv.stan&quot;, data = hsb_sdata,
 ## post-warmup draws per chain=500, total post-warmup draws=1000.
 ## 
 ##               mean se_mean   sd  2.5%   25%   50%   75% 97.5% n_eff Rhat
-## b0           12.58    0.01 0.25 12.10 12.41 12.57 12.74 13.10   880 1.00
-## b[1]          2.04    0.01 0.37  1.29  1.81  2.04  2.29  2.71   791 1.00
-## bm            6.14    0.04 0.89  4.49  5.51  6.11  6.77  7.90   567 1.00
-## b_contextual  4.10    0.05 1.06  2.13  3.37  4.07  4.87  6.28   524 1.00
-## sigma_y       5.96    0.01 0.17  5.65  5.84  5.96  6.07  6.27   627 1.00
-## tau_y         1.39    0.03 0.47  0.26  1.14  1.46  1.70  2.15   202 1.01
-## sigma_x       0.66    0.00 0.02  0.62  0.64  0.66  0.67  0.70  1231 1.00
-## tau_x         0.38    0.00 0.03  0.32  0.36  0.38  0.40  0.45   515 1.00
+## b0           12.88    0.01 0.24 12.42 12.72 12.89 13.03 13.38  1183 1.00
+## b[1]          2.41    0.01 0.35  1.67  2.17  2.41  2.65  3.10  1205 1.00
+## bm            5.86    0.03 0.79  4.35  5.29  5.87  6.41  7.38   546 1.00
+## b_contextual  3.45    0.04 0.93  1.67  2.79  3.45  4.09  5.22   518 1.00
+## sigma_y       6.02    0.01 0.17  5.70  5.90  6.02  6.14  6.34   802 1.00
+## tau_y         1.37    0.04 0.51  0.21  1.06  1.43  1.73  2.24   134 1.01
+## sigma_x       0.68    0.00 0.02  0.65  0.67  0.68  0.69  0.72  1347 1.00
+## tau_x         0.43    0.00 0.04  0.36  0.40  0.43  0.45  0.51   377 1.00
 ## 
-## Samples were drawn using NUTS(diag_e) at Sat Nov 24 18:04:09 2018.
+## Samples were drawn using NUTS(diag_e) at Tue Feb  4 22:12:50 2020.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).</code></pre>
 <p>Note that the coefficient of <code>SES</code> at level-2 now has a posterior mean of
-6.1 with a posterior <em>SD</em> of
-0.89, and the contextual effect has a posterior mean
-of 4.1 with a posterior <em>SD</em> of
-1.1</p>
+5.9 with a posterior <em>SD</em> of
+0.79, and the contextual effect has a posterior mean
+of 3.5 with a posterior <em>SD</em> of
+0.93</p>
+<div id="two-step-approach-using-brms" class="section level4">
+<h4>Two-step approach using <code>brms</code></h4>
+<div id="step-1-estimating-measurement-error-in-observed-means" class="section level5">
+<h5>Step 1: estimating measurement error in observed means</h5>
+<pre class="r"><code>m_ses &lt;- lmer(SES ~ (1 | ID), data = hsb_sub)
+summary(m_ses)</code></pre>
+<pre><code>## Linear mixed model fit by REML [&#39;lmerMod&#39;]
+## Formula: SES ~ (1 | ID)
+##    Data: hsb_sub
+## 
+## REML criterion at convergence: 1830.9
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -4.8031 -0.6035  0.0062  0.6787  2.3937 
+## 
+## Random effects:
+##  Groups   Name        Variance Std.Dev.
+##  ID       (Intercept) 0.1839   0.4289  
+##  Residual             0.4617   0.6795  
+## Number of obs: 800, groups:  ID, 160
+## 
+## Fixed effects:
+##             Estimate Std. Error t value
+## (Intercept) 0.002775   0.041555   0.067</code></pre>
+<p>Extract measurement estimates:</p>
+<pre class="r"><code># sigma_x
+sigmax &lt;- sigma(m_ses)
+# Add to data
+hsb_sub &lt;- hsb_sub %&gt;% 
+  group_by(ID) %&gt;% 
+  mutate(SES_gpm_se = sigmax / sqrt(n())) %&gt;% 
+  ungroup()</code></pre>
+<p>Fit MLM, incorporating measurement error in latent group means:</p>
+<pre class="r"><code>m1_brm_lm &lt;- brm(MATHACH ~ me(SES_gpm, sdx = SES_gpm_se, gr = ID) + 
+                   SES + (1 | ID), 
+                 data = hsb_sub, 
+                 control = list(adapt_delta = .99, 
+                                max_treedepth = 15))
+summary(m1_brm_lm)</code></pre>
+<pre><code>##  Family: gaussian 
+##   Links: mu = identity; sigma = identity 
+## Formula: MATHACH ~ me(SES_gpm, sdx = SES_gpm_se, gr = ID) + SES + (1 | ID) 
+##    Data: hsb_sub (Number of observations: 800) 
+## Samples: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+##          total post-warmup samples = 4000
+## 
+## Group-Level Effects: 
+## ~ID (Number of levels: 160) 
+##               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sd(Intercept)     1.40      0.52     0.16     2.27 1.01      515      476
+## 
+## Population-Level Effects: 
+##                                Estimate Est.Error l-95% CI u-95% CI Rhat
+## Intercept                         12.87      0.26    12.36    13.38 1.00
+## SES                                2.41      0.35     1.75     3.10 1.00
+## meSES_gpmsdxEQSES_gpm_segrEQID     3.45      0.93     1.66     5.33 1.00
+##                                Bulk_ESS Tail_ESS
+## Intercept                          6885     2950
+## SES                                3285     3136
+## meSES_gpmsdxEQSES_gpm_segrEQID     1591     2273
+## 
+## Family Specific Parameters: 
+##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sigma     6.01      0.17     5.69     6.36 1.00     2784     2781
+## 
+## Samples were drawn using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).</code></pre>
+</div>
+</div>
 </div>
 <div id="with-random-slopes" class="section level3">
-<h3>With Random Slopes</h3>
+<h3>With random slopes</h3>
 <p>With <code>brms</code>, we have</p>
 <pre class="r"><code>m2_brm &lt;- brm(MATHACH ~ SES_gpm + SES_gpc + (SES_gpc | ID), data = hsb_sub, 
               control = list(max_treedepth = 15, adapt_delta = .90))
@@ -364,27 +442,27 @@ summary(m2_brm)</code></pre>
 ## 
 ## Group-Level Effects: 
 ## ~ID (Number of levels: 160) 
-##                        Estimate Est.Error l-95% CI u-95% CI Eff.Sample
-## sd(Intercept)              1.82      0.37     1.04     2.49        914
-## sd(SES_gpc)                1.47      0.70     0.14     2.78        889
-## cor(Intercept,SES_gpc)    -0.40      0.39    -0.97     0.56       2214
-##                        Rhat
-## sd(Intercept)          1.00
-## sd(SES_gpc)            1.00
-## cor(Intercept,SES_gpc) 1.00
+##                        Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS
+## sd(Intercept)              1.76      0.37     0.96     2.44 1.00     1223
+## sd(SES_gpc)                0.98      0.63     0.04     2.32 1.00     1022
+## cor(Intercept,SES_gpc)     0.26      0.48    -0.83     0.95 1.00     3094
+##                        Tail_ESS
+## sd(Intercept)              1466
+## sd(SES_gpc)                1672
+## cor(Intercept,SES_gpc)     2839
 ## 
 ## Population-Level Effects: 
-##           Estimate Est.Error l-95% CI u-95% CI Eff.Sample Rhat
-## Intercept    12.71      0.25    12.20    13.21       4946 1.00
-## SES_gpm       4.60      0.54     3.54     5.66       5060 1.00
-## SES_gpc       2.05      0.38     1.29     2.80       6086 1.00
+##           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## Intercept    12.87      0.25    12.37    13.36 1.00     6026     3721
+## SES_gpm       4.65      0.48     3.74     5.60 1.00     6096     3103
+## SES_gpc       2.41      0.37     1.68     3.13 1.00     7981     3203
 ## 
 ## Family Specific Parameters: 
-##       Estimate Est.Error l-95% CI u-95% CI Eff.Sample Rhat
-## sigma     5.87      0.18     5.54     6.24       2149 1.00
+##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sigma     5.96      0.17     5.64     6.31 1.00     3012     3314
 ## 
-## Samples were drawn using sampling(NUTS). For each parameter, Eff.Sample 
-## is a crude measure of effective sample size, and Rhat is the potential 
+## Samples were drawn using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
 ## scale reduction factor on split chains (at convergence, Rhat = 1).</code></pre>
 <p>Below is the STAN code for this model incorporating the unreliability of
 group means:</p>
@@ -464,8 +542,15 @@ generated quantities {
                        J = length(unique(ID))))
 m3_stan &lt;- stan(&quot;stan_gpc_pv_ran_slp.stan&quot;, data = hsb_sdata, 
                 chains = 2L, iter = 1000L, 
+                control = list(adapt_delta = .99, max_treedepth = 15), 
                 pars = c(&quot;b0&quot;, &quot;b&quot;, &quot;bm&quot;, &quot;b_contextual&quot;, &quot;sigma_y&quot;, &quot;tau_y&quot;, 
                          &quot;sigma_x&quot;, &quot;tau_x&quot;))</code></pre>
+<pre><code>## Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
+## Running the chains for more iterations may help. See
+## http://mc-stan.org/misc/warnings.html#bulk-ess</code></pre>
+<pre><code>## Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
+## Running the chains for more iterations may help. See
+## http://mc-stan.org/misc/warnings.html#tail-ess</code></pre>
 <p>The results are shown below:</p>
 <pre class="r"><code>print(m3_stan, pars = &quot;lp__&quot;, include = FALSE)</code></pre>
 <pre><code>## Inference for Stan model: stan_gpc_pv_ran_slp.
@@ -473,20 +558,65 @@ m3_stan &lt;- stan(&quot;stan_gpc_pv_ran_slp.stan&quot;, data = hsb_sdata,
 ## post-warmup draws per chain=500, total post-warmup draws=1000.
 ## 
 ##               mean se_mean   sd  2.5%   25%   50%   75% 97.5% n_eff Rhat
-## b0           12.56    0.01 0.25 12.06 12.40 12.57 12.72 13.07  1291 1.00
-## b[1]          2.04    0.01 0.37  1.32  1.78  2.04  2.28  2.75   681 1.00
-## bm            6.12    0.04 0.94  4.35  5.46  6.12  6.71  8.00   465 1.01
-## b_contextual  4.08    0.05 1.10  2.04  3.27  4.06  4.81  6.26   408 1.01
-## sigma_y       5.89    0.01 0.17  5.57  5.78  5.88  6.01  6.24   540 1.00
-## tau_y[1]      1.45    0.04 0.49  0.35  1.13  1.48  1.80  2.27   160 1.02
-## tau_y[2]      1.17    0.04 0.65  0.06  0.63  1.20  1.65  2.39   223 1.00
-## sigma_x       0.66    0.00 0.02  0.63  0.65  0.66  0.67  0.69  1242 1.00
-## tau_x         0.38    0.00 0.03  0.32  0.35  0.38  0.40  0.45   432 1.00
+## b0           12.90    0.01 0.26 12.42 12.72 12.89 13.07 13.42  1766 1.00
+## b[1]          2.35    0.01 0.37  1.58  2.11  2.36  2.61  3.07   759 1.00
+## bm            5.89    0.04 0.77  4.45  5.35  5.87  6.44  7.35   352 1.01
+## b_contextual  3.54    0.05 0.93  1.68  2.88  3.58  4.17  5.35   305 1.01
+## sigma_y       5.97    0.01 0.17  5.64  5.85  5.97  6.10  6.32   971 1.00
+## tau_y[1]      1.39    0.04 0.49  0.30  1.09  1.45  1.72  2.23   125 1.02
+## tau_y[2]      0.90    0.05 0.59  0.04  0.41  0.85  1.32  2.15   165 1.01
+## sigma_x       0.68    0.00 0.02  0.64  0.67  0.68  0.69  0.72  1489 1.00
+## tau_x         0.43    0.00 0.04  0.36  0.40  0.43  0.46  0.51   334 1.00
 ## 
-## Samples were drawn using NUTS(diag_e) at Sat Nov 24 18:07:05 2018.
+## Samples were drawn using NUTS(diag_e) at Tue Feb  4 22:16:38 2020.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).</code></pre>
+<div id="using-two-step-with-brms" class="section level4">
+<h4>Using two-step with <code>brms</code></h4>
+<pre class="r"><code>m3_brm_lm &lt;- brm(MATHACH ~ me(SES_gpm, sdx = SES_gpm_se, gr = ID) + 
+                   SES + 
+                   (SES_gpc | ID), 
+                 data = hsb_sub, 
+                 control = list(adapt_delta = .99, 
+                                max_treedepth = 15))
+summary(m3_brm_lm)</code></pre>
+<pre><code>##  Family: gaussian 
+##   Links: mu = identity; sigma = identity 
+## Formula: MATHACH ~ me(SES_gpm, sdx = SES_gpm_se, gr = ID) + SES + (SES_gpc | ID) 
+##    Data: hsb_sub (Number of observations: 800) 
+## Samples: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+##          total post-warmup samples = 4000
+## 
+## Group-Level Effects: 
+## ~ID (Number of levels: 160) 
+##                        Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS
+## sd(Intercept)              1.42      0.51     0.20     2.26 1.01      434
+## sd(SES_gpc)                1.01      0.65     0.05     2.37 1.00      781
+## cor(Intercept,SES_gpc)     0.25      0.49    -0.84     0.96 1.00     1742
+##                        Tail_ESS
+## sd(Intercept)               592
+## sd(SES_gpc)                1526
+## cor(Intercept,SES_gpc)     1974
+## 
+## Population-Level Effects: 
+##                                Estimate Est.Error l-95% CI u-95% CI Rhat
+## Intercept                         12.87      0.26    12.36    13.38 1.00
+## SES                                2.40      0.36     1.69     3.13 1.00
+## meSES_gpmsdxEQSES_gpm_segrEQID     3.46      0.97     1.61     5.37 1.00
+##                                Bulk_ESS Tail_ESS
+## Intercept                          4277     3016
+## SES                                1966     2517
+## meSES_gpmsdxEQSES_gpm_segrEQID     1239     2208
+## 
+## Family Specific Parameters: 
+##       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## sigma     5.98      0.17     5.66     6.32 1.00     1805     2642
+## 
+## Samples were drawn using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).</code></pre>
+</div>
 </div>
 </div>
 <div id="using-the-full-data" class="section level2">
@@ -538,22 +668,25 @@ m2full_stan &lt;- stan(&quot;stan_gpc_pv.stan&quot;, data = hsb_sdata,
                     chains = 2L, iter = 1000L, 
                     pars = c(&quot;b0&quot;, &quot;b&quot;, &quot;bm&quot;, &quot;b_contextual&quot;, 
                             &quot;sigma_y&quot;, &quot;tau_y&quot;, &quot;sigma_x&quot;, &quot;tau_x&quot;))</code></pre>
+<pre><code>## Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
+## Running the chains for more iterations may help. See
+## http://mc-stan.org/misc/warnings.html#bulk-ess</code></pre>
 <pre class="r"><code>print(m2full_stan, pars = &quot;lp__&quot;, include = FALSE)</code></pre>
 <pre><code>## Inference for Stan model: stan_gpc_pv.
 ## 2 chains, each with iter=1000; warmup=500; thin=1; 
 ## post-warmup draws per chain=500, total post-warmup draws=1000.
 ## 
 ##               mean se_mean   sd  2.5%   25%   50%   75% 97.5% n_eff Rhat
-## b0           12.70    0.01 0.15 12.39 12.61 12.69 12.79 12.98   377 1.00
-## b[1]          2.19    0.00 0.11  1.98  2.12  2.19  2.27  2.40  1736 1.00
-## bm            6.04    0.02 0.39  5.28  5.79  6.04  6.29  6.83   259 1.00
-## b_contextual  3.85    0.02 0.41  3.09  3.59  3.84  4.12  4.65   279 1.00
-## sigma_y       6.09    0.00 0.05  5.99  6.05  6.09  6.12  6.18  1784 1.00
-## tau_y         1.61    0.01 0.13  1.39  1.53  1.61  1.70  1.88   414 1.00
-## sigma_x       0.67    0.00 0.01  0.66  0.66  0.67  0.67  0.68  2370 1.00
-## tau_x         0.40    0.00 0.03  0.36  0.39  0.40  0.42  0.46   113 1.03
+## b0           12.68    0.01 0.15 12.37 12.58 12.69 12.78 12.96   347 1.00
+## b[1]          2.19    0.00 0.11  1.98  2.12  2.19  2.27  2.40  1536 1.00
+## bm            6.14    0.02 0.40  5.36  5.88  6.14  6.40  6.91   296 1.01
+## b_contextual  3.95    0.02 0.42  3.09  3.69  3.95  4.22  4.74   312 1.01
+## sigma_y       6.09    0.00 0.05  5.98  6.05  6.09  6.12  6.18  2003 1.00
+## tau_y         1.60    0.01 0.13  1.36  1.51  1.60  1.70  1.86   405 1.00
+## sigma_x       0.67    0.00 0.01  0.66  0.66  0.67  0.67  0.68  1741 1.00
+## tau_x         0.40    0.00 0.03  0.35  0.38  0.40  0.42  0.46   101 1.02
 ## 
-## Samples were drawn using NUTS(diag_e) at Sat Nov 24 18:07:55 2018.
+## Samples were drawn using NUTS(diag_e) at Tue Feb  4 22:19:57 2020.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).</code></pre>
