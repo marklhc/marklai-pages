@@ -1,10 +1,17 @@
-+++
-date = 2020-03-27
-draft = true
-tags = ["Julia", "cfa"]
-title = "Using Julia to Find MLE for a Factor Model"
-math = true
-+++
+---
+title: Using Julia to Find MLE for a Factor Model
+author: Mark Lai
+date: '2020-03-07'
+slug: using-julia-find-mle-factor-model
+output:
+  blogdown::html_page:
+    toc: true
+categories:
+  - Programming
+tags:
+  - cfa
+  - Julia
+---
 
 I've been staying home for a bit more than a week now. While keep working on my research, I also think it may help fill my time by picking up some skills. I've been following the development of Julia but haven't had the time to start learning it seriously, so this is the perfect time! As my first learning note, I've decided to try obtaining maximum likelihood estimates on some simulated data based on a one-factor model. I'm sure a lot of improvement can be made as this is really my first Julia notebook. But since to my knowledge there is currently no SEM packages in Julia, may be it could be a starting point. 
 
