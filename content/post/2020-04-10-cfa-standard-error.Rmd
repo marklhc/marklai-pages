@@ -1,7 +1,7 @@
 ---
 title: Asymptotic Standard Errors in CFA
 author: Mark Lai
-date: '2020-04-10'
+date: '2020-04-11'
 slug: cfa-standard-error
 output:
   blogdown::html_page:
@@ -166,7 +166,7 @@ So they are essentially the same (the difference in rounding is mainly due to di
 
 ## Asymptotic Standard Errors
 
-Now onto standard errors, which is the main focus of @Maydeu-Olivares2017. The paper also talk about sandwich estimators which are robust (to some degree) to nonnormality, but I will focus on the ones with observed and expected information first. 
+Now onto standard errors, which is the main focus of @Maydeu-Olivares2017. The paper also talk about sandwich estimators which are robust (to some degree) to nonnormality, but I will focus on the ones with observed and expected information first, and then show how to obtain MLM and MLR standard errors in plain R (to some degree). 
 
 Although in the statistics literature, generally observed information is preferred over the use of expected information (both of which related to the second partial derivatives of the log-likelihood function, see [here](https://en.wikipedia.org/wiki/Observed_information)), in `lavaan` the default is to use the expected information, and so I will demonstrate that first. 
 
@@ -246,13 +246,14 @@ cbind(optim = ase_exp,
 
 So that matches pretty well!
 
-### Observed information (using hessian)
+### Observed information (using Hessian)
 
 While @Maydeu-Olivares2017 also presented the formula (in matrix form) for the asymptotic covariance estimates using the expected information, in practice such a matrix is usually obtained based on the [**Hessian**](https://en.wikipedia.org/wiki/Hessian_matrix), which usually is part of the output in the maximization algorithm in MLE. For example, going back to the output of the `optim()` call, 
 
 ```{r opt_info-hessian}
 # As we've multiplied by -2 before, we need to divide by 2 now.
 # The Hessian is not affected by multiplication of -1
+acov_obs <- solve(opt_info$hessian / 2)
 (ase_obs <- sqrt(diag(solve(opt_info$hessian / 2))))
 ```
 
@@ -265,6 +266,65 @@ cbind(optim = ase_obs,
 ```
 
 So again it's pretty close. You can try using the formula in @Maydeu-Olivares2017 to verify the results. 
+
+## MLM/MLMV
+
+```{r}
+# Asymptotic covariance of S (4th moment)
+Wi_adf <- apply(t(y) - colMeans(y), 2, tcrossprod)
+adf_I <- tcrossprod(Wi_adf - as.vector(Sy)) / N
+# Sandwich estimator:
+Deltat_exp_I <- crossprod(Delta, exp_I)
+acov_mlm <- acov_exp %*% Deltat_exp_I %*% adf_I %*% 
+  crossprod(Deltat_exp_I, acov_exp) * N
+ase_mlm <- sqrt(diag(acov_mlm))
+```
+
+Compare to `lavaan` with `estimator = 'MLR'`:
+
+```{r fit_mlm}
+# lavaan
+fit1_mlm <- lavaan::cfa(model = 'f =~ y1 + y2 + y3 + y4', 
+                        std.lv = TRUE, 
+                        # Note: Full data needed for MLM
+                        data = `colnames<-`(y, paste0("y", 1:4)), 
+                        estimator = "MLM")
+```
+
+```{r compare-opt-lavaan-ase_mlm}
+cbind(optim = ase_mlm, 
+      `lavaan::cfa ('MLM')` = sqrt(diag(lavaan::vcov(fit1_mlm))))
+```
+
+## MLR
+
+```{r ase_mlr}
+# Cross-product matrix (without mean structure)
+# First, need the deviation/residual of covariance for each individual
+# observation
+Sdev <- apply(t(y) - colMeans(y), 2, tcrossprod) - as.vector(Sigmahat)
+g_score <- crossprod(Sdev, invSigmahat %x% invSigmahat) / 2
+xp_I <- crossprod(g_score) / N  # Gamma^-1_XP
+# Sandwich estimator:
+acov_mlr <- acov_obs %*% crossprod(Delta, xp_I %*% Delta) %*% acov_obs * N
+ase_mlr <- sqrt(diag(acov_mlr))
+```
+
+Compare to `lavaan` with `estimator = 'MLR'`:
+
+```{r fit_mlr}
+# lavaan
+fit1_mlr <- lavaan::cfa(model = 'f =~ y1 + y2 + y3 + y4', 
+                        std.lv = TRUE, 
+                        # Note: Full data needed for MLR
+                        data = `colnames<-`(y, paste0("y", 1:4)), 
+                        estimator = "MLR")
+```
+
+```{r compare-opt-lavaan-ase_mlr}
+cbind(optim = ase_mlr, 
+      `lavaan::cfa ('MLR, Hessian')` = sqrt(diag(lavaan::vcov(fit1_mlr))))
+```
 
 ## Bibliography
 

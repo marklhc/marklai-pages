@@ -1,7 +1,7 @@
 ---
 title: Asymptotic Standard Errors in CFA
 author: Mark Lai
-date: '2020-04-10'
+date: '2020-04-11'
 slug: cfa-standard-error
 output:
   blogdown::html_page:
@@ -61,8 +61,10 @@ header-includes:
 <li><a href="#mle">MLE</a></li>
 <li><a href="#asymptotic-standard-errors">Asymptotic Standard Errors</a><ul>
 <li><a href="#using-expected-information">Using expected information</a></li>
-<li><a href="#observed-information-using-hessian">Observed information (using hessian)</a></li>
+<li><a href="#observed-information-using-hessian">Observed information (using Hessian)</a></li>
 </ul></li>
+<li><a href="#mlmmlmv">MLM/MLMV</a></li>
+<li><a href="#mlr">MLR</a></li>
 <li><a href="#bibliography">Bibliography</a></li>
 </ul>
 </div>
@@ -173,7 +175,7 @@ opt_info$par</code></pre>
 </div>
 <div id="asymptotic-standard-errors" class="section level2">
 <h2>Asymptotic Standard Errors</h2>
-<p>Now onto standard errors, which is the main focus of <span class="citation">Maydeu-Olivares (2017)</span>. The paper also talk about sandwich estimators which are robust (to some degree) to nonnormality, but I will focus on the ones with observed and expected information first.</p>
+<p>Now onto standard errors, which is the main focus of <span class="citation">Maydeu-Olivares (2017)</span>. The paper also talk about sandwich estimators which are robust (to some degree) to nonnormality, but I will focus on the ones with observed and expected information first, and then show how to obtain MLM and MLR standard errors in plain R (to some degree).</p>
 <p>Although in the statistics literature, generally observed information is preferred over the use of expected information (both of which related to the second partial derivatives of the log-likelihood function, see <a href="https://en.wikipedia.org/wiki/Observed_information">here</a>), in <code>lavaan</code> the default is to use the expected information, and so I will demonstrate that first.</p>
 <div id="using-expected-information" class="section level3">
 <h3>Using expected information</h3>
@@ -258,10 +260,11 @@ ase_exp &lt;- sqrt(diag(acov_exp))</code></pre>
 <p>So that matches pretty well!</p>
 </div>
 <div id="observed-information-using-hessian" class="section level3">
-<h3>Observed information (using hessian)</h3>
+<h3>Observed information (using Hessian)</h3>
 <p>While <span class="citation">Maydeu-Olivares (2017)</span> also presented the formula (in matrix form) for the asymptotic covariance estimates using the expected information, in practice such a matrix is usually obtained based on the <a href="https://en.wikipedia.org/wiki/Hessian_matrix"><strong>Hessian</strong></a>, which usually is part of the output in the maximization algorithm in MLE. For example, going back to the output of the <code>optim()</code> call,</p>
 <pre class="r"><code># As we&#39;ve multiplied by -2 before, we need to divide by 2 now.
 # The Hessian is not affected by multiplication of -1
+acov_obs &lt;- solve(opt_info$hessian / 2)
 (ase_obs &lt;- sqrt(diag(solve(opt_info$hessian / 2))))</code></pre>
 <pre><code>&gt;# [1] 0.10381614 0.10240102 0.10189012 0.09983351 0.10862886 0.10752628 0.10480306
 &gt;# [8] 0.09943057</code></pre>
@@ -280,6 +283,65 @@ cbind(optim = ase_obs,
 &gt;# y4~~y4 0.09943057          0.09943066</code></pre>
 <p>So again it’s pretty close. You can try using the formula in <span class="citation">Maydeu-Olivares (2017)</span> to verify the results.</p>
 </div>
+</div>
+<div id="mlmmlmv" class="section level2">
+<h2>MLM/MLMV</h2>
+<pre class="r"><code># Asymptotic covariance of S (4th moment)
+Wi_adf &lt;- apply(t(y) - colMeans(y), 2, tcrossprod)
+adf_I &lt;- tcrossprod(Wi_adf - as.vector(Sy)) / N
+# Sandwich estimator:
+Deltat_exp_I &lt;- crossprod(Delta, exp_I)
+acov_mlm &lt;- acov_exp %*% Deltat_exp_I %*% adf_I %*% 
+  crossprod(Deltat_exp_I, acov_exp) * N
+ase_mlm &lt;- sqrt(diag(acov_mlm))</code></pre>
+<p>Compare to <code>lavaan</code> with <code>estimator = 'MLR'</code>:</p>
+<pre class="r"><code># lavaan
+fit1_mlm &lt;- lavaan::cfa(model = &#39;f =~ y1 + y2 + y3 + y4&#39;, 
+                        std.lv = TRUE, 
+                        # Note: Full data needed for MLM
+                        data = `colnames&lt;-`(y, paste0(&quot;y&quot;, 1:4)), 
+                        estimator = &quot;MLM&quot;)</code></pre>
+<pre class="r"><code>cbind(optim = ase_mlm, 
+      `lavaan::cfa (&#39;MLM&#39;)` = sqrt(diag(lavaan::vcov(fit1_mlm))))</code></pre>
+<pre><code>&gt;#             optim lavaan::cfa (&#39;MLM&#39;)
+&gt;# f=~y1  0.12965429          0.12965371
+&gt;# f=~y2  0.10522671          0.10522608
+&gt;# f=~y3  0.08901649          0.08901603
+&gt;# f=~y4  0.08981597          0.08981560
+&gt;# y1~~y1 0.10278055          0.10278061
+&gt;# y2~~y2 0.10252608          0.10252560
+&gt;# y3~~y3 0.09792141          0.09792136
+&gt;# y4~~y4 0.10608980          0.10608957</code></pre>
+</div>
+<div id="mlr" class="section level2">
+<h2>MLR</h2>
+<pre class="r"><code># Cross-product matrix (without mean structure)
+# First, need the deviation/residual of covariance for each individual
+# observation
+Sdev &lt;- apply(t(y) - colMeans(y), 2, tcrossprod) - as.vector(Sigmahat)
+g_score &lt;- crossprod(Sdev, invSigmahat %x% invSigmahat) / 2
+xp_I &lt;- crossprod(g_score) / N  # Gamma^-1_XP
+# Sandwich estimator:
+acov_mlr &lt;- acov_obs %*% crossprod(Delta, xp_I %*% Delta) %*% acov_obs * N
+ase_mlr &lt;- sqrt(diag(acov_mlr))</code></pre>
+<p>Compare to <code>lavaan</code> with <code>estimator = 'MLR'</code>:</p>
+<pre class="r"><code># lavaan
+fit1_mlr &lt;- lavaan::cfa(model = &#39;f =~ y1 + y2 + y3 + y4&#39;, 
+                        std.lv = TRUE, 
+                        # Note: Full data needed for MLR
+                        data = `colnames&lt;-`(y, paste0(&quot;y&quot;, 1:4)), 
+                        estimator = &quot;MLR&quot;)</code></pre>
+<pre class="r"><code>cbind(optim = ase_mlr, 
+      `lavaan::cfa (&#39;MLR, Hessian&#39;)` = sqrt(diag(lavaan::vcov(fit1_mlr))))</code></pre>
+<pre><code>&gt;#             optim lavaan::cfa (&#39;MLR, Hessian&#39;)
+&gt;# f=~y1  0.12884960                   0.12885037
+&gt;# f=~y2  0.10504885                   0.10504891
+&gt;# f=~y3  0.08977431                   0.08977434
+&gt;# f=~y4  0.08883634                   0.08883676
+&gt;# y1~~y1 0.10203109                   0.10203105
+&gt;# y2~~y2 0.10139778                   0.10139847
+&gt;# y3~~y3 0.09785923                   0.09786031
+&gt;# y4~~y4 0.10566978                   0.10567060</code></pre>
 </div>
 <div id="bibliography" class="section level2 unnumbered">
 <h2>Bibliography</h2>
