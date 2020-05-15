@@ -15,12 +15,14 @@ weight = 60
 
 +++
 
-Courses I am and will be teaching at USC:
+Courses I teach at USC:
 
 - PSYC 314: Experimental Research Methods
 - PSYC 621: Seminar in Quantitative Psychology (Multilevel Modeling)
 - PSYC 621: Seminar in Quantitative Psychology (Bayesian Data Analysis)
-    + Course notes: https://psyc-bayes-notes.netlify.com
+    + [Course notes](https://psyc-bayes-notes.netlify.com)
+- PSYC 575: Multilevel Modeling
+    + [Course site](https://github.com/marklhc/20203-PSYC575) (under construction)
 
 Courses I have taught at UC:
 
