@@ -1,0 +1,432 @@
+---
+title: Weighted Least Squares
+author: Mark Lai
+date: '2020-06-12'
+slug: weighted-least-squares
+categories:
+  - Statistics
+tags:
+  - cfa
+  - R
+header:
+  caption: ''
+  image: ''
+  preview: yes
+output:
+  blogdown::html_page:
+    toc: true
+---
+
+\newcommand{\bv}[1]{\boldsymbol{\mathbf{#1}}}
+\newcommand{\dd}{\; \mathrm{d}}
+
+Recently I was working on a revision for a paper that involves structural 
+equation modeling with categorical observed variables, and it uses a robust 
+variant of weighted least square (also called asymptotic distribution free)
+estimators. Even though I had some basic understanding of WLS, the experience made me aware that I hadn't fully understand how it was implemented in software. 
+Therefore, I decided to write a (not so) short note to show how the polychoric correlation matrix can be estimated, and then how the weighted least squares estimation can be applied. 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, comment = "#>")
+```
+
+## Load packages
+
+```{r load-packages}
+library(lavaan)
+library(ggplot2)  # for plotting
+library(polycor)  # for estimating polychoric correlations
+library(mvtnorm)
+library(numDeriv)  # getting numerical derivatives
+theme_set(theme_classic() +
+            theme(panel.grid.major.y = element_line(color = "grey85")))
+```
+
+## Data
+
+The data will be three variables from the classic Holzinger & Swineford (1939) 
+data set. The variables are
+
+- `x1`: Visual perception
+- `x2`: Cubes
+- `x3`: Lozenges
+
+To illustrate categorical variables, I'll categorize each of the variables into
+three categories using the `cut` function in R. 
+
+```{r HS3ord}
+# Holzinger and Swineford (1939) example
+HS3 <- HolzingerSwineford1939[ , c("x1","x2","x3")]
+# ordinal version, with three categories
+HS3ord <- as.data.frame(lapply(HS3, function(v) {
+  as.ordered(cut(v, breaks = 3, labels = FALSE))
+}))
+```
+
+Here is the contingency table of the first two items
+
+```{r table-HS3ord}
+table(HS3ord[1:2])
+```
+
+## Polychoric Correlations
+
+To use WLS, we first assume that each categorical variable has an underlying
+normal variate that has been categorized, and usually it's assumed to be a 
+standard normal variable so that the scale can be fixed. Based on the contingency table for 
+each pair of observed variables, we infer the correlation of the corresponding 
+pair of underlying response variates. That correlation is called the 
+**polychoric correlation**. 
+
+### `lavaan`
+
+There are different ways to estimate the polychoric correlations, but generally
+it involves numerical optimization to find maximum likelihood or psuedo
+maximum likelihood values. In `lavaan` it is easy to estimate that:
+
+```{r pcor_lavaan}
+# polychoric correlations, two-stage estimation
+pcor_lavaan <- lavCor(HS3ord, ordered = names(HS3ord), 
+                      se = "robust.sem", output = "fit")
+subset(
+  parameterestimates(pcor_lavaan), 
+  op %in% c("~~", "|")  # polychoric correlations and thresholds
+)
+```
+
+The default in `lavaan` uses a two-stage estimator that first obtains the 
+maximum likelihood estimate of the thresholds, and then obtain the polychoric
+correlation using the `DWLS` estimator with robust standard errors, which will 
+be further discussed. 
+
+#### Thresholds
+
+The thresholds are the cut points in the underlying standard normal 
+distribution. For example, the proportions for `x1` are
+
+```{r prop-x1}
+(prop_x1 <- prop.table(table(HS3ord$x1)))
+```
+
+This suggests that a sensible way to estimate these cut points is
+
+```{r thresholds_x1}
+(thresholds_x1 <- qnorm(cumsum(prop_x1)))
+```
+
+which basically matches the estimates in `lavaan`. Do the same for `x2`:
+
+```{r thresholds_x2}
+(thresholds_x2 <- qnorm(cumsum(prop.table(table(HS3ord$x2)))))
+```
+
+Note that there are only 
+two thresholds with three categories. This may be more readily seen in a graph:
+
+```{r thresh-x1-graph}
+ggplot(data.frame(xstar = c(-3, 3)), 
+       aes(x = xstar)) + 
+  stat_function(fun = dnorm) + 
+  geom_segment(data = data.frame(tau = thresholds_x2[1:2], 
+                                 density = dnorm(thresholds_x2[1:2])), 
+               aes(x = tau, xend = tau, y = density, yend = 0))
+```
+
+The conversion using the cumulative normal density to obtain the thresholds is 
+equivalent to obtaining $\tau_j$ for the $j$th threshold ($j = 1, 2$) as
+solving for
+$$\Phi(\tau_j) - \Phi(\tau_{j - 1}) = \frac{\sum_i [x_i = j]}{N}, $$
+where $\Phi(\cdot)$ is the standard normal cdf (i.e., `pnorm()` in R), $\sum_i [x_i = j] = n_j$ is the count of $x_i$ that equals $j$, $\Phi(\tau_0) = 0$, and $\Phi(\tau_3) = 1$. Writing it this way would make it clearer how the standard errors (*SE*s) of the $\tau$s can be obtained. In practice, most software uses maximum likelihood estimation and obtain the asymptotic *SE*s by inverting the Hessian. Here's an example to get the same results as in `lavaan` for the thresholds of `x1`, which minimizes
+$$Q(\tau_1, \tau_2) = \sum_{j = 1}^3 n_j \log [\Phi(\tau_j) - \Phi(\tau_{j - 1})]$$
+(see [Jin & Yang-Wallentin, 2017](https://doi.org/10.1007/s11336-016-9512-2), for example.)
+
+```{r optim-taus1}
+lastx <- function(x) x[length(x)]  # helper for last element
+# Minimization criterion
+Q <- function(taus, ns = table(HS3ord[ , 1])) {
+  hs <- pnorm(taus)
+  hs <- c(hs[1], diff(hs), 1 - lastx(hs))
+  - sum(ns * log(hs))
+}
+taus1_optim <- optim(c(-1, 1), Q, hessian = TRUE)
+# Compare to lavaan
+list(`lavaan` = parameterEstimates(pcor_lavaan)[7:8, c("est", "se")], 
+     `optim` = data.frame(
+       est = taus1_optim$par, 
+       se = sqrt(diag(solve(taus1_optim$hessian)))
+     )
+)
+```
+
+They are not exactly the same but are pretty close. 
+
+#### Polychoric correlations
+
+Whereas the thresholds can be computed based on the proportions of each 
+individual variable, the polychoric correlation needs the contingency table
+between two variables. The underlying variates are assumed to follow a 
+bivariate normal distribution, which an example (with $r = .3$) shown below:
+
+```{r bivariate-density}
+# Helper function
+expand_grid_matrix <- function(x, y) {
+  cbind(rep(x, length(y)), 
+        rep(y, each = length(x)))
+}
+x_pts <- seq(-3, 3, length.out = 29)
+y_pts <- seq(-3, 3, length.out = 29)
+xy_grid <- expand_grid_matrix(x = x_pts, y = y_pts)
+example_sigma <- matrix(c(1, .3, .3, 1), nrow = 2)
+z_pts <- dmvnorm(xy_grid, sigma = example_sigma)
+z_grid <- matrix(z_pts, nrow = 29)
+persp(x_pts, y_pts, z_grid, theta = 15, phi = 30, expand = 0.5, 
+      col = "lightblue", box = FALSE)
+```
+With the thresholds set, a bivariate normal distribution will be cut into 9 
+quadrants when each item has 3 categories:
+
+```{r contour-x1-x2}
+ggplot(data = data.frame(x = xy_grid[ , 1], 
+                         y = xy_grid[ , 2], 
+                         z = z_pts), 
+       aes(x, y, z = z)) + 
+  geom_contour(breaks = c(0.02, 0.1)) + 
+  geom_vline(xintercept = thresholds_x1) + 
+  geom_hline(yintercept = thresholds_x2) + 
+  labs(x = "x1", y = "x2")
+```
+The main goal is to find a correlation, $\rho$, such that the implied 
+proportions match the observed contingency table as closely as possible:
+
+```{r plot-table-HS3ord, fig.height=3, fig.width=3}
+table_x1x2 <- as.data.frame(
+  with(HS3ord, 
+       round(prop.table(table(x1, x2)) * 100, 2)
+  )
+)
+ggplot(data = table_x1x2, aes(x = x1, y = x2)) + 
+  geom_tile(aes(fill = Freq)) + 
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+   space = "Lab", 
+   name = "") +
+  geom_text(aes(label = Freq), color = "black", size = 4) +
+  theme_minimal() + 
+  guides(fill = FALSE)
+```
+
+For example, if $\rho = .3$, the implied proportions are
+
+```{r implied-probs-example}
+# Bivariate normal probability
+pbivariatenormal <- function(lower, upper, rho) {
+  mvtnorm::pmvnorm(
+    lower = lower, 
+    upper = upper, 
+    corr = matrix(c(1, rho, rho, 1), nrow = 2)
+  )
+}
+lower_lims <- expand_grid_matrix(c(-Inf, thresholds_x1[1:2]), 
+                                 c(-Inf, thresholds_x2[1:2]))
+upper_lims <- expand_grid_matrix(c(thresholds_x1[1:2], Inf), 
+                                 c(thresholds_x2[1:2], Inf))
+probs <- 
+  vapply(seq_len(nrow(lower_lims)), 
+         function(i, r = .3) pbivariatenormal(lower_lims[i, ], 
+                                              upper_lims[i, ], 
+                                              r), 
+         FUN.VALUE = numeric(1))
+matrix(round(probs * 100, 2), nrow = 3, ncol = 3)
+```
+
+which is not too far away. An optimization algorithm for the (pseudo-) maximum
+likelihood estimates can be obtained by minimizing
+$$\sum_{j = 1}^3 \sum_{k = 1}^3 p_{jk} \log \pi_{jk},$$
+
+([Jin & Yang-Wallentin, 2017](https://doi.org/10.1007/s11336-016-9512-2), 
+p. 71)
+
+where $p_{jk}$ is the observed proportions and $\pi_{jk}$ is the implied 
+proportions with a given correlation $\rho$. 
+
+```{r pcor_optim}
+likelihood_pcor <- function(rho, ns = table(HS3ord[ , 1:2]), 
+                            taus = cbind(thresholds_x1[1:2], 
+                                         thresholds_x2[1:2])) {
+  taus1 <- taus[ , 1]
+  taus2 <- taus[ , 2]
+  lower_lims <- expand_grid_matrix(c(-Inf, taus1), 
+                                   c(-Inf, taus2))
+  upper_lims <- expand_grid_matrix(c(taus1, Inf), 
+                                   c(taus2, Inf))
+  probs <- 
+    vapply(seq_len(nrow(lower_lims)), 
+           function(i, r = rho) pbivariatenormal(lower_lims[i, ], 
+                                                 upper_lims[i, ], 
+                                                 r), 
+           FUN.VALUE = numeric(1))
+  - sum(ns * log(probs))
+}
+pcor_optim <- 
+  optim(0, likelihood_pcor, lower = -.995, upper = .995, method = "L-BFGS-B", 
+      hessian = TRUE)
+# Compare to lavaan
+rbind(`lavaan` = parameterEstimates(pcor_lavaan)[4, c("est", "se")], 
+     `optim` = data.frame(
+       est = pcor_optim$par, 
+       se = sqrt(1 / pcor_optim$hessian)
+     )
+)
+```
+
+The *SE* estimates are different because `optim` uses maximum likelihood, 
+whereas `lavaan` uses WLS-type estimates. You will see the values with ML in 
+`OpenMx` is closer below. 
+
+### OpenMx
+
+With OpenMx, the polychoric correlations can be estimated directly with 
+maximum likelihood or weighted least squares. First, with `DWLS` that should
+give similar results as `lavaan`:
+
+```{r polychoric_mxmodel}
+# OpenMx
+library(OpenMx)
+polychoric_mxmodel <- 
+  mxModel(model = "polychoric", 
+          type = "RAM", 
+          mxData(HS3ord, type = "raw"), 
+          manifestVars = names(HS3ord), 
+          mxPath(from = names(HS3ord), connect = "unique.bivariate", 
+                 arrows = 2, free = TRUE, values = .3), 
+          mxPath(from = names(HS3ord), 
+                 arrows = 2, free = FALSE, values = 1), 
+          mxPath(from = "one", to = names(HS3ord), 
+                 arrows = 1, free = FALSE, values = 0), 
+          mxThreshold(vars = names(HS3ord), nThresh = 2, 
+                      free = TRUE, values = c(-1, 1)) 
+          )
+summary(
+  mxRun(
+    mxModel(polychoric_mxmodel, 
+            mxFitFunctionWLS("DWLS"))
+  )
+)
+```
+
+With ML
+
+```{r polychoric_mxmodel-ml}
+summary(
+  mxRun(
+    mxModel(polychoric_mxmodel, 
+            mxFitFunctionML())
+  )
+)
+```
+
+The $p(p - 1) / 2 \times p(p - 1) / 2$ asymptotic covariance matrix of the polychoric correlations will be used to obtain robust standard errors with the WLS estimators. I'll see the one from `lavaan` for consistency. 
+
+```{r acov_pcor}
+(acov_pcor <- vcov(pcor_lavaan)[1:3, 1:3])
+```
+
+I'll now move to WLS. 
+
+## Weighted Least Squares Estimation
+
+The WLS estimator in SEM has a discrepancy function
+$$F(\bv \theta) = (\hat{\bv \rho} - \bv \rho(\bv \theta))^\top \hat{\bv W} (\hat{\bv \rho} - \bv \rho(\bv \theta)), $$
+where $\hat{\bv \rho}$ is a column vector of the estimated unique polychoric correlations, $bv \rho(\bv \theta)$ is the vector of model-implied polychoric correlations given the model parameters $\bv \theta$, and $\hat{\bv W}$ is some weight matrix. The WLS estimator uses the inverse of the asymptotic covariance matrix of the polychoric correlations, i.e., $\hat{\bv W} = \hat{\bv \Sigma}^{-1}_{\rho \rho}$. However, when the number of variables is large, inverting this large matrix is computationally demanding, and previous studies have shown that WLS did not work well until the sample size is large (e.g., $> 2,000$). 
+
+A more popular variant is to instead use only the diagonals in $\hat{\bv \Sigma}^{-1}_{\rho \rho}$ to form the weight matrix, which requires only taking inverse of the individual elements. In other words, $\hat{\bv W} = \mathrm{diag} \hat{\bv \Sigma}^{-1}_{\rho \rho}$. This is called the diagonally-weighted least squares (DWLS) estimation. In Mplus and `lavaan`, there are variants such as WLSM, WLSMV, etc, but they differ mainly in the test statistics computed, while the parameter estimates are all based on the DWLS estimator.
+
+### One-factor model
+
+As an example, consider the one-factor model:
+
+```{r onefactor_fit}
+# One-factor model
+onefactor_fit <- 
+  cfa(' f =~ x1 + x2 + x3 ', ordered = c("x1", "x2", "x3"), 
+    data = HS3ord, std.lv = TRUE, estimator = "WLSMV")
+```
+
+Aside from the threshold parameters, which was estimated in the first 
+stage, the model only has three loading parameter $\bv \lambda$. To obtain the estimates from scratch, we can use the estimated polychoric correlation and the diagonal of the asymptotic covariance matrix:
+
+```{r rhos_hat}
+rhos_hat <- coef(pcor_lavaan)[1:3]
+acov_rhos <- vcov(pcor_lavaan)[1:3, 1:3]
+ase_rhos <- sqrt(diag(acov_rhos))
+```
+
+Define the $\bv \rho(\bv \theta)$ function:
+
+```{r implied_cor}
+# Function for model-implied correlation (delta parameterization)
+implied_cor <- function(lambdas) {
+  lambdalambdat <- tcrossprod(lambdas)
+  lambdalambdat[lower.tri(lambdalambdat)]
+}
+# implied_cor(rep(.7, 3))  # example
+```
+
+and define the discrepancy function. Note that with DWLS, 
+$$\hat{\bv W} = \mathrm{diag} \hat{\bv \Sigma}^{-1}_{\rho \rho} = \hat{\bv D}^{-1}_{\rho \rho} \hat{\bv D}^{-1}_{\rho \rho}, $$
+where $\hat{\bv D}^{-1}_{\rho \rho}$ is a diagonal matrix containing the asymptotic standard errors (i.e., square root of the variances). 
+
+```{r}
+# Discrepancy function
+dwls_fitfunction <- function(lambdas, 
+                             sample_cors = rhos_hat, 
+                             ase_cors = ase_rhos) {
+  crossprod(
+    (implied_cor(lambdas) - sample_cors) / ase_cors
+  )
+}
+# Optimize
+optim_lambdas <- optim(rep(.7, 3), dwls_fitfunction)
+# Compare to lavaan
+cbind(`lavaan` = coef(onefactor_fit)[1:3], 
+     `optim` = optim_lambdas$par
+)
+```
+
+### Standard Errors
+
+The discussion of this section draws on the materials in [Bollen & Maydeu-Olivares (2007)](https://doi.org/10.1007/ S 11336-007-9006-3). Using a first-order approximation, the asymptotic covariance matrix of the 
+WLS estimator is $(\bv \Delta^\top (\bv \theta) \bv \Sigma^{-1}_{\rho \rho}\bv \Delta)^{-1}$, where $\bv \Delta = \partial \bv \rho(\bv \theta) / \partial \bv \theta^\top$ is the matrix of derivatives with respect to the model parameters. However, in DWLS the full matrix is not used, so the asymptotic covariance 
+should be corrected using a sandwich-type estimator as
+$$\bv H \bv \Sigma_{\rho \rho} \bv H^\top,$$
+where $\bv H = (\bv \Delta^\top \bv W \bv \Delta)^{-1} \bv \Delta^\top \bv W$. This does not 
+involve inversion of the full $\bv \Sigma_{\rho \rho}$ matrix, so it's computational less demanding. This is how the standard errors are obtained with 
+the WLSM and the WLSMV estimators. In `lavaan`, this also corresponds to the 
+`se = "robust.sem"` option (which is the default with WLSMV). 
+
+```{r wlsmv-vcov}
+# Derivatives
+Delta <- numDeriv::jacobian(implied_cor, optim_lambdas$par)
+# H Matrix
+H <- solve(crossprod(Delta / ase_rhos), t(Delta / ase_rhos^2))
+# Asymptotic covariance matrix based on the formula
+H %*% acov_pcor %*% t(H)
+# Compare to lavaan
+vcov(onefactor_fit)[1:3, 1:3]
+```
+
+So the results are essentially the same as in `lavaan`. The asymptotic standard
+errors can then be obtained as the square roots of the diagonal elements:
+
+```{r wlsmv-ase}
+sqrt(diag(H %*% acov_pcor %*% t(H)))
+```
+
+## Final thoughts
+
+So that's what I have learned with the WLS estimators, and I felt like I finally
+got a better understanding of it. It reminds me things I have learned about the
+GLS estimator in the regression context (and I do wonder why it's been called 
+WLS in SEM given that in the context of regression, [WLS generally refers to the use of a diagonal weight matrix](https://en.wikipedia.org/wiki/Weighted_least_squares); perhaps that's the reason we now use a diagonal weight matrix). There are things I may further 
+explore, like doing it on the Theta parameterization instead of the Delta 
+parameterization in this post, and dealing with the test statistics. But I will
+need to deal with the revision first. 
