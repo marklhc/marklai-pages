@@ -27,7 +27,7 @@ tags:
 - Multilevel
 - Simulation
 - Bootstrap
-featured: true
+featured: false
 
 links:
 - name: "supplemental material"
