@@ -1,0 +1,41 @@
+---
+title: Week 1
+linktitle: Lecture videos
+type: docs
+date: "2019-05-05T00:00:00+01:00"
+draft: false
+slides: "psyc575/01_intro"
+menu:
+  psyc575:
+    name: Week 1
+    weight: 1
+
+# Prev/next pager order (if `docs_section_pager` enabled in `params.toml`)
+weight: 1
+---
+
+Before you start the materials for week 1, make sure you have reviewed the [course overview video](../) and the [syllabus](../syllabus). 
+
+## Week Learning Objectives
+
+By the end of this module, you will be able to 
+
+- Identify alternative names for multilevel modeling (MLM)
+- Describe the types of data MLM can handle
+- Knit a simple R Markdown file
+
+## Instructions
+
+1. Install/Update R and RStudio on your computer
+2. Review the resources (lecture videos and slides)
+3. Complete the assigned readings
+    * Snijders & Bosker chapters 1 and [2][4] (they're relatively short)
+    * [R Markdown Intro][1]
+    * [Markdown Quick Reference][2]
+4. Introduce yourself on the Blackboard Discussion Board (as part of [HW 1](../homework-1))
+5. Attend the synchronous Zoom session to learn more about R Markdown
+6. Complete [Homework 1](../homework-1)
+
+[1]: https://vimeo.com/178485416
+[2]: https://web.mit.edu/r/current/RStudio/resources/markdown_help.html
+[4]: https://us.sagepub.com/sites/default/files/upm-assets/44075_book_item_44075.pdf

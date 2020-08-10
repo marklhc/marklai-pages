@@ -1,0 +1,80 @@
+---
+title: Week 1
+linktitle: Lecture videos
+type: docs
+date: "2019-05-05T00:00:00+01:00"
+draft: false
+slides: "psyc575/01_intro"
+menu:
+  psyc575:
+    parent: Week 1
+    weight: 1
+
+# Prev/next pager order (if `docs_section_pager` enabled in `params.toml`)
+weight: 1
+---
+
+`r blogdown::shortcode("slide-buttons")`
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "ufvCUaUkYOA")
+```
+
+```{r, include=FALSE}
+library(checkdown)
+right_ans <- "Correct :+1:"
+wrong_ans <- "That is not correct. Rewatch the video if needed"
+```
+
+***
+
+Check your learning: How would you describe the data structure in the video?
+
+```{r echo=FALSE, results="asis"}
+check_question("hierarchical", 
+               options = c("observational", "educational", "hierarchical"), 
+               type = "radio", 
+               right = right_ans, 
+               wrong = wrong_ans, 
+               alignment = TRUE)
+```
+
+***
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "9Ax8W6VPgmk")
+```
+
+***
+
+Check your learning: How would you describe the data structure 
+
+```{r echo=FALSE, results="asis"}
+check_question(c("mixed-effect modeling"),  
+               options = c("mixed-effect modeling", "hierarchical regression", 
+                           "fixed-effect modeling"), 
+               type = "radio", 
+               right = right_ans, 
+               wrong = wrong_ans)
+```
+
+***
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "4fl2chIkDy4")
+```
+
+***
+
+Check your learning: In the data structure where there are multiple measurements for the same person, which level is level 1? 
+
+```{r echo=FALSE, results="asis"}
+check_question(c("measurement"),  
+               options = c("measurement", "person"), 
+               type = "radio", 
+               right = right_ans, 
+               wrong = wrong_ans, 
+               alignment = TRUE)
+```
+
+***
