@@ -1,0 +1,32 @@
+---
+title: R Markdown
+linktitle: R Codes (wk 1)
+type: docs
+date: "2019-05-05T00:00:00+01:00"
+draft: false
+rmd: "rcodes/week1-intro-RMarkdown"
+menu:
+  psyc575:
+    parent: Week 1
+    weight: 2
+output:
+  blogdown::html_page:
+    toc: true
+    df_print: paged
+
+# Prev/next pager order (if `docs_section_pager` enabled in `params.toml`)
+weight: 2
+---
+
+`r blogdown::shortcode("rmd-buttons")`
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "G-IjAC-2uik")
+```
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "-PdycAVwMuY")
+```
+
+```{r child='week1-intro-RMarkdown.RMarkdown'}
+```

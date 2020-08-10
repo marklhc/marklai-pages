@@ -1,0 +1,201 @@
+---
+title: R Markdown
+linktitle: R Codes (wk 1)
+type: docs
+date: "2019-05-05T00:00:00+01:00"
+draft: false
+rmd: "rcodes/week1-intro-RMarkdown"
+menu:
+  psyc575:
+    parent: Week 1
+    weight: 2
+output:
+  blogdown::html_page:
+    toc: true
+    df_print: paged
+
+# Prev/next pager order (if `docs_section_pager` enabled in `params.toml`)
+weight: 2
+---
+
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+<link href="/rmarkdown-libs/pagedtable/css/pagedtable.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/pagedtable/js/pagedtable.js"></script>
+<script src="/rmarkdown-libs/twitter-widget/widgets.js"></script>
+
+<div id="TOC">
+<ul>
+<li><a href="#rstudio-intro">RStudio Intro</a>
+<ul>
+<li><a href="#recommended-options">Recommended Options</a></li>
+</ul></li>
+<li><a href="#r-markdown">R Markdown</a>
+<ul>
+<li><a href="#yaml-options">YAML options</a></li>
+<li><a href="#chunk-options">Chunk options</a></li>
+</ul></li>
+<li><a href="#including-plots">Including Plots</a></li>
+<li><a href="#install-packages">Install packages</a></li>
+<li><a href="#load-a-package">Load a package</a></li>
+<li><a href="#data-frame">Data Frame</a></li>
+<li><a href="#basic-markdown-elements">Basic Markdown Elements</a>
+<ul>
+<li><a href="#italic-and-bolded-texts">Italic and bolded texts</a></li>
+<li><a href="#lists-ordered-and-unordered">Lists (Ordered and Unordered)</a></li>
+<li><a href="#equations-latex">Equations (LaTeX)</a></li>
+</ul></li>
+<li><a href="#cheatsheet">Cheatsheet</a></li>
+<li><a href="#breakout-room-exercise">Breakout Room Exercise</a></li>
+</ul>
+</div>
+
+{{% rmd-buttons %}}
+{{% youtube "G-IjAC-2uik" %}}
+{{% youtube "-PdycAVwMuY" %}}
+<div id="rstudio-intro" class="section level2">
+<h2>RStudio Intro</h2>
+<p><img src="https://moderndive.netlify.app/images/shutterstock/R_vs_RStudio_1.png" /><!-- --></p>
+<!-- ![](https://moderndive.netlify.app/images/shutterstock/R_vs_RStudio_1.png) -->
+<ul>
+<li>If you’re new to R, follow the online ModernDrive chapter <a href="https://moderndive.netlify.app/1-getting-started.html" class="uri">https://moderndive.netlify.app/1-getting-started.html</a></li>
+<li>Four Panes:
+<ol style="list-style-type: decimal">
+<li></li>
+<li></li>
+<li></li>
+<li></li>
+</ol></li>
+<li></li>
+</ul>
+<div id="recommended-options" class="section level3">
+<h3>Recommended Options</h3>
+<pre><code>Tools --&gt; Global Options --&gt; 
+- Uncheck &quot;Restore .RData into workspace at startup&quot;.
+- Set &quot;Save workspace to .RData on exit&quot; to &quot;Never&quot;.  
+- (Optional) R Markdown --&gt; Set &quot;Show output preview in&quot; to &quot;Viewer Pane&quot;.
+
+Use Project</code></pre>
+</div>
+</div>
+<div id="r-markdown" class="section level2">
+<h2>R Markdown</h2>
+<p>This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <a href="http://rmarkdown.rstudio.com" class="uri">http://rmarkdown.rstudio.com</a>.</p>
+<p>When you click the <strong>Knit</strong> button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:</p>
+<blockquote>
+<p>Note: R is case sensitive. So <code>Cars</code> and <code>cars</code> are different.</p>
+</blockquote>
+<pre class="r"><code>summary(cars)</code></pre>
+<pre><code>##      speed           dist       
+##  Min.   : 4.0   Min.   :  2.00  
+##  1st Qu.:12.0   1st Qu.: 26.00  
+##  Median :15.0   Median : 36.00  
+##  Mean   :15.4   Mean   : 42.98  
+##  3rd Qu.:19.0   3rd Qu.: 56.00  
+##  Max.   :25.0   Max.   :120.00</code></pre>
+<div id="yaml-options" class="section level3">
+<h3>YAML options</h3>
+</div>
+<div id="chunk-options" class="section level3">
+<h3>Chunk options</h3>
+<ul>
+<li></li>
+</ul>
+</div>
+</div>
+<div id="including-plots" class="section level2">
+<h2>Including Plots</h2>
+<p>You can also embed plots, for example:</p>
+<p><img src="/courses/psyc575/rcode1_files/figure-html/pressure-1.png" width="672" /></p>
+<p>Note that the <code>echo = FALSE</code> parameter was added to the code chunk to prevent printing of the R code that generated the plot.</p>
+</div>
+<div id="install-packages" class="section level2">
+<h2>Install packages</h2>
+<blockquote class="twitter-tweet" data-width="550" data-lang="en" data-dnt="true" data-theme="light"><p lang="en" dir="ltr">Students struggle with install vs library every semester, and keep including their install code in the RMarkdown report. Hope this meme might help in the future <a href="https://twitter.com/hashtag/rstats?src=hash&amp;ref_src=twsrc%5Etfw">#rstats</a> <a href="https://t.co/I8xg053y0x">pic.twitter.com/I8xg053y0x</a></p>&mdash; Dianne Cook (@visnut) <a href="https://twitter.com/visnut/status/1248087845589274624?ref_src=twsrc%5Etfw">April 9, 2020</a></blockquote>
+
+<p><img src="https://pbs.twimg.com/media/EVIZRvPU0AAwgdH?format=jpg" /><!-- --></p>
+<!-- ![](https://pbs.twimg.com/media/EVIZRvPU0AAwgdH?format=jpg) -->
+<p>Check out <a href="https://rladiessydney.org/courses/ryouwithme/01-basicbasics-2/" class="uri">https://rladiessydney.org/courses/ryouwithme/01-basicbasics-2/</a></p>
+<pre class="r"><code># Install the tidyverse &quot;meta&quot; package
+
+# Install the lme4 package</code></pre>
+</div>
+<div id="load-a-package" class="section level2">
+<h2>Load a package</h2>
+<blockquote>
+<p>Hint: Try the (PC) <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>I</kbd>/(Mac) <kbd>Cmd</kbd> + <kbd>Option</kbd> + <kbd>I</kbd> shortcut.</p>
+</blockquote>
+<blockquote>
+<p>Hint: Use <kbd>Tab</kbd> for code completeion</p>
+</blockquote>
+<pre class="r"><code># Load tidyverse
+
+# Load lme4</code></pre>
+</div>
+<div id="data-frame" class="section level2">
+<h2>Data Frame</h2>
+<pre class="r"><code># Load SleepStudy
+
+# Extract one column
+
+# Extract column by index
+
+# Extract two rows
+
+# Compute the mean and sd, and chain them together
+
+# Correlation matrix with psych::pairs.panel()
+
+# Find out what a function does (use `?function_name`, e.g., `?pairs.panel`)</code></pre>
+</div>
+<div id="basic-markdown-elements" class="section level2">
+<h2>Basic Markdown Elements</h2>
+<p>From RStudio, click . . .</p>
+<div id="italic-and-bolded-texts" class="section level3">
+<h3>Italic and bolded texts</h3>
+</div>
+<div id="lists-ordered-and-unordered" class="section level3">
+<h3>Lists (Ordered and Unordered)</h3>
+</div>
+<div id="equations-latex" class="section level3">
+<h3>Equations (LaTeX)</h3>
+<p>Inline: The correlation between . . .</p>
+<p>Display:</p>
+</div>
+</div>
+<div id="cheatsheet" class="section level2">
+<h2>Cheatsheet</h2>
+<p>More detailed cheatsheet <a href="https://raw.githubusercontent.com/rstudio/cheatsheets/master/rmarkdown-2.0.pdf" class="uri">https://raw.githubusercontent.com/rstudio/cheatsheets/master/rmarkdown-2.0.pdf</a></p>
+<hr />
+</div>
+<div id="breakout-room-exercise" class="section level2">
+<h2>Breakout Room Exercise</h2>
+<ol style="list-style-type: decimal">
+<li>Once you get to the breakout room, select a group reporter</li>
+<li>Get to know everyone in the group</li>
+<li>Complete the following in this R Markdown document:
+<ol style="list-style-type: lower-alpha">
+<li><p>Copy the following LaTex equation to below: <code>A_1 = \pi r^2</code>. How does this say about writing Greek letters and subscripts/superscripts?
+<span class="math display">\[[Insert equation here]\]</span></p></li>
+<li><p>Install and then load the <code>modelsummary</code> package, and run the following. You’ll need to remove <code>eval=FALSE</code> so that it runs. Find out what this code chunk does.</p>
+<pre class="r"><code># Install and load the modelsummary package first; otherwise it won&#39;t run
+library(modelsummary)
+fm1 &lt;- lm(dist ~ speed, data = cars)
+fm2 &lt;- lm(dist ~ poly(speed, 2), data = cars)
+fm3 &lt;- lm(log(dist) ~ log(speed), data = cars)
+msummary(list(fm1, fm2, fm3))</code></pre></li>
+<li><p>Run the following. You’ll need to remove <code>eval=FALSE</code> so that it runs. Find out what this code chunk does.</p>
+<pre class="r"><code>ggplot(cars, aes(x = log(speed), y = log(dist))) + 
+  geom_point() + 
+  geom_smooth()</code></pre></li>
+<li><p>Knit the document to HTML, PDF, and Word. If you run into an error when
+knitting to any one of the formats, record the error message. Which format
+do you prefer?</p></li>
+<li><p>Go to the top of this Rmd file, and change the line inside YAML</p>
+<pre><code>  html_document: default</code></pre>
+<p>to</p>
+<pre><code>  html_document: 
+      toc: TRUE</code></pre>
+<p>Knit the document again. What does it do?</p></li>
+</ol></li>
+</ol>
+</div>
