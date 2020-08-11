@@ -39,7 +39,7 @@ slug: syllabus
 
 **Office Hours:** Tues 11:00 am–12:00 pm, and by appointment.
 
-**Contact Info:** Email: [hokchiol@usc.edu](mailto:hokchiol@usc.edu); Zoom PMI: [9418552603](https://usc.zoom.us/j/9418552603).   
+**Contact Info:** Email: [hokchiol@usc.edu](mailto:hokchiol@usc.edu).   
 Timeline for replying to emails: within 48 hours.
 
 ## Course Description
