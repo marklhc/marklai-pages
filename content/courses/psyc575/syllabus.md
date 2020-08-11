@@ -318,7 +318,7 @@ Student feedback is essential to the instructor and the Department to keep impro
 </td>
 <td>
 
-- SB ch 3.1--3.4, 4
+- SB ch 3.1--3.4, 4.1--4.5, 4.8
 
 </td>
 <td>
@@ -340,7 +340,7 @@ Student feedback is essential to the instructor and the Department to keep impro
 </td>
 <td>
 
-- SB ch 5
+- SB ch 4.6, 4.7, 5
 
 </td>
 <td>
