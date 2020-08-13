@@ -41,8 +41,8 @@ In this first assignment, you will Find a published research article in your are
     d. In the **Message** box, write 
         i. a brief description of your background (e.g., your major, research interest)
         ii. the reason of taking this course
-        iii. your experience of using R or other statistical packages
-        iv. Something else about yourself that you want to share with the class
+        iii. your experience of using R or other statistical programs/packages
+        iv. something else about yourself that you want to share with the class
     e. (Optional) Review and comment on peer postings
 
 ## Grading 

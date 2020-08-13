@@ -47,7 +47,7 @@ blogdown::shortcode("youtube", "9Ax8W6VPgmk")
 
 ***
 
-Check your learning: How would you describe the data structure 
+Check your learning: What is another name for multilevel modeling? 
 
 ```{r echo=FALSE, results="asis"}
 check_question(c("mixed-effect modeling"),  
