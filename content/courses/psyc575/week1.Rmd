@@ -1,10 +1,9 @@
 ---
 title: Week 1
-linktitle: Lecture videos
+linktitle: Week 1
 type: docs
 date: "2019-05-05T00:00:00+01:00"
 draft: false
-slides: "psyc575/01_intro"
 menu:
   psyc575:
     name: Week 1
@@ -24,7 +23,7 @@ By the end of this module, you will be able to
 - Describe the types of data MLM can handle
 - Knit a simple R Markdown file
 
-## Instructions
+## Task Lists
 
 1. Install/Update R and RStudio on your computer
 2. Review the resources (lecture videos and slides)
