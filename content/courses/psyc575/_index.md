@@ -21,7 +21,7 @@ menu:
     weight: 1
 ---
 
-[Overview video]
+{{% youtube "EOzHGrVcmLk" %}}
 
 <div class="row">
   <div class="col-md-6">

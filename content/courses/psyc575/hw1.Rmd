@@ -25,7 +25,7 @@ In this first assignment, you will first introduce yourself on the Slack channel
 ## Steps
 
 1. Introduce yourself on Slack
-    a. Go to the Slack channel for this course. You will need to sign on. If you're new to Slack, check out [this USC guide](https://keepteaching.usc.edu/students/student-toolkit/classroom/slack/)
+    a. Go to the Slack #introduce-ourselves channel for this course. You will need to sign on. If you're new to Slack, check out [this USC guide](https://keepteaching.usc.edu/students/student-toolkit/classroom/slack/)
     b. In the **Message** box, write 
         i. a brief description of your background (e.g., your major, research interest)
         ii. the reason of taking this course
