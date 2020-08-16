@@ -1,5 +1,5 @@
 ---
-title: ""
+title: "Syllabus"
 author: ''
 date: '2020-07-26T22:00:00Z'
 output:
