@@ -14,14 +14,16 @@ summary: Syllabus for PSYC 575 in 2020 Fall
 lastmod: '2020-08-29T15:27:37-07:00'
 toc: yes
 type: docs
+syllabus: "files/psyc575_syllabus"
+schedule: "files/psyc575_schedule"
 menu:
   psyc575:
     name: Syllabus
-    weight: 1
+    weight: 2
 slug: syllabus
 ---
 
-Click [here](/files/psyc575_syllabus.pdf) for a PDF version of the syllabus
+{{% syllabus-buttons %}}
 
 <!-- Based on the templates from http://cet.usc.edu/resources/course-design/ and https://arr.usc.edu/services/curriculum/resources.html -->
 
@@ -70,7 +72,7 @@ After the successful completion of this course, students will be able to . . .
 
 ## Course Notes
 
-Given the COVID-19 pandemic, this class will be fully online and will follow a [flipped course design](http://cet.usc.edu/cet/wp-content/uploads/2020/06/Flipped-Course-Design.docx). The lecture videos and course materials will be available at https://quantscience.rbind.io/courses/psyc575/ before Mondays, and students are expected to review these materials and the assigned readings on their own. Please note that the lecture slides only serve to guide class discussions and cannot replace the assigned readings. Every Thursday at 10:00--11:50 am there will be a synchronous session where students will work on in-class exercises and discuss questions regarding the learning materials and homework assignments. **Students are expected to have reviewed the posted materials for that week before attending that week's synchronous session.** The synchronous sessions will be recorded and posted on Blackboard. Before attending the synchronous sessions, students are expected to have 
+Given the COVID-19 pandemic, this class will be fully online and will follow a [flipped course design](http://cet.usc.edu/cet/wp-content/uploads/2020/06/Flipped-Course-Design.docx). The lecture videos and course materials will be available at https://quantscience.rbind.io/courses/psyc575/ before Mondays, and students are expected to review these materials and the assigned readings on their own. Please note that the lecture slides only serve to guide class discussions and cannot replace the assigned readings. Every Thursday at 10:00--11:50 am there will be a synchronous session where students will work on in-class exercises and discuss questions regarding the learning materials and homework assignments. **Students are expected to have reviewed the posted materials for that week before attending that week's synchronous session.** The synchronous sessions will be recorded and be posted on Slack. Before attending the synchronous sessions, students are expected to have 
 
 1. Completed the assigned readings and reviewed the posted videos. 
 2. Identified questions that come up in their learning. 
@@ -91,7 +93,7 @@ Communication and Technology Policies differ from university policies in that th
 To promote independence and critical thinking, students are encouraged to work through the following process for obtaining answers to course-related questions before contacting the instructor: 
 
 - consult the course syllabus;
-- consult a classmate or post your questions on the Discussion Board on Blackboard;
+- consult a classmate or post your questions on Slack;
 - meet with the instructor during Zoom office hours at 11-12 on Tuesdays;
 - ask your questions during the synchronous session at 10:00-11:50 am on 
 Thursdays; and
@@ -117,7 +119,7 @@ We realize that attending classes online and completing coursework remotely requ
   
 - Snijders, T. A. B., &amp; Bosker, R. J. (2012). _Multilevel analysis: An introduction to basic and advanced multilevel modeling_ (2nd ed.). Thousand Oaks, CA: Sage.
     * Tom Snijders's website (including R code examples): https://www.stats.ox.ac.uk/~snijders/mlbook.htm
-- Other required readings will be posted on Blackboard
+- Other required readings will be posted on Slack
 
 ## Optional Materials
 
@@ -144,7 +146,7 @@ You must submit your work electronically to Blackboard by **Friday 11:59 p.m. Pa
     A prospectus about your project should be submitted by **Monday, October 5, 9 am Pacific Time**. The prospectus should contain a concise description of what you (or your group) plan to do for your project, including a preliminary plan for statistical analysis. The prospectus should be limited to 1 single-spaced page (excluding tables, figures, references, and other supplemental materials).
 
     - Peer Review (5%)  
-    After the individual meeting with the instructor, each individual/group will refine their research questions and post a summary of their research questions and preliminary analyses to the dedicated forum on the Discussion Board by **Friday, October 30**. Each student will then give specific comments to the summaries of two other students/groups by **Monday, November 9**. More information on what feedback to give will be included in the grading rubric. 
+    After the individual meeting with the instructor, each individual/group will refine their research questions and post a summary of their research questions and preliminary analyses to the dedicated forum on the Discussion Board by **Friday, October 30**. Each student will then give specific comments to the summaries of two other students/groups by **Monday, November 9**. More information on what feedback to give will be included in the grading rubric.  
 
     - Final Presentation/Paper (26%)  
         If you choose to do a presentation, on **November 17 or November 19**, you or your group will give a 20-minute presentation (including Q&A) on your project. You can choose to do your presentation live, or pre-record a 15-minute presentation for the instructor to show during the Zoom sessions; however, you must be present during your assigned presentation time to answer questions. The final presentation should include the following four sections: introduction, method, results, and discussion, or something comparable for methodological or theoretical work; however, **more emphasis should be put on describing the technical details of the analysis and the interpretations of the results**. You will also need to submit your slides to Blackboard for grading by **November 24 at 10:00 a.m. Pacific Time**, which should include a link to the reproducible codes for your analyses. A grading rubric on the research presentation will be posted on Blackboard.
@@ -228,7 +230,7 @@ Students are expected to attend all synchronous Thursday sessions on time. If th
 
 ## Classroom norms
 
-The following applies to both the synchronous sessions and the asynchronous learning time (e.g., Discussion board, project discussions)
+The following applies to both the synchronous sessions and the asynchronous learning time (e.g., Slack discussions, group project discussions, email communications)
 
 - Respect each other's views. 
 - In written communication messages, make sure they're something you could say to someone to their face.
