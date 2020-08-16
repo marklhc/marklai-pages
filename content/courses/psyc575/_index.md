@@ -24,7 +24,7 @@ menu:
 {{% youtube "EOzHGrVcmLk" %}}
 
 <div class="row">
-  <div class="col-md-6">
+  <div class="col-md-5">
 
 ## Instructor
 
@@ -33,13 +33,16 @@ menu:
 - <i class="far fa-clock"></i> Tues 11:00 am–12:00 pm, and by appointment
 
   </div>
-  <div class="col-md-6">
+  <div class="col-md-7">
 
 ## Course Info
 
 - <i class="far fa-calendar"></i> Thursday 10:00-11:50 am (live Zoom session)
 - <i class="fas fa-map-marker"></i> Online
 - <i class="fab fa-slack"></i> <a href="https://uscdornsifeclass.slack.com" target="_blank">Slack channel</a> (USC SSO required)
+- <i class="fas fa-question-circle"></i>Contact Help Desk at Dornsife for IT support 
+    * <i class="fas fa-envelope"></i> ts@dornsife.usc.edu
+    * <i class="fas fa-phone"></i> ext. 02775
 - The best way to ask a course-related question is to post it on Slack. For more personal questions, contact me by email. I will reply within 48 hours
 
   </div>
