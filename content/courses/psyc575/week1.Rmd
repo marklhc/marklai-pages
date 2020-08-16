@@ -31,7 +31,7 @@ By the end of this module, you will be able to
     * Snijders & Bosker chapters 1 and [2][4] (they're relatively short)
     * [R Markdown Intro][1]
     * [Markdown Quick Reference][2]
-4. Introduce yourself on the Blackboard Discussion Board (as part of [HW 1](../homework-1))
+4. Introduce yourself on the #introduce-ourselves Slack channel (as part of [HW 1](../homework-1))
 5. Attend the synchronous Zoom session to learn more about R Markdown
 6. Complete [Homework 1](../homework-1)
 

@@ -11,7 +11,7 @@ categories: []
 tags: []
 linktitle: Syllabus
 summary: Syllabus for PSYC 575 in 2020 Fall
-lastmod: '2020-08-15T15:27:37-07:00'
+lastmod: '2020-08-16T10:27:00-07:00'
 toc: yes
 type: docs
 syllabus: "files/psyc575_syllabus"
