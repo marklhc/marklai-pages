@@ -7,7 +7,7 @@ weight: 1
 # Page metadata.
 title: Welcome to PSYC 575!
 date: "2020-08-08T00:00:00Z"
-lastmod: "2020-08-08T10:00:00Z"
+lastmod: "2020-08-16T10:00:00Z"
 draft: false  # Is this a draft? true/false
 toc: false  # Show table of contents? true/false
 type: docs  # Do not modify.
