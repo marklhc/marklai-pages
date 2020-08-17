@@ -90,6 +90,8 @@ methods (including but not limited to: multilevel modeling, structural equation
 modeling, effect size estimation, psychometrics, and statistical learning) in 
 the 2021-2022 academic year. 
 
+To learn more about the doctoral program at USC and speak to a program advisor, check out the [Preview Day](https://dornsife.usc.edu/psyc/preview-day/) event. 
+
 <button name="fit" onclick="window.open('{{< relref "/content/post/2020-06-19-potential-fit-and-application-tips.en.md">}}');">Potential Fit and Tips</button>
 <button name="usc-admit" onclick="window.open('https://dornsife.usc.edu/admission/apply');">Apply</button>
 {{% /alert %}}
