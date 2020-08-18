@@ -2,8 +2,9 @@
 title: Week 1
 linktitle: Lecture videos
 type: docs
-date: "2019-05-05T00:00:00+01:00"
+date: "2020-07-31T00:00:00+01:00"
 draft: false
+lastmod: '`r Sys.Date()`'
 slides: "psyc575/01_intro"
 menu:
   psyc575:

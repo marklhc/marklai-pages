@@ -49,4 +49,4 @@ Your instructor will be grading on completeness of this first assignment.
 
 ## Additional Notes
 
-Remember that multilevel modeling may be called a different name in some research area. You may post your questions to the Discussion Board to get help from your peers and instructor. 
+Remember that multilevel modeling may be called a different name in some research area. You may post your questions to the Slack channel to get help from your peers and instructor. 
