@@ -41,7 +41,7 @@ In this assignment, you will practice using R Markdown and run a regression anal
 
 ## Grading 
 
-Your instructor will use the rubric on Blackboard to grade this assignment. 
+Your instructor will use the rubric on Slack to grade this assignment. 
 
 ## Additional Notes
 
