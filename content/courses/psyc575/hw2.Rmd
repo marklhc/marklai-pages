@@ -1,0 +1,48 @@
+---
+title: Homework 2
+date: '2020-07-30'
+slug: homework-2
+categories: []
+tags: []
+linktitle: Homework 2
+summary: ~
+lastmod: '`r Sys.Date()`'
+type: docs
+menu:
+  psyc575:
+    parent: Week 2
+    weight: 3
+---
+
+## Learning Objective
+
+- Independently analyze real data using statistical software for multilevel modeling
+
+## Assignment Description 
+
+In this assignment, you will practice using R Markdown and run a regression analysis using the `salary` data set used in the class demonstration. Specifically, you will select two predictors to predict `salary` in the data set to run a multiple regression, plot the slope of one of the predictors, and interpret its coefficient. Complete the two parts (article search and self-introduction) of the assignment by **August 28**. This assignment is worth 6 points. 
+
+## Steps
+
+1. Download the [`hw2_template.Rmd` file](/hw_templates/hw2_template.Rmd). Rename it as `hw2_yourlastnameyourfirstname.Rmd` (e.g., `hw2_LaiMark.Rmd`), and write down your name inside the Rmd. 
+2. Use R to import the data file `salary.txt` (which can be downloaded [here](https://raw.githubusercontent.com/marklhc/marklai-pages/master/data_files/salary.txt); right click --> save as). 
+3. Choose two predictors from the list of: `time`, `pub`, `sex`, and `citation`. You cannot choose both `time` and `pub` as that combination has been used in the class demonstration. 
+4. Write down your regression model using the LaTeX syntax. For example,  
+    `$$salary_i = \beta_0 + \beta_1 time_i + \beta_2 pub_i + e_i$$`  
+    Pay attention to the subscripts. 
+5. Fit the regression model to your data using `lm()`, and obtain a summary table using the `modelsummary::msummary()` function. 
+6. Provide a scatterplot showing (a) the regression slopes for your predictors and (b) the raw data points. You can use the `sjPlot::plot_model(..., show.data = TRUE)` function as in the [R codes](../rcode2/#plotting) in the lecture. 
+7. Write a sentence to interpret *one of* the coefficient in (6). 
+8. Simulation
+    a. Simulate 100 data sets based on your model results by modifying the codes provided in the template. It's similar to the discussion in the [Drawing 100 samples](../rcode2/#drawing-100-samples) subsection. If it runs successfully, you should see two histograms showing the variations in the regression slopes across plausible fake data sets. 
+    b. Write a short paragraph to discuss what the two histograms tell you, and  reflect on the process of simulating the data
+9. Fit a regression model including the interaction term of your two chosen predictors. Show an interaction plot. 
+10. Knit your Rmd file to HTML/PDF/Word, and submit the knitted file to Blackboard. 
+
+## Grading 
+
+Your instructor will use the rubric on Blackboard to grade this assignment. 
+
+## Additional Notes
+
+You may post your questions to the Slack channel to get help from your peers and instructor. 

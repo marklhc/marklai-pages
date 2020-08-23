@@ -1,0 +1,162 @@
+---
+title: Week 2
+linktitle: Lecture videos (wk 2)
+type: docs
+date: "2019-05-05T00:00:00+01:00"
+draft: false
+lastmod: '`r Sys.Date()`'
+slides: "psyc575/02_review_regression"
+menu:
+  psyc575:
+    parent: Week 2
+    weight: 1
+output:
+  blogdown::html_page:
+    toc: true
+    df_print: paged
+# Prev/next pager order (if `docs_section_pager` enabled in `params.toml`)
+weight: 1
+---
+
+`r blogdown::shortcode("slide-buttons")`
+
+```{r, include=FALSE}
+library(checkdown)
+right_ans <- "Correct :+1:"
+wrong_ans <- "That is not correct. Rewatch the video if needed"
+```
+
+## Statistical Model
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "axg_AshO7qM")
+```
+
+Check your learning: In the example in the video, why do we need a random component?
+
+```{r echo=FALSE, results="asis"}
+check_question("Because people who spend the same amount of time studying do not always have the same mastery level", 
+               options = c("Because there is only one predictor", 
+                           "Because the relation between the variables is linear", 
+                           "Because people who spend the same amount of time studying do not always have the same mastery level"), 
+               type = "radio", 
+               right = right_ans, 
+               wrong = wrong_ans)
+```
+
+***
+
+## Import Data
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "NgjdsKxLMbI")
+```
+
+Check your learning: What is the coding for the `sex` variable?
+
+```{r echo=FALSE, results="asis"}
+check_question("0 = male, 1 = female", 
+               options = c("1 = male, 2 = female", 
+                           "2 = male, 1 = female", 
+                           "0 = female, 1 = male", 
+                           "0 = male, 1 = female"), 
+               type = "radio", 
+               right = right_ans, 
+               wrong = wrong_ans)
+```
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "UfFhGF3mJGk")
+```
+
+Take a pause and look at the scatterplot matrix. Ask yourself the following:
+
+- How does the distribution of `salary` look?
+- Are there more males or females in the data?
+- How would you describe the relationship between number of publications and salary?
+
+***
+
+## Linear Regression
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "JcmmFSruAZA")
+```
+
+### Sample regression line
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "GIRtlYGVOXk")
+```
+
+Check your learning: How would you translate the regression line $y = \beta_0 + \beta_1 \texttt{predictor1}$ into R?
+
+```{r echo=FALSE, results="asis"}
+check_question("y ~ predictor1", 
+               options = c("y ~ 0 + predictor1", 
+                           "predictor1 ~ 1 + y", 
+                           "y ~ predictor1"), 
+               type = "radio", 
+               right = right_ans, 
+               wrong = wrong_ans)
+```
+
+### Centering
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "s19aoHq53zw")
+```
+
+Check your learning: The mean of the `pub` variable is 18.2. If we call the mean-centered version of it as `pub_c`, what should be the value of `pub_c` for someone with 10 publications?
+
+```{r echo=FALSE, results="asis"}
+check_question(" -8.2", 
+               options = c(" 8.2", " 1.8", " -8.2", " 1.82"), 
+               type = "radio", 
+               right = right_ans, 
+               wrong = wrong_ans, 
+               alignment = TRUE)
+```
+
+***
+
+## Categorical Predictor
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "k2nNMfJ2Xn0")
+```
+
+Check your learning: In a regression analysis, assume that there is a binary predictor that indicates whether a school is public (coded as 0) or private (coded as 1). If the coefficient for that predictor is 1.5, which category has a higher predicted score?
+
+```{r echo=FALSE, results="asis"}
+check_question("private", 
+               options = c("private", "public"), 
+               type = "radio", 
+               right = right_ans, 
+               wrong = wrong_ans, 
+               alignment = TRUE)
+```
+
+***
+
+## Multiple Regression
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "O2ob6wC91w0")
+```
+
+Think more: the coefficient of `pub_c` becomes smaller after adding `time` into the equation. Why do you think that is the case?
+
+***
+
+## Interaction
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "cqGZD8s5WvU")
+```
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "vK-2xMftORM")
+```
+
+Pratice yourself: from the interaction model obtain the regression line when `pub` = 50. 

@@ -1,0 +1,1070 @@
+---
+title: Using R for Week 2
+linktitle: R Codes (wk 2)
+type: docs
+date: "2020-08-04T00:00:00+01:00"
+draft: false
+lastmod: '2020-08-22'
+rmd: "rcodes/week2-review-multiple-regression"
+menu:
+  psyc575:
+    parent: Week 2 
+    weight: 2
+output:
+  blogdown::html_page:
+    toc: true
+    df_print: paged
+# Prev/next pager order (if `docs_section_pager` enabled in `params.toml`)
+weight: 2
+---
+
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+<link href="/rmarkdown-libs/pagedtable/css/pagedtable.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/pagedtable/js/pagedtable.js"></script>
+
+<div id="TOC">
+<ul>
+<li><a href="#simulation">Simulation</a></li>
+<li><a href="#load-packages-and-import-data">Load Packages and Import Data</a>
+<ul>
+<li><a href="#import-data">Import Data</a></li>
+</ul></li>
+<li><a href="#quick-scatterplot-matrix">Quick Scatterplot Matrix</a></li>
+<li><a href="#linear-regression-of-salary-on-pub">1. Linear Regression of <code>salary</code> on <code>pub</code></a>
+<ul>
+<li><a href="#visualize-the-data">Visualize the data</a></li>
+<li><a href="#linear-regression">Linear regression</a></li>
+<li><a href="#visualize-fitted-regression-line">Visualize fitted regression line:</a></li>
+<li><a href="#confidence-intervals">Confidence intervals</a></li>
+<li><a href="#interpretations">Interpretations</a></li>
+<li><a href="#simulations">Simulations</a></li>
+<li><a href="#p-values"><span class="math inline">\(p\)</span> values</a></li>
+<li><a href="#centering">Centering</a></li>
+</ul></li>
+<li><a href="#categorical-predictor">2. Categorical Predictor</a>
+<ul>
+<li><a href="#equivalence-to-the-t-test">Equivalence to the <span class="math inline">\(t\)</span>-test</a></li>
+</ul></li>
+<li><a href="#multiple-predictors-multiple-regression">3. Multiple Predictors (Multiple Regression)</a>
+<ul>
+<li><a href="#plotting">Plotting</a></li>
+<li><a href="#interpretations-1">Interpretations</a></li>
+<li><a href="#diagnostics">Diagnostics</a></li>
+<li><a href="#effect-size">Effect size</a></li>
+</ul></li>
+<li><a href="#interaction">4. Interaction</a>
+<ul>
+<li><a href="#interaction-plots">Interaction Plots</a></li>
+</ul></li>
+<li><a href="#tabulate-the-regression-results">5. Tabulate the Regression Results</a></li>
+</ul>
+</div>
+
+{{% rmd-buttons %}}
+<div id="simulation" class="section level2">
+<h2>Simulation</h2>
+{{% youtube "ka4Y5jYL3wM" %}}
+<p>Practice yourself: From the simulation code provided, try to increase the sample size from 62 to something larger, like 200. How does this affect the uncertainty in the sample slopes?</p>
+<hr />
+</div>
+<div id="load-packages-and-import-data" class="section level2">
+<h2>Load Packages and Import Data</h2>
+<p>You can use add the <code>message=FALSE</code> option to suppress the package loading messages</p>
+<pre class="r"><code># To install a package, run the following ONCE (and only once on your computer)
+# install.packages(&quot;psych&quot;)  
+library(psych)  # for scatterplot matrix
+library(here)  # makes reading data more consistent
+library(tidyverse)  # for data manipulation and plotting
+library(car)  # some useful functions for regression
+library(modelsummary)  # for making tables
+library(sjPlot)  # for plotting slopes
+library(interactions)  # for plotting interactions
+theme_set(theme_bw())  # Theme; just my personal preference</code></pre>
+<div id="import-data" class="section level3">
+<h3>Import Data</h3>
+<p>First, download the data file <code>salary.txt</code> from <a href="https://raw.githubusercontent.com/marklhc/marklai-pages/master/data_files/salary.txt" class="uri">https://raw.githubusercontent.com/marklhc/marklai-pages/master/data_files/salary.txt</a>, and import the data. A
+robust way to do so is to download the data to a folder called <code>data_files</code> under the project
+directory, and then use the <code>here</code> package. This avoids a lot of data import
+issues that I’ve seen.</p>
+<pre class="r"><code># The `here()` function forces the use of the project directory
+here(&quot;data_files&quot;, &quot;salary.txt&quot;)
+# Read in the data
+salary_dat &lt;- read.table(here(&quot;data_files&quot;, &quot;salary.txt&quot;), header = TRUE)</code></pre>
+<p>Alternatively, from the menu, click <code>File</code> → <code>Import Dataset</code> → <code>From Text (base)...</code>, and select the file.</p>
+<pre class="r"><code># Show the data
+salary_dat</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["id"],"name":[1],"type":["int"],"align":["right"]},{"label":["time"],"name":[2],"type":["int"],"align":["right"]},{"label":["pub"],"name":[3],"type":["int"],"align":["right"]},{"label":["sex"],"name":[4],"type":["int"],"align":["right"]},{"label":["citation"],"name":[5],"type":["int"],"align":["right"]},{"label":["salary"],"name":[6],"type":["int"],"align":["right"]}],"data":[{"1":"1","2":"3","3":"18","4":"1","5":"50","6":"51876"},{"1":"2","2":"6","3":"3","4":"1","5":"26","6":"54511"},{"1":"3","2":"3","3":"2","4":"1","5":"50","6":"53425"},{"1":"4","2":"8","3":"17","4":"0","5":"34","6":"61863"},{"1":"5","2":"9","3":"11","4":"1","5":"41","6":"52926"},{"1":"6","2":"6","3":"6","4":"0","5":"37","6":"47034"},{"1":"7","2":"16","3":"38","4":"0","5":"48","6":"66432"},{"1":"8","2":"10","3":"48","4":"0","5":"56","6":"61100"},{"1":"9","2":"2","3":"9","4":"0","5":"19","6":"41934"},{"1":"10","2":"5","3":"22","4":"0","5":"29","6":"47454"},{"1":"11","2":"5","3":"30","4":"1","5":"28","6":"49832"},{"1":"12","2":"6","3":"21","4":"0","5":"31","6":"47047"},{"1":"13","2":"7","3":"10","4":"1","5":"25","6":"39115"},{"1":"14","2":"11","3":"27","4":"0","5":"40","6":"59677"},{"1":"15","2":"18","3":"37","4":"0","5":"61","6":"61458"},{"1":"16","2":"6","3":"8","4":"0","5":"32","6":"54528"},{"1":"17","2":"9","3":"13","4":"1","5":"36","6":"60327"},{"1":"18","2":"7","3":"6","4":"0","5":"69","6":"56600"},{"1":"19","2":"7","3":"12","4":"1","5":"47","6":"52542"},{"1":"20","2":"3","3":"29","4":"1","5":"29","6":"50455"},{"1":"21","2":"7","3":"29","4":"1","5":"35","6":"51647"},{"1":"22","2":"5","3":"7","4":"0","5":"35","6":"62895"},{"1":"23","2":"7","3":"6","4":"0","5":"18","6":"53740"},{"1":"24","2":"13","3":"69","4":"0","5":"90","6":"75822"},{"1":"25","2":"5","3":"11","4":"0","5":"60","6":"56596"},{"1":"26","2":"8","3":"9","4":"1","5":"30","6":"55682"},{"1":"27","2":"8","3":"20","4":"1","5":"27","6":"62091"},{"1":"28","2":"7","3":"41","4":"1","5":"35","6":"42162"},{"1":"29","2":"2","3":"3","4":"1","5":"14","6":"52646"},{"1":"30","2":"13","3":"27","4":"0","5":"56","6":"74199"},{"1":"31","2":"5","3":"14","4":"0","5":"50","6":"50729"},{"1":"32","2":"3","3":"23","4":"0","5":"25","6":"70011"},{"1":"33","2":"1","3":"1","4":"0","5":"35","6":"37939"},{"1":"34","2":"3","3":"7","4":"0","5":"1","6":"39652"},{"1":"35","2":"9","3":"19","4":"0","5":"69","6":"68987"},{"1":"36","2":"3","3":"11","4":"0","5":"69","6":"55579"},{"1":"37","2":"9","3":"31","4":"0","5":"27","6":"54671"},{"1":"38","2":"3","3":"9","4":"0","5":"50","6":"57704"},{"1":"39","2":"4","3":"12","4":"1","5":"32","6":"44045"},{"1":"40","2":"10","3":"32","4":"0","5":"33","6":"51122"},{"1":"41","2":"1","3":"26","4":"0","5":"45","6":"47082"},{"1":"42","2":"11","3":"12","4":"0","5":"54","6":"60009"},{"1":"43","2":"5","3":"9","4":"0","5":"47","6":"58632"},{"1":"44","2":"1","3":"6","4":"0","5":"29","6":"38340"},{"1":"45","2":"21","3":"39","4":"0","5":"69","6":"71219"},{"1":"46","2":"7","3":"16","4":"1","5":"47","6":"53712"},{"1":"47","2":"5","3":"12","4":"1","5":"43","6":"54782"},{"1":"48","2":"16","3":"50","4":"0","5":"55","6":"83503"},{"1":"49","2":"5","3":"18","4":"0","5":"33","6":"47212"},{"1":"50","2":"4","3":"16","4":"1","5":"28","6":"52840"},{"1":"51","2":"5","3":"5","4":"0","5":"42","6":"53650"},{"1":"52","2":"11","3":"20","4":"0","5":"24","6":"50931"},{"1":"53","2":"16","3":"50","4":"1","5":"31","6":"66784"},{"1":"54","2":"3","3":"6","4":"1","5":"27","6":"49751"},{"1":"55","2":"4","3":"19","4":"1","5":"83","6":"74343"},{"1":"56","2":"4","3":"11","4":"1","5":"49","6":"57710"},{"1":"57","2":"5","3":"13","4":"0","5":"14","6":"52676"},{"1":"58","2":"6","3":"3","4":"1","5":"36","6":"41195"},{"1":"59","2":"4","3":"8","4":"1","5":"34","6":"45662"},{"1":"60","2":"8","3":"11","4":"1","5":"70","6":"47606"},{"1":"61","2":"3","3":"25","4":"1","5":"27","6":"44301"},{"1":"62","2":"4","3":"4","4":"1","5":"28","6":"58582"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>You can see the description of the variables here: <a href="https://rdrr.io/cran/MBESS/man/prof.salary.html" class="uri">https://rdrr.io/cran/MBESS/man/prof.salary.html</a></p>
+</div>
+</div>
+<div id="quick-scatterplot-matrix" class="section level2">
+<h2>Quick Scatterplot Matrix</h2>
+<p>Import to screen your data before any statistical modeling</p>
+<pre class="r"><code>pairs.panels(salary_dat[ , -1],  # not plotting the first column
+             ellipses = FALSE)</code></pre>
+<p><img src="/courses/psyc575/rcode2_files/figure-html/pairs-salary_dat-1.png" width="672" /></p>
+</div>
+<div id="linear-regression-of-salary-on-pub" class="section level2">
+<h2>1. Linear Regression of <code>salary</code> on <code>pub</code></h2>
+<div id="visualize-the-data" class="section level3">
+<h3>Visualize the data</h3>
+<pre class="r"><code># Visualize the data (&quot;gg&quot; stands for grammar of graphics)
+p1 &lt;- ggplot(salary_dat,  # specify data
+             # aesthetics: mapping variable to axes)
+             aes(x = pub, y = salary)) +  
+             # geom: geometric objects, such as points, lines, shapes, etc
+             geom_point()
+# Add a smoother geom to visualize mean salary as a function of pub
+p1 + geom_smooth()</code></pre>
+<pre><code>&gt;# `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
+<p><img src="/courses/psyc575/rcode2_files/figure-html/p1-smooth-1.png" width="672" /></p>
+<p>A little bit of non-linearity on the plot. Now fit the regression model</p>
+</div>
+<div id="linear-regression" class="section level3">
+<h3>Linear regression</h3>
+<p>You can type equations (with LaTeX; see a <a href="https://www.latex-tutorial.com/tutorials/amsmath/">quick reference</a>).</p>
+<p>P.S. Use <code>\text{}</code> to specify variable names</p>
+<p>P.S. Pay attention to the subscripts</p>
+<p><span class="math display">\[\text{salary}_i = \beta_0 + \beta_1 \text{pub}_i + e_i\]</span></p>
+<ul>
+<li>Outcome: <code>salary</code></li>
+<li>Predictor: <code>pub</code></li>
+<li><span class="math inline">\(\beta_0\)</span>: regression intercept</li>
+<li><span class="math inline">\(\beta_1\)</span>: regression slope</li>
+<li><span class="math inline">\(e\)</span>: error</li>
+</ul>
+<pre class="r"><code># left hand side of ~ is outcome; right hand side contains predictors
+# salary ~ (beta_0) * 1 + (beta_1) * pub
+# remove beta_0 and beta_1 to get the formula
+m1 &lt;- lm(salary ~ 1 + pub, data = salary_dat)
+# In R, the output is not printed out if it is saved to an object (e.g., m1). 
+# Summary:
+summary(m1)</code></pre>
+<pre><code>&gt;# 
+&gt;# Call:
+&gt;# lm(formula = salary ~ 1 + pub, data = salary_dat)
+&gt;# 
+&gt;# Residuals:
+&gt;#      Min       1Q   Median       3Q      Max 
+&gt;# -20660.0  -7397.5    333.7   5313.9  19238.7 
+&gt;# 
+&gt;# Coefficients:
+&gt;#             Estimate Std. Error t value Pr(&gt;|t|)    
+&gt;# (Intercept) 48439.09    1765.42  27.438  &lt; 2e-16 ***
+&gt;# pub           350.80      77.17   4.546 2.71e-05 ***
+&gt;# ---
+&gt;# Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+&gt;# 
+&gt;# Residual standard error: 8440 on 60 degrees of freedom
+&gt;# Multiple R-squared:  0.2562, Adjusted R-squared:  0.2438 
+&gt;# F-statistic: 20.67 on 1 and 60 DF,  p-value: 2.706e-05</code></pre>
+</div>
+<div id="visualize-fitted-regression-line" class="section level3">
+<h3>Visualize fitted regression line:</h3>
+<pre class="r"><code>p1 + 
+  # Non-parametric fit
+  geom_smooth(se = FALSE) + 
+  # Linear regression line (in red)
+  geom_smooth(method = &quot;lm&quot;, col = &quot;red&quot;)</code></pre>
+<pre><code>&gt;# `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
+<pre><code>&gt;# `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="/courses/psyc575/rcode2_files/figure-html/p1-fitted-1.png" width="672" /></p>
+</div>
+<div id="confidence-intervals" class="section level3">
+<h3>Confidence intervals</h3>
+<pre class="r"><code># Confidence intervals
+confint(m1)</code></pre>
+<pre><code>&gt;#                 2.5 %     97.5 %
+&gt;# (Intercept) 44907.729 51970.4450
+&gt;# pub           196.441   505.1625</code></pre>
+</div>
+<div id="interpretations" class="section level3">
+<h3>Interpretations</h3>
+<blockquote>
+<p>Based on our model, faculty with one more publication have predicted salary of $350.8, 95% CI [$196.4, $505.2], higher than those with one less publication.</p>
+</blockquote>
+<p>But what do the confidence intervals and the standard errors mean? To understanding what exactly a regression model is, let’s run some simulations.</p>
+<hr />
+</div>
+<div id="simulations" class="section level3">
+<h3>Simulations</h3>
+<p>Before you go on, take a look on a <a href="https://www.youtube.com/watch?v=pGvJl8vvlXY">brief introductory video</a> by Clark Caylord on Youtube on simulating data based on a simple linear regression model.</p>
+<p>To my delight, I also found out a gentle introduction of simulation method by one of our clinical science students at USC (Thanks Kayla!). You can access it through the USC library <a href="https://libproxy1.usc.edu/login?url=http://sk.sagepub.com.libproxy2.usc.edu/reference/sage-encyclopedia-of-educational-research-measurement-evaluation/i13837.xml">here</a> (Sign-on required). Here’s the citation:</p>
+<p>Tureson, K. &amp; Odland, A. (2018). Monte Carlo simulation studies. In B. Frey (Ed.),The SAGE
+Encyclopedia of Educational Research, Measurement, and Evaluation. Thousand Oaks, CA: SAGE Publications.</p>
+<p>Based on the analyses, the sample regression line is
+<span class="math display">\[\widehat{\text{salary}} = 48439.09 + 350.80 \text{pub}.\]</span>
+The numbers are only sample estimates as there are sampling errors. However, if we assume that this line truly describe the relation between <code>salary</code> and <code>pub</code>, then we can simulate some fake data, which represents what we could have obtained in a different sample.</p>
+<p>Going back to the equation
+<span class="math display">\[\text{salary}_i = \beta_0 + \beta_1 \text{pub}_i + e_i,\]</span>
+the only thing that changes across different samples, based on the statistical model, is <span class="math inline">\(e_i\)</span>. Conceptually, you can think of the error term <span class="math inline">\(e_i\)</span> as <strong>the deviation of person <span class="math inline">\(i\)</span>’s salary from the mean salary of everyone in the population who has the same number of publications as person <span class="math inline">\(i\)</span>.</strong> Here we assume that <span class="math inline">\(e_i\)</span> is normally distributed, written as <span class="math inline">\(e_i \sim N(0, \sigma)\)</span>, where <span class="math inline">\(\sigma\)</span> describes the conditional standard deviation (i.e., the standard deviation across individuals who have the same number of publications). From the regression results, <span class="math inline">\(\sigma\)</span> is estimated as the <code>Residual standard error</code> = 8,440.</p>
+<p>Based on these model assumptions, we can imagine a large population, say with 10,000 people</p>
+<pre class="r"><code># Simulating a large population. The code in this chunk 
+# is not essential for conceptual understanding
+Npop &lt;- 10000
+beta0 &lt;- 48439.09
+beta1 &lt;- 350.80
+sigma &lt;- 8440
+# Simulate population data
+simulated_population &lt;- tibble(
+  # Simulate population pub
+  pub = local({
+    dens &lt;- density(c(-salary_dat$pub, salary_dat$pub), bw = &quot;SJ&quot;, 
+                    n = 1024)
+    dens_x &lt;- c(0, dens$x[dens$x &gt; 0])
+    dens_y &lt;- c(0, dens$y[dens$x &gt; 0])
+    round(
+      approx(
+        cumsum(dens_y) / sum(dens_y),
+        dens_x,
+        runif(Npop)
+      )$y
+    )
+  }), 
+  # Simulate error
+  e = rnorm(Npop, mean = 0, sd = sigma)
+)
+# Compute salary variable
+simulated_population$salary &lt;- 
+  beta0 + beta1 * simulated_population$pub + simulated_population$e
+# Plot
+p_pop &lt;- ggplot(data = simulated_population, 
+                aes(x = pub, y = salary)) + 
+  geom_point(alpha = 0.1) + 
+  # Add population regression line in blue
+  geom_smooth(se = FALSE, method = &quot;lm&quot;)
+p_pop</code></pre>
+<pre><code>&gt;# `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="/courses/psyc575/rcode2_files/figure-html/fake-pop-1.png" width="672" /></p>
+<p>Now, we can simulate some fake (but plausible) samples. An important thing to remember is we want to <strong>simulate data that have the same size as the original sample</strong>, because we’re comparing to other plausible samples with equal size. In R there is a handy <code>simulate()</code> function to do that.</p>
+<pre class="r"><code>simulated_salary &lt;- simulate(m1)
+# Add simulated salary to the original data
+# Note: the simulated variable is called `sim_1`
+sim_data1 &lt;- bind_cols(salary_dat, simulated_salary)
+# Show the first six rows
+head(sim_data1)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["id"],"name":[1],"type":["int"],"align":["right"]},{"label":["time"],"name":[2],"type":["int"],"align":["right"]},{"label":["pub"],"name":[3],"type":["int"],"align":["right"]},{"label":["sex"],"name":[4],"type":["int"],"align":["right"]},{"label":["citation"],"name":[5],"type":["int"],"align":["right"]},{"label":["salary"],"name":[6],"type":["int"],"align":["right"]},{"label":["sim_1"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"1","2":"3","3":"18","4":"1","5":"50","6":"51876","7":"60341.50","_rn_":"1"},{"1":"2","2":"6","3":"3","4":"1","5":"26","6":"54511","7":"46386.95","_rn_":"2"},{"1":"3","2":"3","3":"2","4":"1","5":"50","6":"53425","7":"52020.99","_rn_":"3"},{"1":"4","2":"8","3":"17","4":"0","5":"34","6":"61863","7":"36516.03","_rn_":"4"},{"1":"5","2":"9","3":"11","4":"1","5":"41","6":"52926","7":"55183.13","_rn_":"5"},{"1":"6","2":"6","3":"6","4":"0","5":"37","6":"47034","7":"55606.59","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre class="r"><code># Plot the data (add on to the population)
+p_pop + 
+  geom_point(data = sim_data1, 
+             aes(x = pub, y = sim_1),
+             col = &quot;red&quot;) + 
+  # Add sample regression line
+  geom_smooth(data = sim_data1, 
+              aes(x = pub, y = sim_1),
+              method = &quot;lm&quot;, se = FALSE, col = &quot;red&quot;)</code></pre>
+<pre><code>&gt;# `geom_smooth()` using formula &#39;y ~ x&#39;
+&gt;# `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="/courses/psyc575/rcode2_files/figure-html/sim-data1-1.png" width="672" /></p>
+<pre class="r"><code># To be more transparent, here&#39;s what the simulate() function essentially is
+# doing
+sample_size &lt;- nrow(salary_dat)
+sim_data1 &lt;- tibble(
+  pub = salary_dat$pub,
+  # simulate error
+  e = rnorm(sample_size, mean = 0, sd = sigma)
+)
+# Compute new salary data
+sim_data1$sim_1 &lt;- beta0 + beta1 * sim_data1$pub + sim_data1$e</code></pre>
+<p>As you can see, the sample regression line in red is different from the blue line.</p>
+<div id="drawing-100-samples" class="section level4">
+<h4>Drawing 100 samples</h4>
+<p>Let’s draw more samples</p>
+<pre class="r"><code>num_samples &lt;- 100
+simulated_salary100 &lt;- simulate(m1, nsim = num_samples)
+# Form a giant data set with 100 samples
+sim_data100 &lt;- bind_cols(salary_dat, simulated_salary100) %&gt;% 
+  pivot_longer(sim_1:sim_100, 
+               names_prefix = &quot;sim_&quot;, 
+               names_to = &quot;sim&quot;, 
+               values_to = &quot;simulated_salary&quot;)
+# Plot by samples
+p_sim100 &lt;- ggplot(sim_data100, 
+                   aes(x = pub, y = simulated_salary, group = sim)) + 
+  geom_point(col = &quot;red&quot;, alpha = 0.1) + 
+  geom_smooth(col = &quot;red&quot;, se = FALSE, method = &quot;lm&quot;)
+# Use gganimate (this takes some time to render)
+library(gganimate)
+p_sim100 + transition_states(sim) + 
+  ggtitle(&quot;Simulation {frame} of {nframes}&quot;)</code></pre>
+<pre><code>&gt;# `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="/courses/psyc575/rcode2_files/figure-html/sim-100-samples-1.gif" /><!-- --></p>
+<p>We can show the regression lines for all 100 samples</p>
+<pre class="r"><code>ggplot(sim_data100,
+       aes(x = pub, y = simulated_salary, group = sim)) +
+  stat_smooth(
+    geom = &quot;line&quot;,
+    col = &quot;red&quot;,
+    se = FALSE,
+    method = &quot;lm&quot;,
+    alpha = 0.4
+  )</code></pre>
+<pre><code>&gt;# `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="/courses/psyc575/rcode2_files/figure-html/plot-sim_data100-1.png" width="672" /></p>
+<p>The confidence intervals of the intercept and the slope how much uncertainty there is.</p>
+</div>
+</div>
+<div id="p-values" class="section level3">
+<h3><span class="math inline">\(p\)</span> values</h3>
+<p>Now, we can also understand the <span class="math inline">\(p\)</span> value for the regression slope of <code>pub</code> is. Remember that the <span class="math inline">\(p\)</span> value is the probability that, if the regression slope of <code>pub</code> is zero (i.e., no association), how likely/unlikely would we get the sample slope (i.e., 350.80) in our data. So now we’ll repeat the simulation, but without <code>pub</code> as a predictor (i.e., assuming <span class="math inline">\(\beta_1 = 0\)</span>).</p>
+<pre class="r"><code>num_samples &lt;- 100
+m0 &lt;- lm(salary ~ 1, data = salary_dat)  # null model
+simulated_salary100_null &lt;- simulate(m0, nsim = num_samples)
+# Form a giant data set with 100 samples
+sim_null100 &lt;- bind_cols(salary_dat, simulated_salary100_null) %&gt;% 
+  pivot_longer(sim_1:sim_100, 
+               names_prefix = &quot;sim_&quot;, 
+               names_to = &quot;sim&quot;, 
+               values_to = &quot;simulated_salary&quot;)
+# Show the null slopes
+ggplot(data = salary_dat,
+       aes(x = pub, y = salary)) +
+  stat_smooth(
+    data = sim_null100,
+    aes(x = pub, y = simulated_salary, group = sim),
+    geom = &quot;line&quot;,
+    col = &quot;darkgrey&quot;,
+    se = FALSE,
+    method = &quot;lm&quot;
+  ) +
+  geom_smooth(method = &quot;lm&quot;, col = &quot;red&quot;, se = FALSE) +
+  geom_point()</code></pre>
+<pre><code>&gt;# `geom_smooth()` using formula &#39;y ~ x&#39;
+&gt;# `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="/courses/psyc575/rcode2_files/figure-html/sim-null-1.png" width="672" /></p>
+<p>So you can see the sample slope is larger than what you would expect to see if the true slope is zero. So the <span class="math inline">\(p\)</span> value is very small, and the result is statistically significant (at, say, .05 level).</p>
+<hr />
+</div>
+<div id="centering" class="section level3">
+<h3>Centering</h3>
+<p>So that the intercept refers to a more meaningful value. It’s a major issue in multilevel modeling.</p>
+<p><span class="math display">\[\text{salary}_i = \beta_0 + \beta_1 \text{pub}^c_i + e_i\]</span></p>
+<pre class="r"><code># Using pipe operator
+salary_dat &lt;- salary_dat %&gt;% 
+  mutate(pub_c = pub - mean(pub))
+# Equivalent to:
+# salary_dat &lt;- mutate(salary_dat, 
+#                      pub_c = pub - mean(pub))
+m1c &lt;- lm(salary ~ pub_c, data = salary_dat)
+summary(m1c)</code></pre>
+<pre><code>&gt;# 
+&gt;# Call:
+&gt;# lm(formula = salary ~ pub_c, data = salary_dat)
+&gt;# 
+&gt;# Residuals:
+&gt;#      Min       1Q   Median       3Q      Max 
+&gt;# -20660.0  -7397.5    333.7   5313.9  19238.7 
+&gt;# 
+&gt;# Coefficients:
+&gt;#             Estimate Std. Error t value Pr(&gt;|t|)    
+&gt;# (Intercept) 54815.76    1071.93  51.137  &lt; 2e-16 ***
+&gt;# pub_c         350.80      77.17   4.546 2.71e-05 ***
+&gt;# ---
+&gt;# Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+&gt;# 
+&gt;# Residual standard error: 8440 on 60 degrees of freedom
+&gt;# Multiple R-squared:  0.2562, Adjusted R-squared:  0.2438 
+&gt;# F-statistic: 20.67 on 1 and 60 DF,  p-value: 2.706e-05</code></pre>
+<p>The only change is the intercept coefficient</p>
+<pre class="r"><code>p1 + 
+  geom_smooth(method = &quot;lm&quot;, col = &quot;red&quot;) + 
+  # Intercept without centering
+  geom_vline(aes(col = &quot;Not centered&quot;, xintercept = 0)) + 
+  # Intercept with centering
+  geom_vline(aes(col = &quot;Centered&quot;, xintercept = mean(salary_dat$pub))) + 
+  labs(col = &quot;&quot;)</code></pre>
+<pre><code>&gt;# `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="/courses/psyc575/rcode2_files/figure-html/p1-center-1.png" width="672" /></p>
+</div>
+</div>
+<div id="categorical-predictor" class="section level2">
+<h2>2. Categorical Predictor</h2>
+<p>Recode <code>sex</code> as <code>factor</code> variable in R (which allows R to automatically do dummy coding). This should be done in general for categorical predictors.</p>
+<pre class="r"><code>salary_dat &lt;- salary_dat %&gt;% 
+  mutate(sex = factor(sex, levels = c(0, 1), 
+                      labels = c(&quot;male&quot;, &quot;female&quot;)))</code></pre>
+<p><span class="math display">\[\text{salary}_i = \beta_0 + \beta_1 \text{sex}_i + e_i\]</span></p>
+<pre class="r"><code>(p2 &lt;- ggplot(salary_dat, aes(x = sex, y = salary)) + 
+    geom_boxplot() + 
+    geom_jitter(height = 0, width = 0.1))  # move the points to left/right a bit</code></pre>
+<p><img src="/courses/psyc575/rcode2_files/figure-html/p2-1.png" width="672" /></p>
+<pre class="r"><code>m2 &lt;- lm(salary ~ sex, data = salary_dat)
+summary(m2)</code></pre>
+<pre><code>&gt;# 
+&gt;# Call:
+&gt;# lm(formula = salary ~ sex, data = salary_dat)
+&gt;# 
+&gt;# Residuals:
+&gt;#    Min     1Q Median     3Q    Max 
+&gt;# -18576  -5736    -19   4853  26988 
+&gt;# 
+&gt;# Coefficients:
+&gt;#             Estimate Std. Error t value Pr(&gt;|t|)    
+&gt;# (Intercept)    56515       1620  34.875   &lt;2e-16 ***
+&gt;# sexfemale      -3902       2456  -1.589    0.117    
+&gt;# ---
+&gt;# Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+&gt;# 
+&gt;# Residual standard error: 9587 on 60 degrees of freedom
+&gt;# Multiple R-squared:  0.04039,    Adjusted R-squared:  0.02439 
+&gt;# F-statistic: 2.525 on 1 and 60 DF,  p-value: 0.1173</code></pre>
+<p>The <code>(Intercept)</code> coefficient is for the ‘0’ category, i.e., predicted salary for males; the <code>female</code> coefficient is the difference between males and females.</p>
+<p>Predicted female salary = 56515 + (-3902) = 52613.</p>
+<div id="equivalence-to-the-t-test" class="section level3">
+<h3>Equivalence to the <span class="math inline">\(t\)</span>-test</h3>
+<p>When assuming homogeneity of variance</p>
+<pre class="r"><code>t.test(salary ~ sex, data = salary_dat, var.equal = TRUE)</code></pre>
+<pre><code>&gt;# 
+&gt;#  Two Sample t-test
+&gt;# 
+&gt;# data:  salary by sex
+&gt;# t = 1.5891, df = 60, p-value = 0.1173
+&gt;# alternative hypothesis: true difference in means is not equal to 0
+&gt;# 95 percent confidence interval:
+&gt;#  -1009.853  8814.041
+&gt;# sample estimates:
+&gt;#   mean in group male mean in group female 
+&gt;#             56515.06             52612.96</code></pre>
+</div>
+</div>
+<div id="multiple-predictors-multiple-regression" class="section level2">
+<h2>3. Multiple Predictors (Multiple Regression)</h2>
+<p>Now add one more predictor, <code>time</code>
+<span class="math display">\[\text{salary}_i = \beta_0 + \beta_1 \text{pub}^c_i + \beta_2 \text{time}_i + e_i\]</span></p>
+<pre class="r"><code>ggplot(salary_dat, aes(x = time, y = salary)) + 
+  geom_point() + 
+  geom_smooth()</code></pre>
+<pre><code>&gt;# `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
+<p><img src="/courses/psyc575/rcode2_files/figure-html/p3-1.png" width="672" /></p>
+<pre class="r"><code>m3 &lt;- lm(salary ~ pub_c + time, data = salary_dat)
+summary(m3)  # summary</code></pre>
+<pre><code>&gt;# 
+&gt;# Call:
+&gt;# lm(formula = salary ~ pub_c + time, data = salary_dat)
+&gt;# 
+&gt;# Residuals:
+&gt;#    Min     1Q Median     3Q    Max 
+&gt;# -15919  -5537   -985   4861  22476 
+&gt;# 
+&gt;# Coefficients:
+&gt;#             Estimate Std. Error t value Pr(&gt;|t|)    
+&gt;# (Intercept) 47373.38    2281.78  20.762  &lt; 2e-16 ***
+&gt;# pub_c         133.00      92.73   1.434 0.156797    
+&gt;# time         1096.03     303.58   3.610 0.000632 ***
+&gt;# ---
+&gt;# Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+&gt;# 
+&gt;# Residual standard error: 7703 on 59 degrees of freedom
+&gt;# Multiple R-squared:  0.3908, Adjusted R-squared:  0.3701 
+&gt;# F-statistic: 18.92 on 2 and 59 DF,  p-value: 4.476e-07</code></pre>
+<pre class="r"><code>confint(m3)  # confidence interval</code></pre>
+<pre><code>&gt;#                   2.5 %     97.5 %
+&gt;# (Intercept) 42807.55413 51939.2044
+&gt;# pub_c         -52.56216   318.5589
+&gt;# time          488.56251  1703.4921</code></pre>
+<p>The regression coefficients are the <em>partial</em> effects.</p>
+<p><img src="https://github.com/marklhc/marklai-pages/raw/master/static/img/regression_venn.png" /></p>
+<div id="plotting" class="section level3">
+<h3>Plotting</h3>
+<p>The <code>sjPlot::plot_model()</code> function is handy</p>
+<pre class="r"><code>sjPlot::plot_model(m3, type = &quot;pred&quot;, show.data = TRUE, 
+                   title = &quot;&quot;)  # remove title</code></pre>
+<pre><code>&gt;# $pub_c</code></pre>
+<p><img src="/courses/psyc575/rcode2_files/figure-html/plot-m3-1.png" width="672" /></p>
+<pre><code>&gt;# 
+&gt;# $time</code></pre>
+<p><img src="/courses/psyc575/rcode2_files/figure-html/plot-m3-2.png" width="672" /></p>
+</div>
+<div id="interpretations-1" class="section level3">
+<h3>Interpretations</h3>
+<blockquote>
+<p>Faculty who have worked <em>longer</em> tended to have <em>more</em> publications
+<strong>For faculty who graduate around the same time</strong>, a difference of 1 publication is associated with an estimated difference in salary of <span class="math inline">\(133.0, 95% CI [\)</span>-52.6, $318.6], which was not significant.</p>
+</blockquote>
+</div>
+<div id="diagnostics" class="section level3">
+<h3>Diagnostics</h3>
+<pre class="{m3-diagnostics}"><code>car::mmps(m3)  # marginal model plots for linearity assumptions</code></pre>
+</div>
+<div id="effect-size" class="section level3">
+<h3>Effect size</h3>
+<p>Proportion of predicted variance: <span class="math inline">\(R^2\)</span> = 39%, adj. <span class="math inline">\(R^2\)</span> = 37%.</p>
+</div>
+</div>
+<div id="interaction" class="section level2">
+<h2>4. Interaction</h2>
+<p>For interpretation purposes, it’s recommended to center the predictors (at least the continuous ones)</p>
+<p><span class="math display">\[\text{salary}_i = \beta_0 + \beta_1 \text{pub}^c_i + \beta_2 \text{time}^c_i + \beta_3 (\text{pub}^c_i)(\text{time}^c_i) + e_i\]</span></p>
+<pre class="r"><code>salary_dat &lt;- salary_dat %&gt;% 
+  mutate(time_c = time - mean(time))
+# Fit the model with interactions:
+m4 &lt;- lm(salary ~ pub_c * time_c, data = salary_dat)
+summary(m4)  # summary</code></pre>
+<pre><code>&gt;# 
+&gt;# Call:
+&gt;# lm(formula = salary ~ pub_c * time_c, data = salary_dat)
+&gt;# 
+&gt;# Residuals:
+&gt;#    Min     1Q Median     3Q    Max 
+&gt;# -14740  -5305   -373   4385  22744 
+&gt;# 
+&gt;# Coefficients:
+&gt;#              Estimate Std. Error t value Pr(&gt;|t|)    
+&gt;# (Intercept)  54238.08    1183.01  45.847  &lt; 2e-16 ***
+&gt;# pub_c          104.72      98.41   1.064  0.29169    
+&gt;# time_c         964.17     339.68   2.838  0.00624 ** 
+&gt;# pub_c:time_c    15.07      17.27   0.872  0.38664    
+&gt;# ---
+&gt;# Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+&gt;# 
+&gt;# Residual standard error: 7719 on 58 degrees of freedom
+&gt;# Multiple R-squared:  0.3987, Adjusted R-squared:  0.3676 
+&gt;# F-statistic: 12.82 on 3 and 58 DF,  p-value: 1.565e-06</code></pre>
+<div id="interaction-plots" class="section level3">
+<h3>Interaction Plots</h3>
+<p>Interpreting interaction effects is hard. Therefore,</p>
+<blockquote>
+<p>Always plot the interaction to understand the dynamics</p>
+</blockquote>
+<pre class="r"><code>interactions::interact_plot(m4,
+                            pred = &quot;pub_c&quot;,
+                            modx = &quot;time_c&quot;,
+                            # Insert specific values to plot the slopes. 
+                            # Pay attention that `time_c` has been centered
+                            modx.values = c(1, 7, 15) - 6.79, 
+                            modx.labels = c(1, 7, 15), 
+                            plot.points = TRUE, 
+                            x.label = &quot;Number of publications (mean-centered)&quot;, 
+                            y.label = &quot;Salary&quot;, 
+                            legend.main = &quot;Time since Ph.D.&quot;)</code></pre>
+<p><img src="/courses/psyc575/rcode2_files/figure-html/interaction-plot-1.png" width="672" /></p>
+<p>Another approach is to plug in numbers to the equation:
+<span class="math display">\[\widehat{\text{salary}} = \hat \beta_0 + \hat \beta_1 \text{pub}^c + \hat \beta_2 \text{time}^c + \hat \beta_3 (\text{pub}^c)(\text{time}^c)\]</span>
+For example, consider people who’ve graduated for seven years, i.e., <code>time</code> = 7. First, be careful that in the model we have <code>time_c</code>, and <code>time</code> = 7 corresponds to <code>time_c</code> = 0.2096774 years. So if we plug that into the equation,
+<span class="math display">\[\widehat{\text{salary}} |_{\text{time} = 7} = \hat \beta_0 + \hat \beta_1 \text{pub}^c + \hat \beta_2 (0.21) + \hat \beta_3 (\text{pub}^c)(0.21)\]</span>
+Combining terms with pub<sup>c</sup>,
+<span class="math display">\[\widehat{\text{salary}} |_{\text{time} = 7} = [\hat \beta_0 + \hat \beta_2 (0.21)] + [\hat \beta_1 + \hat \beta_3 (0.21)] (\text{pub}^c)\]</span>
+Now plug in the numbers for <span class="math inline">\(\hat \beta_0\)</span>, <span class="math inline">\(\hat \beta_1\)</span>, <span class="math inline">\(\hat \beta_2\)</span>, <span class="math inline">\(\hat \beta_3\)</span>,</p>
+<pre class="r"><code># beta0 + beta2 * 0.21
+54238.08 + 964.17 * 0.21</code></pre>
+<pre><code>&gt;# [1] 54440.56</code></pre>
+<pre class="r"><code># beta1 + beta3 * 0.21
+104.72 + 15.07 * 0.21</code></pre>
+<pre><code>&gt;# [1] 107.8847</code></pre>
+<p>resulting in
+<span class="math display">\[\widehat{\text{salary}} |_{\text{time} = 7} = 54440.6 + 107.9 (\text{pub}^c), \]</span>
+which is the regression line for <code>time</code> = 7. Note, however, when an interaction is present, the regression slope will be different with a different value of <code>time</code>. So remember that</p>
+<blockquote>
+<p>An interaction means that the regression slope of a predictor depends on another predictor.</p>
+</blockquote>
+<p>We will further explore this in the class exercise this week.</p>
+</div>
+</div>
+<div id="tabulate-the-regression-results" class="section level2">
+<h2>5. Tabulate the Regression Results</h2>
+<pre class="r"><code>msummary(list(&quot;M1&quot; = m1, 
+              &quot;M2&quot; = m2, 
+              &quot;M3&quot; = m3, 
+              &quot;M3 + Interaction&quot; = m4), 
+         fmt = &quot;%.1f&quot;)  # keep one digit</code></pre>
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#ovhytruaup .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#ovhytruaup .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#ovhytruaup .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#ovhytruaup .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 4px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#ovhytruaup .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#ovhytruaup .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#ovhytruaup .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#ovhytruaup .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#ovhytruaup .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#ovhytruaup .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#ovhytruaup .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#ovhytruaup .gt_group_heading {
+  padding: 8px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#ovhytruaup .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#ovhytruaup .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#ovhytruaup .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#ovhytruaup .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#ovhytruaup .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 12px;
+}
+
+#ovhytruaup .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#ovhytruaup .gt_first_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+}
+
+#ovhytruaup .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#ovhytruaup .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#ovhytruaup .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#ovhytruaup .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#ovhytruaup .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#ovhytruaup .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding: 4px;
+}
+
+#ovhytruaup .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#ovhytruaup .gt_sourcenote {
+  font-size: 90%;
+  padding: 4px;
+}
+
+#ovhytruaup .gt_left {
+  text-align: left;
+}
+
+#ovhytruaup .gt_center {
+  text-align: center;
+}
+
+#ovhytruaup .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#ovhytruaup .gt_font_normal {
+  font-weight: normal;
+}
+
+#ovhytruaup .gt_font_bold {
+  font-weight: bold;
+}
+
+#ovhytruaup .gt_font_italic {
+  font-style: italic;
+}
+
+#ovhytruaup .gt_super {
+  font-size: 65%;
+}
+
+#ovhytruaup .gt_footnote_marks {
+  font-style: italic;
+  font-size: 65%;
+}
+</style>
+<div id="ovhytruaup" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;"><table class="gt_table">
+  
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1"> </th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">M1</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">M2</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">M3</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">M3 + Interaction</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr>
+      <td class="gt_row gt_left">(Intercept)</td>
+      <td class="gt_row gt_left">48439.1</td>
+      <td class="gt_row gt_left">56515.1</td>
+      <td class="gt_row gt_left">47373.4</td>
+      <td class="gt_row gt_left">54238.1</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left">(1765.4)</td>
+      <td class="gt_row gt_left">(1620.5)</td>
+      <td class="gt_row gt_left">(2281.8)</td>
+      <td class="gt_row gt_left">(1183.0)</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">pub</td>
+      <td class="gt_row gt_left">350.8</td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left">(77.2)</td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">sexfemale</td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left">-3902.1</td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left">(2455.6)</td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">pub_c</td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left">133.0</td>
+      <td class="gt_row gt_left">104.7</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left">(92.7)</td>
+      <td class="gt_row gt_left">(98.4)</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">time</td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left">1096.0</td>
+      <td class="gt_row gt_left"></td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left">(303.6)</td>
+      <td class="gt_row gt_left"></td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">pub_c:time_c</td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left">15.1</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left">(17.3)</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">time_c</td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left">964.2</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #000000;"></td>
+      <td class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #000000;"></td>
+      <td class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #000000;"></td>
+      <td class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #000000;"></td>
+      <td class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #000000;">(339.7)</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">Num.Obs.</td>
+      <td class="gt_row gt_left">62</td>
+      <td class="gt_row gt_left">62</td>
+      <td class="gt_row gt_left">62</td>
+      <td class="gt_row gt_left">62</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">R2</td>
+      <td class="gt_row gt_left">0.256</td>
+      <td class="gt_row gt_left">0.040</td>
+      <td class="gt_row gt_left">0.391</td>
+      <td class="gt_row gt_left">0.399</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">R2 Adj.</td>
+      <td class="gt_row gt_left">0.244</td>
+      <td class="gt_row gt_left">0.024</td>
+      <td class="gt_row gt_left">0.370</td>
+      <td class="gt_row gt_left">0.368</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">AIC</td>
+      <td class="gt_row gt_left">1301.0</td>
+      <td class="gt_row gt_left">1316.8</td>
+      <td class="gt_row gt_left">1290.6</td>
+      <td class="gt_row gt_left">1291.8</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">BIC</td>
+      <td class="gt_row gt_left">1307.4</td>
+      <td class="gt_row gt_left">1323.1</td>
+      <td class="gt_row gt_left">1299.1</td>
+      <td class="gt_row gt_left">1302.4</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">Log.Lik.</td>
+      <td class="gt_row gt_left">-647.486</td>
+      <td class="gt_row gt_left">-655.383</td>
+      <td class="gt_row gt_left">-641.299</td>
+      <td class="gt_row gt_left">-640.895</td>
+    </tr>
+  </tbody>
+  
+  
+</table></div>
+</div>

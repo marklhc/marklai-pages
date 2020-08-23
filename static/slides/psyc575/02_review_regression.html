@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Review of Regression Analysis</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Mark Lai" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Review of Regression Analysis
+## PSYC 575
+### Mark Lai
+### University of Southern California
+### 2020/08/04 (updated: 2020-08-10)
+
+---
+
+
+
+
+# Statistical Model
+
+.pull-left[
+
+![](02_review_regression_files/figure-html/stat-model-1.png)&lt;!-- --&gt;
+
+]
+
+--
+
+.pull-right[
+
+## A set of statistical assumptions describing how data are generated
+
+- Deterministic/fixed component
+
+`$$Y_i = \beta_0 + \beta_1 X_{1i} + \beta_2 X_{2i} + \ldots$$`
+
+- Stochastic/random component
+
+`$$Y_i = \beta_0 + \beta_1 X_{1i} + \beta_2 X_{2i} + \ldots + \color{red}{e_i}$$`
+`$$\color{red}{e_i \sim N(0, \sigma)}$$`
+
+]
+
+???
+
+- It's only a review so I won't go deep. 
+- You may check out the sections in the book by Gelman et al. 
+- Model in OpenBoard
+- Statistical notation
+    * Notation for normal distribution
+    * Important for MLM
+
+---
+
+class: middle, center
+
+# Why Regression?
+
+--
+
+### MLM is an extension of multiple regression to deal with data from multiple levels
+
+---
+
+# Learning Objectives
+
+### Refresh your memory on regression
+
+--
+
+- Describe the statistical model
+
+--
+
+- Write out the model equations
+
+--
+
+- Simulate data based on a regression model
+
+--
+
+- Plot interactions
+
+---
+
+class: inverse, middle, center
+
+# R Demonstration
+
+???
+
+Transition to RStudio
+
+- Data Import
+- Explain the variables
+
+---
+
+# Salary Data
+
+From [Cohen, Cohen, West &amp; Aiken (2003)](https://doi.org/10.4324/9780203774441)
+
+Examine factors related to annual salary of faculty in a university department
+
+--
+
+- time = years after receiving degree
+- pub = # of publications
+- sex = gender (0 = male, 1 = female)
+- citation = # of citations
+- salary = annual salary
+
+---
+
+# Data Exploration
+
+.pull-left[
+
+&lt;img src="02_review_regression_files/figure-html/salary_dat-1.png" width="504" /&gt;
+
+]
+
+???
+
+Explain what the x axis, y axis, diagonals are
+
+Citation vs salary as an example
+
+--
+
+.pull-right[
+
+- How does the distribution of `salary` look?
+
+- Are there more males or females in the data?
+
+- How would you describe the relationship between number of publications and salary?
+
+]
+
+---
+
+# Simple Linear Regression
+
+### Sample regression line
+
+### Confidence intervals
+
+### Centering
+
+???
+
+- Regression line is only a sample estimate; there is uncertainty
+- Uncertainty measured by standard errors and confidence intervals
+    * Show animations on the varying regression slopes
+    * A function of sample size
+- Centering: Draw picture on changing the x-axis
+- Interpretations: unit increase in `\(x\)` associated with `\(\beta\)` unit increase in `\(y\)`
+
+---
+
+class: inverse, middle, center
+
+# Simulation
+
+---
+
+# Categorical Predictors
+
+.pull-left[
+
+### Dummy Coding
+
+With `\(k\)` categories, one needs `\(k – 1\)` dummy variables
+
+The coefficients are differences relative to the reference group
+
+]
+
+--
+
+.pull-right[
+
+
+
+![](02_review_regression_files/figure-html/p2-1.png)&lt;!-- --&gt;
+
+
+]
+
+---
+
+# Categorical Predictors
+
+.pull-left[
+
+### Dummy Coding
+
+With `\(k\)` categories, one needs `\(k – 1\)` dummy variables
+
+The coefficients are differences relative to the reference group
+
+Male = 0
+
+`$$y = \beta_0 + \beta_1 (0) = \beta_0$$`
+
+]
+
+.pull-right[
+
+![](02_review_regression_files/figure-html/p2-1-1.png)&lt;!-- --&gt;
+
+]
+
+---
+
+# Categorical Predictors
+
+.pull-left[
+
+### Dummy Coding
+
+With `\(k\)` categories, one needs `\(k – 1\)` dummy variables
+
+The coefficients are differences relative to the reference group
+
+Male = 0
+
+`$$y = \beta_0 + \beta_1 (0) = \beta_0$$`
+
+Female = 1
+
+`$$y = \beta_0 + \beta_1 (1) = \beta_0 + \beta_1$$`
+
+]
+
+.pull-right[
+
+![](02_review_regression_files/figure-html/p2-2-1.png)&lt;!-- --&gt;
+
+
+]
+
+---
+
+class: inverse, middle, center
+
+# Multiple Regression
+
+---
+
+.pull-left[
+
+# Partial Effects
+
+`$$\text{salary}_i = \beta_0 + \beta_1 \text{pub}^c_i + \beta_2 \text{time}_i + e_i$$`
+
+![](https://github.com/marklhc/marklai-pages/raw/master/static/img/regression_venn.png)
+
+]
+
+???
+
+Transition to R
+
+--
+
+.pull-right[
+
+# Interpretations
+
+### Every unit increase in `\(X\)` is associated with `\(\beta_1\)` unit increase in `\(Y\)`, **when all other predictors are constant**
+
+]
+
+---
+
+# Interactions
+
+### Regression slope of a predictor depends on another predictor
+
+`\begin{align}
+  \widehat{\text{salary}} &amp; = 54238 + 105 \times \text{pub}^c + 964 \times \text{time}^c \\
+  &amp; \quad + 15 (\text{pub}^c)(\text{time}^c)
+\end{align}`
+
+--
+
+`time` = 7 `\(\Rightarrow\)` `time_c` = 0.21
+
+`\begin{align}
+  \widehat{\text{salary}} &amp; = 54238 + 105 \times \text{pub}^c + 964 (0.21) \\
+  &amp; \quad + 15 (\text{pub}^c)(0.21) \\
+  &amp; = 54440 + 120 \times \text{pub}^c
+\end{align}`
+
+--
+
+`time` = 15 `\(\Rightarrow\)` `time_c` = 8.21
+
+`\begin{align}
+  \widehat{\text{salary}} &amp; = 54238 + 105 \times \text{pub}^c + 964 (8.21) \\
+  &amp; \quad + 15 (\text{pub}^c)(8.21) \\
+  &amp; = 62152 + 228 \times \text{pub}^c
+\end{align}`
+
+---
+
+# Interactions
+
+### Regression slope of a predictor depends on another predictor
+
+.pull-left[
+
+`\begin{align}
+  \widehat{\text{salary}} &amp; = 54238 + 105 \times \text{pub}^c + 964 \times \text{time}^c \\
+  &amp; \quad + 15 (\text{pub}^c)(\text{time}^c)
+\end{align}`
+
+`time` = 7 `\(\Rightarrow\)` `time_c` = 0.21
+
+`\begin{align}
+  \widehat{\text{salary}} &amp; = 54238 + 105 \times \text{pub}^c + 964 (0.21) \\
+  &amp; \quad + 15 (\text{pub}^c)(0.21) \\
+  &amp; = 54440 + 120 \times \text{pub}^c
+\end{align}`
+
+`time` = 15 `\(\Rightarrow\)` `time_c` = 8.21
+
+`\begin{align}
+  \widehat{\text{salary}} &amp; = 54238 + 105 \times \text{pub}^c + 964 (8.21) \\
+  &amp; \quad + 15 (\text{pub}^c)(8.21) \\
+  &amp; = 62152 + 228 \times \text{pub}^c
+\end{align}`
+
+]
+
+.pull-right[
+
+
+
+&lt;img src="02_review_regression_files/figure-html/p4-1.png" width="100%" /&gt;
+
+]
+
+---
+
+# `modelsummary::msummary()`
+
+
+```r
+library(modelsummary)
+msummary(list("M3 + Interaction" = m4), 
+         fmt = "%.1f")  # keep one digit
+```
+
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#wfjyqnlsft .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#wfjyqnlsft .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#wfjyqnlsft .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#wfjyqnlsft .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 4px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#wfjyqnlsft .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#wfjyqnlsft .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#wfjyqnlsft .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#wfjyqnlsft .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#wfjyqnlsft .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#wfjyqnlsft .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#wfjyqnlsft .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#wfjyqnlsft .gt_group_heading {
+  padding: 8px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#wfjyqnlsft .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#wfjyqnlsft .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#wfjyqnlsft .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#wfjyqnlsft .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#wfjyqnlsft .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 12px;
+}
+
+#wfjyqnlsft .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#wfjyqnlsft .gt_first_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+}
+
+#wfjyqnlsft .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#wfjyqnlsft .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#wfjyqnlsft .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#wfjyqnlsft .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#wfjyqnlsft .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#wfjyqnlsft .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding: 4px;
+}
+
+#wfjyqnlsft .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#wfjyqnlsft .gt_sourcenote {
+  font-size: 90%;
+  padding: 4px;
+}
+
+#wfjyqnlsft .gt_left {
+  text-align: left;
+}
+
+#wfjyqnlsft .gt_center {
+  text-align: center;
+}
+
+#wfjyqnlsft .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#wfjyqnlsft .gt_font_normal {
+  font-weight: normal;
+}
+
+#wfjyqnlsft .gt_font_bold {
+  font-weight: bold;
+}
+
+#wfjyqnlsft .gt_font_italic {
+  font-style: italic;
+}
+
+#wfjyqnlsft .gt_super {
+  font-size: 65%;
+}
+
+#wfjyqnlsft .gt_footnote_marks {
+  font-style: italic;
+  font-size: 65%;
+}
+</style>
+<div id="wfjyqnlsft" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;"><table class="gt_table">
+  
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1"> </th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">M3 + Interaction</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr>
+      <td class="gt_row gt_left">(Intercept)</td>
+      <td class="gt_row gt_left">54238.1</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left">(1183.0)</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">pub_c</td>
+      <td class="gt_row gt_left">104.7</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left">(98.4)</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">pub_c:time_c</td>
+      <td class="gt_row gt_left">15.1</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left"></td>
+      <td class="gt_row gt_left">(17.3)</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">time_c</td>
+      <td class="gt_row gt_left">964.2</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #000000;"></td>
+      <td class="gt_row gt_left" style="border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #000000;">(339.7)</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">Num.Obs.</td>
+      <td class="gt_row gt_left">62</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">R2</td>
+      <td class="gt_row gt_left">0.399</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">R2 Adj.</td>
+      <td class="gt_row gt_left">0.368</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">AIC</td>
+      <td class="gt_row gt_left">1291.8</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">BIC</td>
+      <td class="gt_row gt_left">1302.4</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">Log.Lik.</td>
+      <td class="gt_row gt_left">-640.895</td>
+    </tr>
+  </tbody>
+  
+  
+</table></div>
+
+---
+
+# Summary
+
+### Concepts
+
+- What is a statistical model
+
+- Linear/Multiple Regression
+
+    * Centering 
+    
+    * Categorical predictor
+    
+    * Interpretations
+    
+    * Interactions
+
+### HW 2
+
+### Try replicating the examples in the Rmd file
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

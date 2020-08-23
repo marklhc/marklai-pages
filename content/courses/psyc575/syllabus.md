@@ -317,7 +317,7 @@ Student feedback is essential to the instructor and the Department to keep impro
 </td>
 <td>
 
-- Exercise: Interpreting interactions
+- Exercise: [Interpreting interactions][8]
 - [HW 2](../homework-2)
 
 </td>
@@ -338,7 +338,7 @@ Student feedback is essential to the instructor and the Department to keep impro
 <td>
 
 - Exercise: Empirical Bayes estimates
-- [HW 3](#)
+- [HW 3](../homework-3)
 
 </td>
 </tr>
@@ -572,7 +572,7 @@ Final paper (due **11/24, 10:00 am**)
 [5]: ../rcode1/#breakout-room-exercise
 [6]: https://statmodeling.stat.columbia.edu/wp-content/uploads/2020/07/raos_overview.pdf
 [7]: https://statmodeling.stat.columbia.edu/wp-content/uploads/2020/07/raos_tips.pdf
-
+[8]: /exercise/02-interaction.Rmd
 
 <!-- from https://graduateschool.usc.edu/faculty-n-staff/academic-conduct-n-support-systems/ --> 
 

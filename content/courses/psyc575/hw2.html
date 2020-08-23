@@ -1,0 +1,58 @@
+---
+title: Homework 2
+date: '2020-07-30'
+slug: homework-2
+categories: []
+tags: []
+linktitle: Homework 2
+summary: ~
+lastmod: '2020-08-22'
+type: docs
+menu:
+  psyc575:
+    parent: Week 2
+    weight: 3
+---
+
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+
+
+<div id="learning-objective" class="section level2">
+<h2>Learning Objective</h2>
+<ul>
+<li>Independently analyze real data using statistical software for multilevel modeling</li>
+</ul>
+</div>
+<div id="assignment-description" class="section level2">
+<h2>Assignment Description</h2>
+<p>In this assignment, you will practice using R Markdown and run a regression analysis using the <code>salary</code> data set used in the class demonstration. Specifically, you will select two predictors to predict <code>salary</code> in the data set to run a multiple regression, plot the slope of one of the predictors, and interpret its coefficient. Complete the two parts (article search and self-introduction) of the assignment by <strong>August 28</strong>. This assignment is worth 6 points.</p>
+</div>
+<div id="steps" class="section level2">
+<h2>Steps</h2>
+<ol style="list-style-type: decimal">
+<li>Download the <a href="/hw_templates/hw2_template.Rmd"><code>hw2_template.Rmd</code> file</a>. Rename it as <code>hw2_yourlastnameyourfirstname.Rmd</code> (e.g., <code>hw2_LaiMark.Rmd</code>), and write down your name inside the Rmd.</li>
+<li>Use R to import the data file <code>salary.txt</code> (which can be downloaded <a href="https://raw.githubusercontent.com/marklhc/marklai-pages/master/data_files/salary.txt">here</a>; right click –&gt; save as).</li>
+<li>Choose two predictors from the list of: <code>time</code>, <code>pub</code>, <code>sex</code>, and <code>citation</code>. You cannot choose both <code>time</code> and <code>pub</code> as that combination has been used in the class demonstration.</li>
+<li>Write down your regression model using the LaTeX syntax. For example,<br />
+<code>$$salary_i = \beta_0 + \beta_1 time_i + \beta_2 pub_i + e_i$$</code><br />
+Pay attention to the subscripts.</li>
+<li>Fit the regression model to your data using <code>lm()</code>, and obtain a summary table using the <code>modelsummary::msummary()</code> function.</li>
+<li>Provide a scatterplot showing (a) the regression slopes for your predictors and (b) the raw data points. You can use the <code>sjPlot::plot_model(..., show.data = TRUE)</code> function as in the <a href="../rcode2/#plotting">R codes</a> in the lecture.</li>
+<li>Write a sentence to interpret <em>one of</em> the coefficient in (6).</li>
+<li>Simulation
+<ol style="list-style-type: lower-alpha">
+<li>Simulate 100 data sets based on your model results by modifying the codes provided in the template. It’s similar to the discussion in the <a href="../rcode2/#drawing-100-samples">Drawing 100 samples</a> subsection. If it runs successfully, you should see two histograms showing the variations in the regression slopes across plausible fake data sets.</li>
+<li>Write a short paragraph to discuss what the two histograms tell you, and reflect on the process of simulating the data</li>
+</ol></li>
+<li>Fit a regression model including the interaction term of your two chosen predictors. Show an interaction plot.</li>
+<li>Knit your Rmd file to HTML/PDF/Word, and submit the knitted file to Blackboard.</li>
+</ol>
+</div>
+<div id="grading" class="section level2">
+<h2>Grading</h2>
+<p>Your instructor will use the rubric on Blackboard to grade this assignment.</p>
+</div>
+<div id="additional-notes" class="section level2">
+<h2>Additional Notes</h2>
+<p>You may post your questions to the Slack channel to get help from your peers and instructor.</p>
+</div>

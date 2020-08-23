@@ -1,0 +1,473 @@
+---
+title: "Review of Multiple Regression"
+output:
+  html_document:
+    df_print: paged
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = ">#")
+```
+
+## Load Packages and Import Data
+
+You can use add the `message=FALSE` option to suppress the package loading messages
+
+```{r load-pkg, message=FALSE}
+# To install a package, run the following ONCE (and only once on your computer)
+# install.packages("psych")  
+library(psych)  # for scatterplot matrix
+library(here)  # makes reading data more consistent
+library(tidyverse)  # for data manipulation and plotting
+library(car)  # some useful functions for regression
+library(modelsummary)  # for making tables
+library(sjPlot)  # for plotting slopes
+library(interactions)  # for plotting interactions
+theme_set(theme_bw())  # Theme; just my personal preference
+```
+
+### Import Data
+
+First, download the data file `salary.txt` from <https://raw.githubusercontent.com/marklhc/marklai-pages/master/data_files/salary.txt>, and import the data. A 
+robust way to do so is to download the data to a folder called `data_files` under the project 
+directory, and then use the `here` package. This avoids a lot of data import 
+issues that I've seen. 
+
+[P.S.]: # (You can hide the output by adding `results='hide'`)
+
+```{r salary_dat, results='hide'}
+# The `here()` function forces the use of the project directory
+here("data_files", "salary.txt")
+# Read in the data
+salary_dat <- read.table(here("data_files", "salary.txt"), header = TRUE)
+```
+
+Alternatively, from the menu, click `File` &rightarrow; `Import Dataset` &rightarrow; `From Text (base)...`, and select the file. 
+
+```{r show-salary_dat}
+# Show the data
+salary_dat
+```
+
+You can see the description of the variables here: https://rdrr.io/cran/MBESS/man/prof.salary.html
+
+## Quick Scatterplot Matrix
+
+Import to screen your data before any statistical modeling
+
+[P.S.]: # (You can hide the input by adding `echo=FALSE`)
+
+```{r pairs-salary_dat}
+pairs.panels(salary_dat[ , -1],  # not plotting the first column
+             ellipses = FALSE)
+```
+
+## 1. Linear Regression of `salary` on `pub`
+
+### Visualize the data
+
+```{r p1-smooth}
+# Visualize the data ("gg" stands for grammar of graphics)
+p1 <- ggplot(salary_dat,  # specify data
+             # aesthetics: mapping variable to axes)
+             aes(x = pub, y = salary)) +  
+             # geom: geometric objects, such as points, lines, shapes, etc
+             geom_point()
+# Add a smoother geom to visualize mean salary as a function of pub
+p1 + geom_smooth()
+```
+
+A little bit of non-linearity on the plot. Now fit the regression model
+
+### Linear regression
+
+You can type equations (with LaTeX; see a [quick reference](https://www.latex-tutorial.com/tutorials/amsmath/)). 
+
+P.S. Use `\text{}` to specify variable names
+
+P.S. Pay attention to the subscripts
+
+$$\text{salary}_i = \beta_0 + \beta_1 \text{pub}_i + e_i$$
+
+- Outcome: `salary`
+- Predictor: `pub`
+- $\beta_0$: regression intercept
+- $\beta_1$: regression slope
+- $e$: error
+
+```{r m1}
+# left hand side of ~ is outcome; right hand side contains predictors
+# salary ~ (beta_0) * 1 + (beta_1) * pub
+# remove beta_0 and beta_1 to get the formula
+m1 <- lm(salary ~ 1 + pub, data = salary_dat)
+# In R, the output is not printed out if it is saved to an object (e.g., m1). 
+# Summary:
+summary(m1)
+```
+
+### Visualize fitted regression line:
+
+```{r p1-fitted}
+p1 + 
+  # Non-parametric fit
+  geom_smooth(se = FALSE) + 
+  # Linear regression line (in red)
+  geom_smooth(method = "lm", col = "red")
+```
+
+### Confidence intervals
+
+```{r confint-m1}
+# Confidence intervals
+confint(m1)
+```
+
+### Interpretations
+
+> Based on our model, faculty with one more publication have predicted salary of $350.8, 95% CI [$196.4, $505.2], higher than those with one less publication. 
+
+But what do the confidence intervals and the standard errors mean? To understanding what exactly a regression model is, let's run some simulations. 
+
+***
+
+### Simulations
+
+Before you go on, take a look on a [brief introductory video](https://www.youtube.com/watch?v=pGvJl8vvlXY) by Clark Caylord on Youtube on simulating data based on a simple linear regression model. 
+
+To my delight, I also found out a gentle introduction of simulation method by one of our clinical science students at USC (Thanks Kayla!). You can access it through the USC library [here](https://libproxy1.usc.edu/login?url=http://sk.sagepub.com.libproxy2.usc.edu/reference/sage-encyclopedia-of-educational-research-measurement-evaluation/i13837.xml) (Sign-on required). Here's the citation: 
+
+Tureson, K. & Odland, A. (2018). Monte Carlo simulation studies. In B. Frey (Ed.),The SAGE
+Encyclopedia of Educational Research, Measurement, and Evaluation. Thousand Oaks, CA: SAGE Publications.
+
+Based on the analyses, the sample regression line is 
+$$\widehat{\text{salary}} = 48439.09 + 350.80 \text{pub}.$$
+The numbers are only sample estimates as there are sampling errors. However, if we assume that this line truly describe the relation between `salary` and `pub`, then we can simulate some fake data, which represents what we could have obtained in a different sample. 
+
+Going back to the equation
+$$\text{salary}_i = \beta_0 + \beta_1 \text{pub}_i + e_i,$$
+the only thing that changes across different samples, based on the statistical model, is $e_i$. Conceptually, you can think of the error term $e_i$ as **the deviation of person $i$'s salary from the mean salary of everyone in the population who has the same number of publications as person $i$.** Here we assume that $e_i$ is normally distributed, written as $e_i \sim N(0, \sigma)$, where $\sigma$ describes the conditional standard deviation (i.e., the standard deviation across individuals who have the same number of publications). From the regression results, $\sigma$ is estimated as the `Residual standard error` = 8,440. 
+
+Based on these model assumptions, we can imagine a large population, say with 10,000 people
+
+```{r fake-pop}
+# Simulating a large population. The code in this chunk 
+# is not essential for conceptual understanding
+Npop <- 10000
+beta0 <- 48439.09
+beta1 <- 350.80
+sigma <- 8440
+# Simulate population data
+simulated_population <- tibble(
+  # Simulate population pub
+  pub = local({
+    dens <- density(c(-salary_dat$pub, salary_dat$pub), bw = "SJ", 
+                    n = 1024)
+    dens_x <- c(0, dens$x[dens$x > 0])
+    dens_y <- c(0, dens$y[dens$x > 0])
+    round(
+      approx(
+        cumsum(dens_y) / sum(dens_y),
+        dens_x,
+        runif(Npop)
+      )$y
+    )
+  }), 
+  # Simulate error
+  e = rnorm(Npop, mean = 0, sd = sigma)
+)
+# Compute salary variable
+simulated_population$salary <- 
+  beta0 + beta1 * simulated_population$pub + simulated_population$e
+# Plot
+p_pop <- ggplot(data = simulated_population, 
+                aes(x = pub, y = salary)) + 
+  geom_point(alpha = 0.1) + 
+  # Add population regression line in blue
+  geom_smooth(se = FALSE, method = "lm")
+p_pop
+```
+
+Now, we can simulate some fake (but plausible) samples. An important thing to remember is we want to **simulate data that have the same size as the original sample**, because we're comparing to other plausible samples with equal size. In R there is a handy `simulate()` function to do that. 
+
+```{r sim-data1}
+simulated_salary <- simulate(m1)
+# Add simulated salary to the original data
+# Note: the simulated variable is called `sim_1`
+sim_data1 <- bind_cols(salary_dat, simulated_salary)
+# Show the first six rows
+head(sim_data1)
+# Plot the data (add on to the population)
+p_pop + 
+  geom_point(data = sim_data1, 
+             aes(x = pub, y = sim_1),
+             col = "red") + 
+  # Add sample regression line
+  geom_smooth(data = sim_data1, 
+              aes(x = pub, y = sim_1),
+              method = "lm", se = FALSE, col = "red")
+```
+
+```{r alternative-sim-data1, eval=FALSE}
+# To be more transparent, here's what the simulate() function essentially is
+# doing
+sample_size <- nrow(salary_dat)
+sim_data1 <- tibble(
+  pub = salary_dat$pub,
+  # simulate error
+  e = rnorm(sample_size, mean = 0, sd = sigma)
+)
+# Compute new salary data
+sim_data1$sim_1 <- beta0 + beta1 * sim_data1$pub + sim_data1$e
+```
+
+As you can see, the sample regression line in red is different from the blue line. 
+
+#### Drawing 100 samples
+
+Let's draw more samples
+
+```{r sim-100-samples}
+num_samples <- 100
+simulated_salary100 <- simulate(m1, nsim = num_samples)
+# Form a giant data set with 100 samples
+sim_data100 <- bind_cols(salary_dat, simulated_salary100) %>% 
+  pivot_longer(sim_1:sim_100, 
+               names_prefix = "sim_", 
+               names_to = "sim", 
+               values_to = "simulated_salary")
+# Plot by samples
+p_sim100 <- ggplot(sim_data100, 
+                   aes(x = pub, y = simulated_salary, group = sim)) + 
+  geom_point(col = "red", alpha = 0.1) + 
+  geom_smooth(col = "red", se = FALSE, method = "lm")
+# Use gganimate (this takes some time to render)
+library(gganimate)
+p_sim100 + transition_states(sim) + 
+  ggtitle("Simulation {frame} of {nframes}")
+```
+
+We can show the regression lines for all 100 samples
+
+```{r plot-sim_data100}
+ggplot(sim_data100,
+       aes(x = pub, y = simulated_salary, group = sim)) +
+  stat_smooth(
+    geom = "line",
+    col = "red",
+    se = FALSE,
+    method = "lm",
+    alpha = 0.4
+  )
+```
+
+The confidence intervals of the intercept and the slope how much uncertainty there is. 
+
+### $p$ values
+
+Now, we can also understand the $p$ value for the regression slope of `pub` is. Remember that the $p$ value is the probability that, if the regression slope of `pub` is zero (i.e., no association), how likely/unlikely would we get the sample slope (i.e., 350.80) in our data. So now we'll repeat the simulation, but without `pub` as a predictor (i.e., assuming $\beta_1 = 0$). 
+
+```{r sim-null}
+num_samples <- 100
+m0 <- lm(salary ~ 1, data = salary_dat)  # null model
+simulated_salary100_null <- simulate(m0, nsim = num_samples)
+# Form a giant data set with 100 samples
+sim_null100 <- bind_cols(salary_dat, simulated_salary100_null) %>% 
+  pivot_longer(sim_1:sim_100, 
+               names_prefix = "sim_", 
+               names_to = "sim", 
+               values_to = "simulated_salary")
+# Show the null slopes
+ggplot(data = salary_dat,
+       aes(x = pub, y = salary)) +
+  stat_smooth(
+    data = sim_null100,
+    aes(x = pub, y = simulated_salary, group = sim),
+    geom = "line",
+    col = "darkgrey",
+    se = FALSE,
+    method = "lm"
+  ) +
+  geom_smooth(method = "lm", col = "red", se = FALSE) +
+  geom_point()
+```
+
+So you can see the sample slope is larger than what you would expect to see if the true slope is zero. So the $p$ value is very small, and the result is statistically significant (at, say, .05 level). 
+
+***
+
+### Centering
+
+So that the intercept refers to a more meaningful value. It's a major issue in multilevel modeling. 
+
+$$\text{salary}_i = \beta_0 + \beta_1 \text{pub}^c_i + e_i$$
+
+```{r m1c}
+# Using pipe operator
+salary_dat <- salary_dat %>% 
+  mutate(pub_c = pub - mean(pub))
+# Equivalent to:
+# salary_dat <- mutate(salary_dat, 
+#                      pub_c = pub - mean(pub))
+m1c <- lm(salary ~ pub_c, data = salary_dat)
+summary(m1c)
+```
+
+The only change is the intercept coefficient
+
+```{r p1-center}
+p1 + 
+  geom_smooth(method = "lm", col = "red") + 
+  # Intercept without centering
+  geom_vline(aes(col = "Not centered", xintercept = 0)) + 
+  # Intercept with centering
+  geom_vline(aes(col = "Centered", xintercept = mean(salary_dat$pub))) + 
+  labs(col = "")
+```
+
+## 2. Categorical Predictor 
+
+Recode `sex` as `factor` variable in R (which allows R to automatically do dummy coding). This should be done in general for categorical predictors. 
+
+```{r recode-sex}
+salary_dat <- salary_dat %>% 
+  mutate(sex = factor(sex, levels = c(0, 1), 
+                      labels = c("male", "female")))
+```
+
+$$\text{salary}_i = \beta_0 + \beta_1 \text{sex}_i + e_i$$
+
+```{r p2}
+(p2 <- ggplot(salary_dat, aes(x = sex, y = salary)) + 
+    geom_boxplot() + 
+    geom_jitter(height = 0, width = 0.1))  # move the points to left/right a bit
+```
+
+```{r m2}
+m2 <- lm(salary ~ sex, data = salary_dat)
+summary(m2)
+```
+
+The `(Intercept)` coefficient is for the '0' category, i.e., predicted salary for males; the `female` coefficient is the difference between males and females.
+
+Predicted female salary = 56515 + (-3902) = 52613.
+
+### Equivalence to the $t$-test
+
+When assuming homogeneity of variance
+
+```{r t-test}
+t.test(salary ~ sex, data = salary_dat, var.equal = TRUE)
+```
+
+## 3. Multiple Predictors (Multiple Regression)
+
+Now add one more predictor, `time`
+$$\text{salary}_i = \beta_0 + \beta_1 \text{pub}^c_i + \beta_2 \text{time}_i + e_i$$
+
+```{r p3}
+ggplot(salary_dat, aes(x = time, y = salary)) + 
+  geom_point() + 
+  geom_smooth()
+```
+
+```{r m3}
+m3 <- lm(salary ~ pub_c + time, data = salary_dat)
+summary(m3)  # summary
+confint(m3)  # confidence interval
+```
+
+The regression coefficients are the *partial* effects. 
+
+![](https://github.com/marklhc/marklai-pages/raw/master/static/img/regression_venn.png)
+
+### Plotting
+
+The `sjPlot::plot_model()` function is handy
+
+```{r plot-m3}
+sjPlot::plot_model(m3, type = "pred", show.data = TRUE, 
+                   title = "")  # remove title
+```
+
+### Interpretations
+
+> Faculty who have worked *longer* tended to have *more* publications
+> **For faculty who graduate around the same time**, a difference of 1 publication is associated with an estimated difference in salary of $133.0, 95% CI [$-52.6, $318.6], which was not significant. 
+
+### Diagnostics
+
+```{m3-diagnostics}
+car::mmps(m3)  # marginal model plots for linearity assumptions
+```
+
+### Effect size
+
+Proportion of predicted variance: $R^2$ = 39%, adj. $R^2$ = 37%. 
+
+## 4. Interaction
+
+For interpretation purposes, it's recommended to center the predictors (at least the continuous ones)
+
+$$\text{salary}_i = \beta_0 + \beta_1 \text{pub}^c_i + \beta_2 \text{time}^c_i + \beta_3 (\text{pub}^c_i)(\text{time}^c_i) + e_i$$
+
+```{r m4}
+salary_dat <- salary_dat %>% 
+  mutate(time_c = time - mean(time))
+# Fit the model with interactions:
+m4 <- lm(salary ~ pub_c * time_c, data = salary_dat)
+summary(m4)  # summary
+```
+
+### Interaction Plots
+
+Interpreting interaction effects is hard. Therefore, 
+
+> Always plot the interaction to understand the dynamics
+
+```{r interaction-plot}
+interactions::interact_plot(m4,
+                            pred = "pub_c",
+                            modx = "time_c",
+                            # Insert specific values to plot the slopes. 
+                            # Pay attention that `time_c` has been centered
+                            modx.values = c(1, 7, 15) - 6.79, 
+                            modx.labels = c(1, 7, 15), 
+                            plot.points = TRUE, 
+                            x.label = "Number of publications (mean-centered)", 
+                            y.label = "Salary", 
+                            legend.main = "Time since Ph.D.")
+```
+
+Another approach is to plug in numbers to the equation:
+$$\widehat{\text{salary}} = \hat \beta_0 + \hat \beta_1 \text{pub}^c + \hat \beta_2 \text{time}^c + \hat \beta_3 (\text{pub}^c)(\text{time}^c)$$
+For example, consider people who've graduated for seven years, i.e., `time` = 7. First, be careful that in the model we have `time_c`, and `time` = 7 corresponds to `time_c` = `r 7 - mean(salary_dat$time)` years. So if we plug that into the equation, 
+$$\widehat{\text{salary}} |_{\text{time} = 7} = \hat \beta_0 + \hat \beta_1 \text{pub}^c + \hat \beta_2 (0.21) + \hat \beta_3 (\text{pub}^c)(0.21)$$
+Combining terms with pub^c^, 
+$$\widehat{\text{salary}} |_{\text{time} = 7} = [\hat \beta_0 + \hat \beta_2 (0.21)] + [\hat \beta_1 + \hat \beta_3 (0.21)] (\text{pub}^c)$$
+Now plug in the numbers for $\hat \beta_0$, $\hat \beta_1$, $\hat \beta_2$, $\hat \beta_3$, 
+```{r int-slope-7}
+# beta0 + beta2 * 0.21
+54238.08 + 964.17 * 0.21
+# beta1 + beta3 * 0.21
+104.72 + 15.07 * 0.21
+```
+resulting in 
+$$\widehat{\text{salary}} |_{\text{time} = 7} = 54440.6 + 107.9 (\text{pub}^c), $$
+which is the regression line for `time` = 7. Note, however, when an interaction is present, the regression slope will be different with a different value of `time`. So remember that
+
+> An interaction means that the regression slope of a predictor depends on another predictor. 
+
+We will further explore this in the class exercise this week. 
+
+## 5. Tabulate the Regression Results
+
+```{r tab-m1-m4}
+msummary(list("M1" = m1, 
+              "M2" = m2, 
+              "M3" = m3, 
+              "M3 + Interaction" = m4), 
+         fmt = "%.1f")  # keep one digit
+```
+
