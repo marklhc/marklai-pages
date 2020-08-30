@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE, comment = ">#")
 
 ## Load Packages and Import Data
 
-You can use add the `message=FALSE` option to suppress the package loading messages
+You can use the `message=FALSE` option to suppress the package loading messages
 
 ```{r load-pkg, message=FALSE}
 # To install a package, run the following ONCE (and only once on your computer)
@@ -233,10 +233,7 @@ $$\text{mathach}_{ij} = \beta_{0j} + e_{ij}$$
 Lv-2:
 
 $$\beta_{0j} = \gamma_{00} + \gamma_{01} \text{meanses}_j + u_{0j}$$
-where $\gamma_{00}$ is the grand *intercept*, $\gamma_{10}$ is the regression
-coefficient of `meanses` that represents the expected difference in school mean
-achievement between two schools with one unit difference in `meanses`, and and
-$u_{0j}$ is the deviation of the mean of the $j$th school from the grand mean.
+where $\gamma_{00}$ is the grand *intercept*, $\gamma_{10}$ is the regression coefficient of `meanses` that represents the expected difference in school mean achievement between two schools with one unit difference in `meanses`, and and $u_{0j}$ is the deviation of the mean of the $j$th school from the grand mean.
 
 ```{r m_lv2}
 m_lv2 <- lmer(mathach ~ meanses + (1 | id), data = hsball)
@@ -246,9 +243,7 @@ summary(m_lv2)
 confint(m_lv2, parm = "beta_")
 ```
 
-The 95% confidence intervals (CIs) above showed the uncertainty associated with
-the estimates. Also, as the 95% CI for `meanses` does not contain zero, there is
-evidence for the positive association of SES and `mathach` at the school level.
+The 95% confidence intervals (CIs) above showed the uncertainty associated with the estimates. Also, as the 95% CI for `meanses` does not contain zero, there is evidence for the positive association of SES and `mathach` at the school level.
 
 ```{r plot-m_lv2}
 sjPlot::plot_model(m_lv2, type = "pred", terms = "meanses", 
@@ -265,6 +260,8 @@ sjPlot::plot_model(m_lv2, type = "pred", terms = "meanses",
 ```
 
 ### Proportion of variance predicted
+
+We will use the $R^2$ statistic proposed by [Nakagawa & Schielzeth (2013)]( https://doi.org/10.1111/j.2041-210x.2012.00261.x) to obtain an $R^2$ statistic. There are multiple versions of $R^2$ in the literature, but personally I think this $R^2$ avoids many of the problems in other variants and is most meaningful to interpret. Note that I only interpret the marginal $R^2$. 
 
 ```{r r2-m_lv2}
 # Generally, you should use the marginal R^2 (R2m) for the variance predicted by
