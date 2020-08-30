@@ -24,7 +24,7 @@ In this assignment, you will practice using R Markdown and run a regression anal
 
 ## Steps
 
-1. Download the [`hw2_template.Rmd` file](/hw_templates/hw2_template.Rmd). Rename it as `hw2_yourlastnameyourfirstname.Rmd` (e.g., `hw2_LaiMark.Rmd`), and write down your name inside the Rmd. 
+1. Download the [`hw2_template.Rmd`](/hw_templates/hw2_template.Rmd) file. Rename it as `hw2_yourlastnameyourfirstname.Rmd` (e.g., `hw2_LaiMark.Rmd`), and write down your name inside the Rmd. 
 2. Use R to import the data file `salary.txt` (which can be downloaded [here](https://raw.githubusercontent.com/marklhc/marklai-pages/master/data_files/salary.txt); right click --> save as). 
 3. Choose two predictors from the list of: `time`, `pub`, `sex`, and `citation`. You cannot choose both `time` and `pub` as that combination has been used in the class demonstration. 
 4. Write down your regression model using the LaTeX syntax. For example,  

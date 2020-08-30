@@ -1,0 +1,57 @@
+---
+title: Homework 3
+date: '2020-08-18'
+slug: homework-3
+categories: []
+tags: []
+linktitle: Homework 3
+summary: ~
+lastmod: '`r Sys.Date()`'
+type: docs
+menu:
+  psyc575:
+    parent: Week 3
+    weight: 3
+---
+
+## Learning Objective
+
+- Independently analyze real data using statistical software for multilevel modeling
+
+## Assignment Description 
+
+In this assignment, you will use the "happy_combined.sav" data set to fit two 
+different multilevel models using R. The given data set is a subset of the World Value Survey--1990-93 data (World Values Study Group, 1994). There are five variables in the data set:
+
+1. `CountryID`: Country ID
+2. `country`: Country's name
+3. `gm_GNP`: Grand-mean centered Gross National Product (rescaled by 1/10,000)
+4. `income`: Income level (0-_least income_ to 9-_most income_)
+5. `happy`: Feel happy (1-_not happy_ to 4-_very happy_)
+
+Follow the instructions and complete the assignment by **September 4**. This assignment is worth 6 points. 
+
+## Steps
+
+1. Download the [`hw3_template.Rmd` file](/hw_templates/hw3_template.Rmd). Rename it as `hw3_yourlastnameyourfirstname.Rmd` (e.g., `hw3_LaiMark.Rmd`), and write down your name inside the Rmd. 
+2. Provide a short description of the sample (e.g., units and sample sizes at
+each level, number of participants per country, etc), as well as the descriptive statistics for the three variables `gm_GNP`, `income`, and `happy`. Indicate at which level each of the three variables are defined.
+3. Fit a random intercept model (i.e., `Happy` as the outcome variable and no
+predictor in the model)
+    i. Calculate the intraclass correlation
+    ii. Adapt the [code in the "Showing the variations" section](../rcode3/#showing-the-variations-across-a-subset-of-schools) to plot the distribution of `Happy` across a random sample of 5-10 countries. (Hint: you should use the `country` variable for plotting as that has the names of the countries)
+    iii. Based on the model, which country has the highest level of happiness? Which has the lowest?
+<!-- 4. Adapt the [code in the "Simulating Data" section](../rcode3/#simulating-data-based-on-the-random-intercept-model) to simulate a `happy` variable similar to the provided data, but with $\tau^2_0 = 0$. Obtain a similar plot as the one in 3 (ii) for the simulated data, and write a quick paragraph to discuss similarities or differences in the plots.  -->
+4. Calculate the design effect for the original data. Is a multilevel model  needed with `happy` as the outcome?
+5. Add `gm_GNP` as a predictor to the model
+    i. Write out the model equation(s)
+    ii. Obtain a 95% confidence interval and interpret the fixed effect coefficient of `gm_GNP`. 
+6. Knit your Rmd file to HTML/PDF/Word, and submit the knitted file to Blackboard. 
+
+## Grading 
+
+Your instructor will use the rubric on Slack to grade this assignment. 
+
+## Additional Notes
+
+You may post your questions to the Slack channel to get help from your peers and instructor. 

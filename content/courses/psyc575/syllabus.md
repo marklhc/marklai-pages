@@ -11,7 +11,7 @@ categories: []
 tags: []
 linktitle: Syllabus
 summary: Syllabus for PSYC 575 in 2020 Fall
-lastmod: '2020-08-16T10:27:00-07:00'
+lastmod: '2020-08-29T10:35:00-07:00'
 toc: yes
 type: docs
 syllabus: "files/psyc575_syllabus"
@@ -354,7 +354,7 @@ Student feedback is essential to the instructor and the Department to keep impro
 </td>
 <td>
 
-- SB ch 4.6, 4.7, 5
+- SB ch 4.6, 5.1--5.3
 
 </td>
 <td>
@@ -376,7 +376,7 @@ Student feedback is essential to the instructor and the Department to keep impro
 </td>
 <td>
 
-- SB ch 6
+- SB ch 4.7, 6
 
 </td>
 <td>

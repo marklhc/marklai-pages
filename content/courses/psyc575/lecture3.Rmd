@@ -1,0 +1,295 @@
+---
+title: Week 3
+linktitle: Lecture videos (wk 3)
+type: docs
+date: "2019-05-05T00:00:00+01:00"
+draft: false
+slides: "psyc575/03_random_intercept_model"
+menu:
+  psyc575:
+    parent: Week 3
+    weight: 1
+output:
+  blogdown::html_page:
+    toc: true
+    df_print: paged
+# Prev/next pager order (if `docs_section_pager` enabled in `params.toml`)
+weight: 1
+---
+
+`r blogdown::shortcode("slide-buttons2")`
+
+```{r, include=FALSE}
+library(checkdown)
+right_ans <- "Well done :+1:"
+wrong_ans <- "Try again. Rewatch the video if needed"
+```
+
+## Overview
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "fyup2VnsVLM")
+```
+
+Check your learning: Here's a snapshot of the `sleepstudy` data:
+
+```{r}
+data("sleepstudy", package = "lme4")
+sleepstudy[c(1:3, 11:13, 21:23), ]
+```
+
+where `Subject` is the cluster ID. Is `Days` a level-1 or a level-2 variable?
+
+```{r echo=FALSE, results="asis"}
+check_question("Level-1", 
+               options = c("Level-1", 
+                           "Level-2"), 
+               type = "radio", 
+               right = right_ans, 
+               wrong = wrong_ans)
+```
+
+***
+
+## Unconditional Random Intercept Model
+
+### Equations
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "w7jOQMQFvnc")
+```
+
+Check your learning: $u_{0j}$ is the new term in a multilevel model (compared to regression). Is it a level-1 or a level-2 deviation variable?
+
+```{r echo=FALSE, results="asis"}
+check_question("Level-2", 
+               options = c("Level-1", 
+                           "Level-2"), 
+               type = "radio", 
+               right = right_ans, 
+               wrong = wrong_ans)
+```
+
+### Path diagram
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "YoS0-Q2dQo4")
+```
+
+Check your learning: For the diagram in the video, which one is an actual variable in the data?
+
+```{r echo=FALSE, results="asis"}
+check_question("$Y_{ij}$", 
+               options = c("$\\gamma_{00}$", 
+                           "$\\beta_{0j}$", 
+                           "$u_{0j}$", 
+                           "$Y_{ij}$"), 
+               type = "radio", 
+               right = right_ans, 
+               wrong = wrong_ans)
+```
+
+***
+
+## Fixed and Random Effects
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "8uLgaLNPJbk")
+```
+
+Check your learning: For the unconditional model, which of the following is a fixed effect?
+
+```{r echo=FALSE, results="asis"}
+check_question("the grand mean", 
+               options = c("school means", 
+                           "individual scores", 
+                           "variance components", 
+                           "the grand mean"), 
+               type = "radio", 
+               right = right_ans, 
+               wrong = wrong_ans)
+```
+
+***
+
+## The Intraclass Correlation
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "x4VT8sSyckg")
+```
+
+Note: On the slide around the 9 minute mark, the numbers labeled the "Std.Dev." is just the square root of the variance components. That is, the standard deviation of the school means and the within-school standard deviation.
+
+Check your learning: For a study, if $\tau^2_0 = 5$, $\sigma^2 = 10$, what is the ICC?
+
+```{r echo=FALSE, results="asis"}
+check_question("0.333", 
+               options = c("0.5", 
+                           "2.0", 
+                           "0.333"), 
+               type = "radio", 
+               right = right_ans, 
+               wrong = wrong_ans)
+```
+
+Check your learning: The graph below shows the distribution of the `Reaction` variable in the `sleepstudy` data. What do you think is a good guess for the its ICC?
+
+```{r, echo=FALSE, message=FALSE}
+library(tidyverse)
+sleepstudy %>%
+    ggplot(aes(x = Subject, y = Reaction)) +
+    geom_jitter(height = 0, width = 0.1, alpha = 0.3) +
+    # Add school means
+    stat_summary(
+      fun = "mean",
+      geom = "point",
+      col = "red",
+      shape = 17,
+      # use triangles
+      size = 4
+    )  # make them larger
+```
+
+```{r echo=FALSE, results="asis"}
+check_question("0.4", 
+               options = c("0", 
+                           "0.4", 
+                           "0.9"), 
+               type = "radio", 
+               right = right_ans, 
+               wrong = wrong_ans)
+```
+
+***
+
+## Empirical Bayes Estimates
+
+Note: OLS = ordinary least squares, the estimation method commonly used in regular regression. 
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "cs-t0Xitr8k")
+```
+
+Thinking exercise: When $\sigma^2 / n_j = 0$, $\lambda_j = 1$, and the empirical Bayes estimate will be the same as the sample school mean, meaning that there is no borrowing of information. Why is there no need to borrow information in this situation?
+
+***
+
+## Adding a Level-2 Predictor
+
+Note that the `ses` was standardized in the data set, meaning that `ses` = 0 is at the sample mean, and `ses` = 1 means one standard deviation above the mean. 
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "5kiBrPO_WTs")
+```
+
+Check your learning: In regression, the independent observation assumption means that
+
+```{r echo=FALSE, results="asis"}
+check_question("Knowing the score of one observation gives no information about other observations", 
+               options = c("The predictor variables should be independent", 
+                           "Knowing the score of one observation gives no information about other observations", 
+                           "The data should follow a hierarchical structure"), 
+               type = "radio", 
+               right = right_ans, 
+               wrong = wrong_ans)
+```
+
+### The design effect
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "0pRpU6-8zGs")
+```
+
+Practice yourself: Compute the design effect for `mathach` for the HSB data. Which of the following is the closest to your computation?
+
+```{r echo=FALSE, results="asis"}
+check_question("8.9", 
+               options = c("8.1", 
+                           "8.9", 
+                           "29.6", 
+                           "1294.1"), 
+               type = "radio", 
+               right = right_ans, 
+               wrong = wrong_ans)
+```
+
+Bonus Challenge: What is the design effect for a longitudinal study of 5 waves with 30 individuals, and with an ICC for the outcome of 0.5?
+
+```{r echo=FALSE, results="asis"}
+check_question("3", 
+               options = c("1", 
+                           "3", 
+                           "15.5"), 
+               type = "radio", 
+               right = right_ans, 
+               wrong = wrong_ans)
+```
+
+### Aggregation
+
+While disaggregation yields results with standard errors being too small, aggregation generally results in standard errors that are slightly larger. The main problem of aggregation, however, is that it removes all the information in the lower level, so level-1 predictors cannot be studied. MLM avoids problems of both disaggregation and aggregation. 
+
+### Standard error estimates under OLS and MLM
+
+This part is optional but gives a mathematical explanation of why OLS underestimates the standard error
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "cQ4DZXe8BZw")
+```
+
+### Model equations
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "RJeo9BwLnJw")
+```
+
+Check your learning: In the level-2 equation with `meanses` as the predictor, what is the outcome variable?
+
+```{r echo=FALSE, results="asis"}
+check_question("school mean math achievement", 
+               options = c("student math achievement scores", 
+                           "school mean math achievement", 
+                           "variance of school means"), 
+               type = "radio", 
+               right = right_ans, 
+               wrong = wrong_ans)
+```
+
+### MLM with a level-2 predictor in R
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "U9dozP0VFUg")
+```
+
+Check your learning: How do you interpret the coefficient for `meanses`?
+
+```{r echo=FALSE, results="asis"}
+check_question("The predicted difference in math achievement between two schools with one unit difference in mean SES", 
+               options = c("The predicted difference in math achievement between two schools with one unit difference in mean SES", 
+                           "The mean achievement for a school with meanses = 0", 
+                           "The variance of math achievement accounted for by meanses"), 
+               type = "radio", 
+               right = right_ans, 
+               wrong = wrong_ans)
+```
+
+### Statistical inference
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "oV14ScItiV4")
+```
+
+Note: If the 95% CI exlcudes zero, there is evidence that the predictor has a nonzero relation with the outcome. 
+
+Check your learning: By default, what type of confidence interval is computed by the `lme4` package?
+
+```{r echo=FALSE, results="asis"}
+check_question("Likelihood-based", 
+               options = c("Likelihood-based", 
+                           "Wald", 
+                           "Score", 
+                           "Bootstrap"), 
+               type = "radio", 
+               right = right_ans, 
+               wrong = wrong_ans)
+```
