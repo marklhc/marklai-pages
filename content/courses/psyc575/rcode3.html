@@ -4,7 +4,7 @@ linktitle: R Codes (wk 3)
 type: docs
 date: "2020-08-07T00:00:00+01:00"
 draft: false
-lastmod: '2020-08-18'
+lastmod: '2020-08-31'
 rmd: "rcodes/week3-random-intercept-model"
 menu:
   psyc575:
@@ -33,7 +33,7 @@ weight: 2
 <li><a href="#model-equations">Model equations</a></li>
 <li><a href="#running-the-model-in-r">Running the model in R</a></li>
 <li><a href="#showing-the-variations-across-a-subset-of-schools">Showing the variations across (a subset of) schools</a></li>
-<li><a href="#simulating-data-based-on-the-random-intercept-model">Simulating Data Based on the Random Intercept Model</a></li>
+<li><a href="#simulating-data-based-on-the-random-intercept-model">Simulating data based on the random intercept model</a></li>
 <li><a href="#plotting-the-random-effects-i.e.-u_0j">Plotting the random effects (i.e., <span class="math inline">\(u_{0j}\)</span>)</a></li>
 <li><a href="#intraclass-correlations">Intraclass correlations</a></li>
 </ul></li>
@@ -49,7 +49,7 @@ weight: 2
 {{% rmd-buttons %}}
 <div id="load-packages-and-import-data" class="section level2">
 <h2>Load Packages and Import Data</h2>
-<p>You can use add the <code>message=FALSE</code> option to suppress the package loading messages</p>
+<p>You can use the <code>message=FALSE</code> option to suppress the package loading messages</p>
 <pre class="r"><code># To install a package, run the following ONCE (and only once on your computer)
 # install.packages(&quot;psych&quot;)  
 library(here)  # makes reading data more consistent
@@ -65,7 +65,7 @@ theme_set(theme_bw())  # Theme; just my personal preference</code></pre>
 <p>In R, there are many packages for multilevel modeling, two of the most common ones are the <code>lme4</code> package and the <code>nlme</code> package. In this note I will show how to run different basic multilevel models using the <code>lme4</code> package, which is newer. However, some of the models, like unstructured covariance structure, will need the <code>brms</code> package or other packages (like the <code>nlme</code> and <code>rstanarm</code> packages).</p>
 <div id="import-data" class="section level3">
 <h3>Import Data</h3>
-<p>We’ll import the data in .sav format using the <code>read_sav()</code> function from the
+<p>First, download the data from <a href="https://github.com/marklhc/marklai-pages/raw/master/data_files/hsball.sav" class="uri">https://github.com/marklhc/marklai-pages/raw/master/data_files/hsball.sav</a>. We’ll import the data in .sav format using the <code>read_sav()</code> function from the
 <code>haven</code> package.</p>
 <pre class="r"><code># Read in the data (pay attention to the directory)
 hsball &lt;- read_sav(here(&quot;data_files&quot;, &quot;hsball.sav&quot;))
@@ -153,14 +153,14 @@ random_ids &lt;- sample(unique(hsball$id), size = 10)
 <p><img src="/courses/psyc575/rcode3_files/figure-html/plot-means-1.png" width="672" /></p>
 </div>
 <div id="simulating-data-based-on-the-random-intercept-model" class="section level3">
-<h3>Simulating Data Based on the Random Intercept Model</h3>
+<h3>Simulating data based on the random intercept model</h3>
 <p><span class="math display">\[Y_{ij} = \gamma_{00} + u_{0j} + e_{ij},\]</span></p>
 <pre class="r"><code>gamma00 &lt;- 12.6370
 tau0 &lt;- 2.935
 sigma &lt;- 6.257
 num_students &lt;- nrow(hsball)
 num_schools &lt;- length(unique(hsball$id))
-# Simulate with only gamma00
+# Simulate with only gamma00 (i.e., tau0 = 0 and sigma = 0)
 simulated_data1 &lt;- tibble(
   id = hsball$id, 
   mathach = gamma00
@@ -171,7 +171,7 @@ p_subset %+%
   (simulated_data1 %&gt;%
      filter(id %in% random_ids))</code></pre>
 <p><img src="/courses/psyc575/rcode3_files/figure-html/sim-ran_int-1.png" width="672" /></p>
-<pre class="r"><code># Simulate with gamma00 + e_ij
+<pre class="r"><code># Simulate with gamma00 + e_ij (i.e., tau0 = 0)
 simulated_data2 &lt;- tibble(
   id = hsball$id, 
   mathach = gamma00 + rnorm(num_students, sd = sigma)
@@ -266,10 +266,7 @@ bootmlm:::prof_ci_icc(ran_int)</code></pre>
 <p><span class="math display">\[\text{mathach}_{ij} = \beta_{0j} + e_{ij}\]</span></p>
 <p>Lv-2:</p>
 <p><span class="math display">\[\beta_{0j} = \gamma_{00} + \gamma_{01} \text{meanses}_j + u_{0j}\]</span>
-where <span class="math inline">\(\gamma_{00}\)</span> is the grand <em>intercept</em>, <span class="math inline">\(\gamma_{10}\)</span> is the regression
-coefficient of <code>meanses</code> that represents the expected difference in school mean
-achievement between two schools with one unit difference in <code>meanses</code>, and and
-<span class="math inline">\(u_{0j}\)</span> is the deviation of the mean of the <span class="math inline">\(j\)</span>th school from the grand mean.</p>
+where <span class="math inline">\(\gamma_{00}\)</span> is the grand <em>intercept</em>, <span class="math inline">\(\gamma_{10}\)</span> is the regression coefficient of <code>meanses</code> that represents the expected difference in school mean achievement between two schools with one unit difference in <code>meanses</code>, and and <span class="math inline">\(u_{0j}\)</span> is the deviation of the mean of the <span class="math inline">\(j\)</span>th school from the grand mean.</p>
 <pre class="r"><code>m_lv2 &lt;- lmer(mathach ~ meanses + (1 | id), data = hsball)
 summary(m_lv2)</code></pre>
 <pre><code>&gt;# Linear mixed model fit by REML [&#39;lmerMod&#39;]
@@ -303,9 +300,7 @@ confint(m_lv2, parm = &quot;beta_&quot;)</code></pre>
 <pre><code>&gt;#                 2.5 %    97.5 %
 &gt;# (Intercept) 12.356615 12.941707
 &gt;# meanses      5.155769  6.572415</code></pre>
-<p>The 95% confidence intervals (CIs) above showed the uncertainty associated with
-the estimates. Also, as the 95% CI for <code>meanses</code> does not contain zero, there is
-evidence for the positive association of SES and <code>mathach</code> at the school level.</p>
+<p>The 95% confidence intervals (CIs) above showed the uncertainty associated with the estimates. Also, as the 95% CI for <code>meanses</code> does not contain zero, there is evidence for the positive association of SES and <code>mathach</code> at the school level.</p>
 <pre class="r"><code>sjPlot::plot_model(m_lv2, type = &quot;pred&quot;, terms = &quot;meanses&quot;, 
                    show.data = TRUE, title = &quot;&quot;, 
                    dot.size = 0.5) + 
@@ -320,6 +315,7 @@ evidence for the positive association of SES and <code>mathach</code> at the sch
 <p><img src="/courses/psyc575/rcode3_files/figure-html/plot-m_lv2-1.png" width="672" /></p>
 <div id="proportion-of-variance-predicted" class="section level3">
 <h3>Proportion of variance predicted</h3>
+<p>We will use the <span class="math inline">\(R^2\)</span> statistic proposed by <a href="https://doi.org/10.1111/j.2041-210x.2012.00261.x">Nakagawa &amp; Schielzeth (2013)</a> to obtain an <span class="math inline">\(R^2\)</span> statistic. There are multiple versions of <span class="math inline">\(R^2\)</span> in the literature, but personally I think this <span class="math inline">\(R^2\)</span> avoids many of the problems in other variants and is most meaningful to interpret. Note that I only interpret the marginal <span class="math inline">\(R^2\)</span>.</p>
 <pre class="r"><code># Generally, you should use the marginal R^2 (R2m) for the variance predicted by
 # your predictors (`meanses` in this case).
 MuMIn::r.squaredGLMM(m_lv2)</code></pre>
@@ -338,7 +334,7 @@ msummary(list(&quot;MLM&quot; = m_lv2,
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#amnxpsxxsj .gt_table {
+#bgqppgupra .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -363,7 +359,7 @@ msummary(list(&quot;MLM&quot; = m_lv2,
   border-left-color: #D3D3D3;
 }
 
-#amnxpsxxsj .gt_heading {
+#bgqppgupra .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -375,7 +371,7 @@ msummary(list(&quot;MLM&quot; = m_lv2,
   border-right-color: #D3D3D3;
 }
 
-#amnxpsxxsj .gt_title {
+#bgqppgupra .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -385,7 +381,7 @@ msummary(list(&quot;MLM&quot; = m_lv2,
   border-bottom-width: 0;
 }
 
-#amnxpsxxsj .gt_subtitle {
+#bgqppgupra .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -395,13 +391,13 @@ msummary(list(&quot;MLM&quot; = m_lv2,
   border-top-width: 0;
 }
 
-#amnxpsxxsj .gt_bottom_border {
+#bgqppgupra .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#amnxpsxxsj .gt_col_headings {
+#bgqppgupra .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -416,7 +412,7 @@ msummary(list(&quot;MLM&quot; = m_lv2,
   border-right-color: #D3D3D3;
 }
 
-#amnxpsxxsj .gt_col_heading {
+#bgqppgupra .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -436,7 +432,7 @@ msummary(list(&quot;MLM&quot; = m_lv2,
   overflow-x: hidden;
 }
 
-#amnxpsxxsj .gt_column_spanner_outer {
+#bgqppgupra .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -448,15 +444,15 @@ msummary(list(&quot;MLM&quot; = m_lv2,
   padding-right: 4px;
 }
 
-#amnxpsxxsj .gt_column_spanner_outer:first-child {
+#bgqppgupra .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#amnxpsxxsj .gt_column_spanner_outer:last-child {
+#bgqppgupra .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#amnxpsxxsj .gt_column_spanner {
+#bgqppgupra .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -468,7 +464,7 @@ msummary(list(&quot;MLM&quot; = m_lv2,
   width: 100%;
 }
 
-#amnxpsxxsj .gt_group_heading {
+#bgqppgupra .gt_group_heading {
   padding: 8px;
   color: #333333;
   background-color: #FFFFFF;
@@ -490,7 +486,7 @@ msummary(list(&quot;MLM&quot; = m_lv2,
   vertical-align: middle;
 }
 
-#amnxpsxxsj .gt_empty_group_heading {
+#bgqppgupra .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -505,15 +501,15 @@ msummary(list(&quot;MLM&quot; = m_lv2,
   vertical-align: middle;
 }
 
-#amnxpsxxsj .gt_from_md > :first-child {
+#bgqppgupra .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#amnxpsxxsj .gt_from_md > :last-child {
+#bgqppgupra .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#amnxpsxxsj .gt_row {
+#bgqppgupra .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -532,7 +528,7 @@ msummary(list(&quot;MLM&quot; = m_lv2,
   overflow-x: hidden;
 }
 
-#amnxpsxxsj .gt_stub {
+#bgqppgupra .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -544,7 +540,7 @@ msummary(list(&quot;MLM&quot; = m_lv2,
   padding-left: 12px;
 }
 
-#amnxpsxxsj .gt_summary_row {
+#bgqppgupra .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -554,7 +550,7 @@ msummary(list(&quot;MLM&quot; = m_lv2,
   padding-right: 5px;
 }
 
-#amnxpsxxsj .gt_first_summary_row {
+#bgqppgupra .gt_first_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -564,7 +560,7 @@ msummary(list(&quot;MLM&quot; = m_lv2,
   border-top-color: #D3D3D3;
 }
 
-#amnxpsxxsj .gt_grand_summary_row {
+#bgqppgupra .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -574,7 +570,7 @@ msummary(list(&quot;MLM&quot; = m_lv2,
   padding-right: 5px;
 }
 
-#amnxpsxxsj .gt_first_grand_summary_row {
+#bgqppgupra .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -584,11 +580,11 @@ msummary(list(&quot;MLM&quot; = m_lv2,
   border-top-color: #D3D3D3;
 }
 
-#amnxpsxxsj .gt_striped {
+#bgqppgupra .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#amnxpsxxsj .gt_table_body {
+#bgqppgupra .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -597,7 +593,7 @@ msummary(list(&quot;MLM&quot; = m_lv2,
   border-bottom-color: #D3D3D3;
 }
 
-#amnxpsxxsj .gt_footnotes {
+#bgqppgupra .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -611,13 +607,13 @@ msummary(list(&quot;MLM&quot; = m_lv2,
   border-right-color: #D3D3D3;
 }
 
-#amnxpsxxsj .gt_footnote {
+#bgqppgupra .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding: 4px;
 }
 
-#amnxpsxxsj .gt_sourcenotes {
+#bgqppgupra .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -631,46 +627,46 @@ msummary(list(&quot;MLM&quot; = m_lv2,
   border-right-color: #D3D3D3;
 }
 
-#amnxpsxxsj .gt_sourcenote {
+#bgqppgupra .gt_sourcenote {
   font-size: 90%;
   padding: 4px;
 }
 
-#amnxpsxxsj .gt_left {
+#bgqppgupra .gt_left {
   text-align: left;
 }
 
-#amnxpsxxsj .gt_center {
+#bgqppgupra .gt_center {
   text-align: center;
 }
 
-#amnxpsxxsj .gt_right {
+#bgqppgupra .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#amnxpsxxsj .gt_font_normal {
+#bgqppgupra .gt_font_normal {
   font-weight: normal;
 }
 
-#amnxpsxxsj .gt_font_bold {
+#bgqppgupra .gt_font_bold {
   font-weight: bold;
 }
 
-#amnxpsxxsj .gt_font_italic {
+#bgqppgupra .gt_font_italic {
   font-style: italic;
 }
 
-#amnxpsxxsj .gt_super {
+#bgqppgupra .gt_super {
   font-size: 65%;
 }
 
-#amnxpsxxsj .gt_footnote_marks {
+#bgqppgupra .gt_footnote_marks {
   font-style: italic;
   font-size: 65%;
 }
 </style>
-<div id="amnxpsxxsj" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;"><table class="gt_table">
+<div id="bgqppgupra" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;"><table class="gt_table">
   
   <thead class="gt_col_headings">
     <tr>

@@ -33,7 +33,7 @@ In R, there are many packages for multilevel modeling, two of the most common on
 
 ### Import Data
 
-We'll import the data in .sav format using the `read_sav()` function from the 
+First, download the data from <https://github.com/marklhc/marklai-pages/raw/master/data_files/hsball.sav>.  We'll import the data in .sav format using the `read_sav()` function from the 
 `haven` package. 
 
 ```{r import_sav, message=FALSE}
@@ -107,7 +107,7 @@ random_ids <- sample(unique(hsball$id), size = 10)
 )
 ```
 
-### Simulating Data Based on the Random Intercept Model
+### Simulating data based on the random intercept model
 
 $$Y_{ij} = \gamma_{00} + u_{0j} + e_{ij},$$
 
