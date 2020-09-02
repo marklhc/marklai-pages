@@ -4,7 +4,7 @@ linktitle: R Codes (wk 2)
 type: docs
 date: "2020-08-04T00:00:00+01:00"
 draft: false
-lastmod: '2020-08-22'
+lastmod: '2020-09-02'
 rmd: "rcodes/week2-review-multiple-regression"
 menu:
   psyc575:
@@ -249,7 +249,7 @@ sim_data1 &lt;- bind_cols(salary_dat, simulated_salary)
 head(sim_data1)</code></pre>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["id"],"name":[1],"type":["int"],"align":["right"]},{"label":["time"],"name":[2],"type":["int"],"align":["right"]},{"label":["pub"],"name":[3],"type":["int"],"align":["right"]},{"label":["sex"],"name":[4],"type":["int"],"align":["right"]},{"label":["citation"],"name":[5],"type":["int"],"align":["right"]},{"label":["salary"],"name":[6],"type":["int"],"align":["right"]},{"label":["sim_1"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"1","2":"3","3":"18","4":"1","5":"50","6":"51876","7":"60341.50","_rn_":"1"},{"1":"2","2":"6","3":"3","4":"1","5":"26","6":"54511","7":"46386.95","_rn_":"2"},{"1":"3","2":"3","3":"2","4":"1","5":"50","6":"53425","7":"52020.99","_rn_":"3"},{"1":"4","2":"8","3":"17","4":"0","5":"34","6":"61863","7":"36516.03","_rn_":"4"},{"1":"5","2":"9","3":"11","4":"1","5":"41","6":"52926","7":"55183.13","_rn_":"5"},{"1":"6","2":"6","3":"6","4":"0","5":"37","6":"47034","7":"55606.59","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["id"],"name":[1],"type":["int"],"align":["right"]},{"label":["time"],"name":[2],"type":["int"],"align":["right"]},{"label":["pub"],"name":[3],"type":["int"],"align":["right"]},{"label":["sex"],"name":[4],"type":["int"],"align":["right"]},{"label":["citation"],"name":[5],"type":["int"],"align":["right"]},{"label":["salary"],"name":[6],"type":["int"],"align":["right"]},{"label":["sim_1"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"1","2":"3","3":"18","4":"1","5":"50","6":"51876","7":"62047.86","_rn_":"1"},{"1":"2","2":"6","3":"3","4":"1","5":"26","6":"54511","7":"51246.80","_rn_":"2"},{"1":"3","2":"3","3":"2","4":"1","5":"50","6":"53425","7":"47972.16","_rn_":"3"},{"1":"4","2":"8","3":"17","4":"0","5":"34","6":"61863","7":"51841.46","_rn_":"4"},{"1":"5","2":"9","3":"11","4":"1","5":"41","6":"52926","7":"58708.99","_rn_":"5"},{"1":"6","2":"6","3":"6","4":"0","5":"37","6":"47034","7":"55385.72","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 <pre class="r"><code># Plot the data (add on to the population)
@@ -492,7 +492,8 @@ summary(m3)  # summary</code></pre>
 </div>
 <div id="diagnostics" class="section level3">
 <h3>Diagnostics</h3>
-<pre class="{m3-diagnostics}"><code>car::mmps(m3)  # marginal model plots for linearity assumptions</code></pre>
+<pre class="r"><code>car::mmps(m3)  # marginal model plots for linearity assumptions</code></pre>
+<p><img src="/courses/psyc575/rcode2_files/figure-html/m3-diagnostics-1.png" width="672" /></p>
 </div>
 <div id="effect-size" class="section level3">
 <h3>Effect size</h3>
@@ -579,7 +580,7 @@ which is the regression line for <code>time</code> = 7. Note, however, when an i
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#ovhytruaup .gt_table {
+#xatfpeeiib .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -604,7 +605,7 @@ which is the regression line for <code>time</code> = 7. Note, however, when an i
   border-left-color: #D3D3D3;
 }
 
-#ovhytruaup .gt_heading {
+#xatfpeeiib .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -616,7 +617,7 @@ which is the regression line for <code>time</code> = 7. Note, however, when an i
   border-right-color: #D3D3D3;
 }
 
-#ovhytruaup .gt_title {
+#xatfpeeiib .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -626,7 +627,7 @@ which is the regression line for <code>time</code> = 7. Note, however, when an i
   border-bottom-width: 0;
 }
 
-#ovhytruaup .gt_subtitle {
+#xatfpeeiib .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -636,13 +637,13 @@ which is the regression line for <code>time</code> = 7. Note, however, when an i
   border-top-width: 0;
 }
 
-#ovhytruaup .gt_bottom_border {
+#xatfpeeiib .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#ovhytruaup .gt_col_headings {
+#xatfpeeiib .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -657,7 +658,7 @@ which is the regression line for <code>time</code> = 7. Note, however, when an i
   border-right-color: #D3D3D3;
 }
 
-#ovhytruaup .gt_col_heading {
+#xatfpeeiib .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -677,7 +678,7 @@ which is the regression line for <code>time</code> = 7. Note, however, when an i
   overflow-x: hidden;
 }
 
-#ovhytruaup .gt_column_spanner_outer {
+#xatfpeeiib .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -689,15 +690,15 @@ which is the regression line for <code>time</code> = 7. Note, however, when an i
   padding-right: 4px;
 }
 
-#ovhytruaup .gt_column_spanner_outer:first-child {
+#xatfpeeiib .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#ovhytruaup .gt_column_spanner_outer:last-child {
+#xatfpeeiib .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#ovhytruaup .gt_column_spanner {
+#xatfpeeiib .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -709,7 +710,7 @@ which is the regression line for <code>time</code> = 7. Note, however, when an i
   width: 100%;
 }
 
-#ovhytruaup .gt_group_heading {
+#xatfpeeiib .gt_group_heading {
   padding: 8px;
   color: #333333;
   background-color: #FFFFFF;
@@ -731,7 +732,7 @@ which is the regression line for <code>time</code> = 7. Note, however, when an i
   vertical-align: middle;
 }
 
-#ovhytruaup .gt_empty_group_heading {
+#xatfpeeiib .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -746,15 +747,15 @@ which is the regression line for <code>time</code> = 7. Note, however, when an i
   vertical-align: middle;
 }
 
-#ovhytruaup .gt_from_md > :first-child {
+#xatfpeeiib .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#ovhytruaup .gt_from_md > :last-child {
+#xatfpeeiib .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#ovhytruaup .gt_row {
+#xatfpeeiib .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -773,7 +774,7 @@ which is the regression line for <code>time</code> = 7. Note, however, when an i
   overflow-x: hidden;
 }
 
-#ovhytruaup .gt_stub {
+#xatfpeeiib .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -785,7 +786,7 @@ which is the regression line for <code>time</code> = 7. Note, however, when an i
   padding-left: 12px;
 }
 
-#ovhytruaup .gt_summary_row {
+#xatfpeeiib .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -795,7 +796,7 @@ which is the regression line for <code>time</code> = 7. Note, however, when an i
   padding-right: 5px;
 }
 
-#ovhytruaup .gt_first_summary_row {
+#xatfpeeiib .gt_first_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -805,7 +806,7 @@ which is the regression line for <code>time</code> = 7. Note, however, when an i
   border-top-color: #D3D3D3;
 }
 
-#ovhytruaup .gt_grand_summary_row {
+#xatfpeeiib .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -815,7 +816,7 @@ which is the regression line for <code>time</code> = 7. Note, however, when an i
   padding-right: 5px;
 }
 
-#ovhytruaup .gt_first_grand_summary_row {
+#xatfpeeiib .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -825,11 +826,11 @@ which is the regression line for <code>time</code> = 7. Note, however, when an i
   border-top-color: #D3D3D3;
 }
 
-#ovhytruaup .gt_striped {
+#xatfpeeiib .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#ovhytruaup .gt_table_body {
+#xatfpeeiib .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -838,7 +839,7 @@ which is the regression line for <code>time</code> = 7. Note, however, when an i
   border-bottom-color: #D3D3D3;
 }
 
-#ovhytruaup .gt_footnotes {
+#xatfpeeiib .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -852,13 +853,13 @@ which is the regression line for <code>time</code> = 7. Note, however, when an i
   border-right-color: #D3D3D3;
 }
 
-#ovhytruaup .gt_footnote {
+#xatfpeeiib .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding: 4px;
 }
 
-#ovhytruaup .gt_sourcenotes {
+#xatfpeeiib .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -872,46 +873,46 @@ which is the regression line for <code>time</code> = 7. Note, however, when an i
   border-right-color: #D3D3D3;
 }
 
-#ovhytruaup .gt_sourcenote {
+#xatfpeeiib .gt_sourcenote {
   font-size: 90%;
   padding: 4px;
 }
 
-#ovhytruaup .gt_left {
+#xatfpeeiib .gt_left {
   text-align: left;
 }
 
-#ovhytruaup .gt_center {
+#xatfpeeiib .gt_center {
   text-align: center;
 }
 
-#ovhytruaup .gt_right {
+#xatfpeeiib .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#ovhytruaup .gt_font_normal {
+#xatfpeeiib .gt_font_normal {
   font-weight: normal;
 }
 
-#ovhytruaup .gt_font_bold {
+#xatfpeeiib .gt_font_bold {
   font-weight: bold;
 }
 
-#ovhytruaup .gt_font_italic {
+#xatfpeeiib .gt_font_italic {
   font-style: italic;
 }
 
-#ovhytruaup .gt_super {
+#xatfpeeiib .gt_super {
   font-size: 65%;
 }
 
-#ovhytruaup .gt_footnote_marks {
+#xatfpeeiib .gt_footnote_marks {
   font-style: italic;
   font-size: 65%;
 }
 </style>
-<div id="ovhytruaup" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;"><table class="gt_table">
+<div id="xatfpeeiib" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;"><table class="gt_table">
   
   <thead class="gt_col_headings">
     <tr>

@@ -398,7 +398,7 @@ sjPlot::plot_model(m3, type = "pred", show.data = TRUE,
 
 ### Diagnostics
 
-```{m3-diagnostics}
+```{r m3-diagnostics}
 car::mmps(m3)  # marginal model plots for linearity assumptions
 ```
 
