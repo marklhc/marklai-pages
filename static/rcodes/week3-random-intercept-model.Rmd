@@ -267,6 +267,22 @@ We will use the $R^2$ statistic proposed by [Nakagawa & Schielzeth (2013)]( http
 # Generally, you should use the marginal R^2 (R2m) for the variance predicted by
 # your predictors (`meanses` in this case).
 MuMIn::r.squaredGLMM(m_lv2)
+# Using the approach by Rights & Sterba (2019, Psychological Methods, https://doi.org/10.1037/met0000184)
+# Read in selected lines from the source to get the r2MLM function
+readLines(
+  "https://cdn.vanderbilt.edu/vu-my/wp-content/uploads/sites/2149/2018/06/27222138/r2MLM_codeandinput-1.txt", n = 135) %>% 
+  paste(collapse = "\n") %>% 
+  textConnection() %>% 
+  source()
+r2MLM(hsball, 
+      within_covs = NULL,  # no level-1 predictor
+      between_covs = 11,  # meanses in the 11th column
+      random_covs = NULL,  # no random slopes
+      gamma_w = NULL,  # no level-1 coefficient
+      gamma_b = c(12.6494, 5.864), 
+      Tau = matrix(2.639),  # random intercept variance
+      sigma2 = 39.157
+      )
 ```
 
 Including school means of SES in the model accounted for about 12% of the total variance of math achievement.
