@@ -1,0 +1,300 @@
+---
+title: "Adding Level-1 Predictors"
+output:
+  html_document:
+    df_print: paged
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = ">#")
+```
+
+## Load Packages and Import Data
+
+```{r load-pkg, message=FALSE}
+# To install a package, run the following ONCE (and only once on your computer)
+# install.packages("psych")  
+library(here)  # makes reading data more consistent
+library(tidyverse)  # for data manipulation and plotting
+library(haven)  # for importing SPSS/SAS/Stata data
+library(lme4)  # for multilevel analysis
+library(sjPlot)  # for plotting effects
+library(MuMIn)  # for computing r-squared
+library(broom.mixed)  # for summarizing results
+library(modelsummary)  # for making tables
+library(interactions)  # for plotting interactions
+theme_set(theme_bw())  # Theme; just my personal preference
+```
+
+### Import Data
+
+```{r import_sav, message=FALSE}
+# Read in the data (pay attention to the directory)
+hsball <- read_sav(here("data_files", "hsball.sav"))
+```
+
+# Between-Within Decomposition
+
+## Cluster-mean centering
+
+To separate the effects of a lv-1 predictor into different levels, one needs to
+first center the predictor on the cluster means:
+
+```{r cmc}
+hsball <- hsball %>% 
+  group_by(id) %>%   # operate within schools
+  mutate(ses_cm = mean(ses),   # create cluster means (the same as `meanses`)
+         ses_cmc = ses - ses_cm) %>%   # cluster-mean centered
+  ungroup()  # exit the "editing within groups" mode
+# The meanses variable already exists in the original data, but it's slightly
+# different from computing it by hand
+hsball %>% 
+  select(id, ses, meanses, ses_cm, ses_cmc)
+```
+
+## Model Equation
+
+Lv-1:
+
+$$\text{mathach}_{ij} = \beta_{0j} + \beta_{1j} \text{ses_cmc}_{ij} + e_{ij}$$
+
+Lv-2:
+
+\begin{align*}
+  \beta_{0j} & = \gamma_{00} + \gamma_{01} \text{meanses}_j + u_{0j}  \\
+  \beta_{1j} & = \gamma_{10}
+\end{align*}
+where
+
+- $\gamma_{10}$ = regression coefficient of student-level `ses` 
+representing the expected difference in student achievement between two students
+_in the same school_ with one unit difference in `ses`,  
+- $\gamma_{01}$ = between-school effect, which is the expected difference in
+mean achievement between two schools with one unit difference in `meanses`.
+
+## Running in R
+
+We can specify the model as:
+
+```{r m_bw}
+m_bw <- lmer(mathach ~ meanses + ses_cmc + (1 | id), data = hsball)
+```
+
+You can summarize the results using
+
+```{r summary-m_bw}
+summary(m_bw)
+```
+
+# Contextual Effect
+
+With a level-1 predictor like `ses`, which has both student-level and 
+school-level variance, we can include both the level-1 variable and the school
+mean variable as predictors. When the level-1 predictor is present, the 
+coefficient for the group mean variable becomes the _contextual_ effect. 
+
+## Model Equation
+
+Lv-1:
+
+$$\text{mathach}_{ij} = \beta_{0j} + \beta_{1j} \text{ses}_{ij} + e_{ij}$$
+
+Lv-2:
+
+\begin{align*}
+  \beta_{0j} & = \gamma_{00} + \gamma_{01} \text{meanses}_j + u_{0j}  \\
+  \beta_{1j} & = \gamma_{10}
+\end{align*}
+where
+
+- $\gamma_{10}$ = regression coefficient of student-level `ses` 
+representing the expected difference in student achievement between two students
+_in the same school_ with one unit difference in `ses`,  
+- $\gamma_{01}$ = contextual effect, which is the expected difference in 
+student achievement between two students _with the same `ses`_ but from two 
+schools with one unit difference in `meanses`. 
+
+## Running in R
+
+We can specify the model as:
+
+```{r contextual}
+contextual <- lmer(mathach ~ meanses + ses + (1 | id), data = hsball)
+```
+
+You can summarize the results using
+
+```{r summary_contextual}
+summary(contextual)
+```
+
+If you compare the `REML criterion at convergence` number you can see this is
+the same as the between-within model. The estimated contextual effect is 
+the coefficient of `meanses` minus the coefficient of `ses_cmc`, which is the 
+same as what you will get in the contextual effect model. 
+
+# Random-Coefficients Model
+
+## Explore Variations in Slopes
+
+```{r var-in-slopes}
+hsball %>% 
+  # randomly sample 16 schools
+  filter(id %in% sample(unique(id), 16)) %>% 
+ggplot(aes(x = ses, y = mathach)) + 
+  geom_point(size = 0.5) + 
+  geom_smooth(method = "lm") + 
+  facet_wrap( ~ id)
+```
+
+
+## Model Equation
+
+Lv-1:
+
+$$\text{mathach}_{ij} = \beta_{0j} + \beta_{1j} \text{ses_cmc}_{ij} + e_{ij}$$
+
+Lv-2:
+
+\begin{align*}
+  \beta_{0j} & = \gamma_{00} + \gamma_{01} \text{meanses}_j + u_{0j}  \\
+  \beta_{1j} & = \gamma_{10} + u_{1j}  
+\end{align*}
+The additional term is $u_{1j}$, which represents the deviation of the slope of
+school $j$ from the average slope (i.e., $\gamma_{10}$). 
+
+## Running in R
+
+We have to put `ses` in the random part:
+
+```{r ran_slp}
+ran_slp <- lmer(mathach ~ meanses + ses_cmc + (ses_cmc | id), data = hsball)
+```
+
+You can summarize the results using
+
+```{r summary_ran_slp}
+summary(ran_slp)
+```
+
+## Plotting Random Slopes
+
+```{r plot-ran-slp}
+augment(ran_slp, data = hsball) %>%  # augmented data (adding EB estimates)
+  ggplot(aes(x = ses, y = .fitted, color = factor(id))) +
+  geom_smooth(method = "lm", se = FALSE, size = 0.5) + 
+  labs(y = "Predicted mathach") + 
+  guides(color = FALSE)
+```
+
+# Analyzing Cross-Level Interactions
+
+`sector` is added to the level-2 intercept and slope equations
+
+## Model Equation
+
+Lv-1:
+
+$$\text{mathach}_{ij} = \beta_{0j} + \beta_{1j} \text{ses_cmc}_{ij} + e_{ij}$$
+
+Lv-2:
+
+\begin{align*}
+  \beta_{0j} & = \gamma_{00} + \gamma_{01} \text{meanses}_j + 
+                 \gamma_{02} \text{sector}_j + u_{0j}  \\
+  \beta_{1j} & = \gamma_{10} + \gamma_{11} \text{sector}_j + u_{1j}  
+\end{align*}
+where
+- $\gamma_{02}$ = regression coefficient of school-level `sector` variable
+representing the expected difference in achievement between two students with 
+the same SES level and from two schools with the same school-level SES, but one
+is a catholic school and the other a private school. 
+- $\gamma_{11}$ = cross-level interaction coefficient of the expected _slope_
+difference between a catholic and a private school with the same school-level
+SES. 
+
+## Running in R
+
+We have to put the `sector * ses` interaction to the fixed part:
+
+```{r crlv_int}
+# The first step is optional, but let's recode sector into a factor variable
+hsball <- hsball %>% 
+  mutate(sector = factor(sector, levels = c(0, 1), 
+                         labels = c("Public", "Catholic")))
+crlv_int <- lmer(mathach ~ meanses + sector * ses_cmc + (ses_cmc | id), 
+                 data = hsball)
+```
+
+You can summarize the results using
+
+```{r summary_crlv_int}
+summary(crlv_int)
+```
+
+## Simple Slopes
+
+With a cross-level interaction, the slope between `ses_cmc` and `mathach` depends on a moderator, `sector`. To find out what the model suggests to be the slope at a particular level of `sector`, which is also called a *simple slope* in the literature, you just need to look at the equation for $\beta_{1j}$, which shows that the predicted slope is
+$$\hat \beta_{1} = \hat \gamma_{10} + \hat \gamma_{11} \text{sector}.$$
+So when `sector` = 0 (public school), the simple slope is
+$$\hat \beta_{1} = \hat \gamma_{10} + \hat \gamma_{11} (0),$$
+or `r fixef(crlv_int)[["ses_cmc"]]`. When `sector` = 1 (private school), the simple slope is
+$$\hat \beta_{1} = \hat \gamma_{10} + \hat \gamma_{11} (1),$$
+or `r fixef(crlv_int)[["ses_cmc"]]` + (`r fixef(crlv_int)[["sectorCatholic:ses_cmc"]]`)(1) = `r fixef(crlv_int)[["ses_cmc"]] + fixef(crlv_int)[["sectorCatholic:ses_cmc"]]`.
+
+## Plotting the Interactions
+
+```{r plot-crlv_int-slopes}
+crlv_int %>% 
+  augment(data = hsball) %>% 
+  ggplot(aes(x = ses, y = .fitted, group = factor(id), 
+           color = factor(sector))) +   # use `sector` for coloring lines
+  geom_smooth(method = "lm", se = FALSE, size = 0.5) + 
+  labs(y = "Predicted mathach")
+```
+
+You can also use the `interactions::interact_plot()` function for just the fixed effects:
+
+```{r plot-crlv_int}
+interact_plot(crlv_int, 
+              pred = "ses_cmc",
+              modx = "sector",
+              modx.labels = c("Public", "Catholic"), 
+              plot.points = TRUE, 
+              point.size = 0.5, 
+              point.alpha = 0.2, 
+              facet.modx = TRUE,  # use this to make two panels
+              x.label = "SES (cluster-mean centered)", 
+              y.label = "Math achievement")
+```
+
+
+# Summaizing Analyses in a Table
+
+```{r mlm-vs-ols}
+# (Optional) Rename and reorder the rows. Need to use '\\( \\)' to 
+# show math. If this does not work for you, don't worry about it.
+cm <- c("(Intercept)" = "(Intercept)", 
+        "meanses" = "school mean SES", 
+        "ses_cmc" = "SES (cluster-mean centered)", 
+        "ses" = "SES (contextual)", 
+        "sector" = "Catholic school", 
+        "sector:ses_cmc" = "Catholic school x SES (cmc)", 
+        "sd__(Intercept)" = "\\(\\tau_0\\)", 
+        "sd__ses_cmc" = "\\(\\tau_1\\) (SES)", 
+        "sd__Observation" = "\\(\\sigma\\)")
+# (Optional) Add rows to say fixed and random effects
+new_rows <- data.frame(term = c('Fixed effect', 'Random effect'), 
+                       "Between-within" = c('', ''), 
+                       "Contextual" = c('', ''), 
+                       "Random slope" = c('', ''), 
+                       "Cross-level interaction" = c('', ''))
+attr(new_rows, 'position') <- c(1, 14)
+msummary(list("Between-within" = m_bw, 
+              "Contextual" = contextual, 
+              "Random slope" = ran_slp, 
+              "Cross-level interaction" = crlv_int), 
+         coef_map = cm, 
+         add_rows = new_rows)
+```

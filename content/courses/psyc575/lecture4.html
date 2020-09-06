@@ -1,0 +1,175 @@
+---
+title: Week 4
+linktitle: Lecture videos (wk 4)
+type: docs
+date: "2020-08-27T00:00:00+01:00"
+draft: false
+slides: "psyc575/04_adding_level-1_predictor"
+menu:
+  psyc575:
+    parent: Week 4
+    weight: 1
+output:
+  blogdown::html_page:
+    toc: true
+    df_print: paged
+# Prev/next pager order (if `docs_section_pager` enabled in `params.toml`)
+weight: 1
+---
+
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+<link href="/rmarkdown-libs/pagedtable/css/pagedtable.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/pagedtable/js/pagedtable.js"></script>
+
+<div id="TOC">
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#ecological-fallacy">Ecological Fallacy</a></li>
+<li><a href="#decomposing-effects">Decomposing Effects</a>
+<ul>
+<li><a href="#betweenwithin-effects">Between/within effects</a></li>
+<li><a href="#path-diagram-and-equations">Path diagram and equations</a></li>
+<li><a href="#interpret-the-betweenwithin-effects">Interpret the between/within effects</a></li>
+</ul></li>
+<li><a href="#contextual-effects">Contextual Effects</a></li>
+<li><a href="#random-slopesrandom-coefficients">Random Slopes/Random Coefficients</a>
+<ul>
+<li><a href="#developing-intuition">Developing intuition</a></li>
+<li><a href="#equations-and-path-diagram">Equations and path diagram</a></li>
+<li><a href="#interpretations">Interpretations</a></li>
+</ul></li>
+<li><a href="#cross-level-interaction">Cross-Level Interaction</a></li>
+</ul>
+</div>
+
+{{% slide-buttons2 %}}
+<div id="overview" class="section level2">
+<h2>Overview</h2>
+{{% youtube "0bIXkUTEC3U" %}}
+<p>Check your learning: The Type I error inflation problem when using OLS regression for clustered data applies to</p>
+<form name="form_50908" onsubmit="return validate_form_50908()" method="post">
+<input type="radio" name="answer_50908" id="50908_1" value="Level-1 predictors"><label for="1">Level-1 predictors</label><br><input type="radio" name="answer_50908" id="50908_2" value="Level-2 predictors"><label for="2">Level-2 predictors</label><br><input type="radio" name="answer_50908" id="50908_3" value="Level-2 predictors and most level-1 predictors"><label for="3">Level-2 predictors and most level-1 predictors</label><br><input type="submit" value="check">
+</form>
+<p id="result_50908">
+</p>
+<script> function validate_form_50908() {var x, text; var x = document.forms["form_50908"]["answer_50908"].value;if (x == "Level-2 predictors and most level-1 predictors"){text = 'Well done :+1:';} else {text = 'Try again. You can do it!';} document.getElementById('result_50908').innerHTML = text; return false;} </script>
+<hr />
+</div>
+<div id="ecological-fallacy" class="section level2">
+<h2>Ecological Fallacy</h2>
+{{% youtube "4SnA5Du4E-c" %}}
+<p>Check your learning: In a <a href="https://blogs.scientificamerican.com/the-curious-wavefunction/chocolate-consumption-and-nobel-prizes-a-bizarre-juxtaposition-if-there-ever-was-one/">“bizarre” research finding</a> that found a correlation between chocolate consumption and number of Nobel prize winners at the country level, which of the following is reasonable to infer?</p>
+<form name="form_76078" onsubmit="return validate_form_76078()" method="post">
+<input type="radio" name="answer_76078" id="76078_1" value="That those who eat more chocolate are more likely to win a nobel prize"><label for="1">That those who eat more chocolate are more likely to win a nobel prize</label><br><input type="radio" name="answer_76078" id="76078_2" value="That nutritional contents in chocolate is related to cognitive functioning"><label for="2">That nutritional contents in chocolate is related to cognitive functioning</label><br><input type="radio" name="answer_76078" id="76078_3" value="That there are potential third variables that relate to both a country's chocolate consumption level and the number of Nobel prize winners"><label for="3">That there are potential third variables that relate to both a country’s chocolate consumption level and the number of Nobel prize winners</label><br><input type="submit" value="check">
+</form>
+<p id="result_76078">
+</p>
+<script> function validate_form_76078() {var x, text; var x = document.forms["form_76078"]["answer_76078"].value;if (x == "That there are potential third variables that relate to both a country's chocolate consumption level and the number of Nobel prize winners"){text = 'Well done :+1:';} else {text = 'Try again. You can do it!';} document.getElementById('result_76078').innerHTML = text; return false;} </script>
+<p>Check your learning: Summarize the “Big-Fish-Little-Pond Effect” in terms of how a person’s own academic performance and the overall performance of the person’s school on academic self-concept.</p>
+<hr />
+</div>
+<div id="decomposing-effects" class="section level2">
+<h2>Decomposing Effects</h2>
+<div id="betweenwithin-effects" class="section level3">
+<h3>Between/within effects</h3>
+<p>Note: What I called “cluster-mean centering” is the same as “within-group centering” in Snijders &amp; Bosker (2012)</p>
+{{% youtube "6h1U6aZmohY" %}}
+<p>Check your learning: Why do we need to separate a level-1 predictor into two variables in the model?</p>
+<form name="form_69781" onsubmit="return validate_form_69781()" method="post">
+<input type="radio" name="answer_69781" id="69781_1" value="Because the slope of the level-1 predictor and that of its cluster means may be different"><label for="1">Because the slope of the level-1 predictor and that of its cluster means may be different</label><br><input type="radio" name="answer_69781" id="69781_2" value="Because there is an interaction between the predictor and the cluster variable"><label for="2">Because there is an interaction between the predictor and the cluster variable</label><br><input type="radio" name="answer_69781" id="69781_3" value="Because the intraclass correlation for any level-1 predictor will be zero"><label for="3">Because the intraclass correlation for any level-1 predictor will be zero</label><br><input type="submit" value="check">
+</form>
+<p id="result_69781">
+</p>
+<script> function validate_form_69781() {var x, text; var x = document.forms["form_69781"]["answer_69781"].value;if (x == "Because the slope of the level-1 predictor and that of its cluster means may be different"){text = 'Well done :+1:';} else {text = 'Try again. You can do it!';} document.getElementById('result_69781').innerHTML = text; return false;} </script>
+<hr />
+</div>
+<div id="path-diagram-and-equations" class="section level3">
+<h3>Path diagram and equations</h3>
+{{% youtube "ZhLOtzzxIRk" %}}
+<p>Thinking exercise: Based on the between-cluster level component in the path diagram and in the equations, <code>meanses</code> can predict</p>
+<form name="form_33687" onsubmit="return validate_form_33687()" method="post">
+<input type="radio" name="answer_33687" id="33687_1" value="Both the school-level math achievement and a student's relative standing within a school"><label for="1">Both the school-level math achievement and a student’s relative standing within a school</label><br><input type="radio" name="answer_33687" id="33687_2" value="Only a student's relative standing within a school"><label for="2">Only a student’s relative standing within a school</label><br><input type="radio" name="answer_33687" id="33687_3" value="Only the school means of math achievement"><label for="3">Only the school means of math achievement</label><br><input type="submit" value="check">
+</form>
+<p id="result_33687">
+</p>
+<script> function validate_form_33687() {var x, text; var x = document.forms["form_33687"]["answer_33687"].value;if (x == "Only the school means of math achievement"){text = 'Well done :+1:';} else {text = 'Try again. You can do it!';} document.getElementById('result_33687').innerHTML = text; return false;} </script>
+<p>Check your learning: Based on the results shown in the video, is the school-level slope or the student-level slope larger for the association between SES and math achievement?</p>
+<form name="form_31377" onsubmit="return validate_form_31377()" method="post">
+<input type="radio" name="answer_31377" id="31377_1" value="School-level"><label for="1">School-level</label><br><input type="radio" name="answer_31377" id="31377_2" value="Student-level"><label for="2">Student-level</label><br><input type="submit" value="check">
+</form>
+<p id="result_31377">
+</p>
+<script> function validate_form_31377() {var x, text; var x = document.forms["form_31377"]["answer_31377"].value;if (x == "School-level"){text = 'You are on your way to be an MLM expert :+1:';} else {text = 'Try again. You can do it!';} document.getElementById('result_31377').innerHTML = text; return false;} </script>
+<hr />
+</div>
+<div id="interpret-the-betweenwithin-effects" class="section level3">
+<h3>Interpret the between/within effects</h3>
+{{% youtube "Pet7lt7Nb68" %}}
+<p>Try it yourself: Obtain the predicted <code>mathach</code> for Student B, and compare with Students A and C.</p>
+<hr />
+</div>
+</div>
+<div id="contextual-effects" class="section level2">
+<h2>Contextual Effects</h2>
+{{% youtube "TTCE9Tuqj0Y" %}}
+<p>Check your learning: The contextual effect is</p>
+<form name="form_75929" onsubmit="return validate_form_75929()" method="post">
+<input type="radio" name="answer_75929" id="75929_1" value="The predicted difference in the outcome for every unit difference in the cluster mean predictor, holding constant the level-1 predictor"><label for="1">The predicted difference in the outcome for every unit difference in the cluster mean predictor, holding constant the level-1 predictor</label><br><input type="radio" name="answer_75929" id="75929_2" value="The predicted difference in the outcome for every unit difference in the level-1 predictor, within a given cluster"><label for="2">The predicted difference in the outcome for every unit difference in the level-1 predictor, within a given cluster</label><br><input type="radio" name="answer_75929" id="75929_3" value="The between-level effect"><label for="3">The between-level effect</label><br><input type="submit" value="check">
+</form>
+<p id="result_75929">
+</p>
+<script> function validate_form_75929() {var x, text; var x = document.forms["form_75929"]["answer_75929"].value;if (x == "The predicted difference in the outcome for every unit difference in the cluster mean predictor, holding constant the level-1 predictor"){text = 'You are on your way to be an MLM expert :+1:';} else {text = 'Try again. You can do it!';} document.getElementById('result_75929').innerHTML = text; return false;} </script>
+<hr />
+</div>
+<div id="random-slopesrandom-coefficients" class="section level2">
+<h2>Random Slopes/Random Coefficients</h2>
+<div id="developing-intuition" class="section level3">
+<h3>Developing intuition</h3>
+{{% youtube "K6Q9wbsdgXw" %}}
+<p>Check your learning: In a random-coefficient model, if there are <span class="math inline">\(J\)</span> cluster, there are</p>
+<form name="form_67616" onsubmit="return validate_form_67616()" method="post">
+<input type="radio" name="answer_67616" id="67616_1" value="one intercept, two slopes"><label for="1">one intercept, two slopes</label><br><input type="radio" name="answer_67616" id="67616_2" value="one intercept, J slopes"><label for="2">one intercept, J slopes</label><br><input type="radio" name="answer_67616" id="67616_3" value="J intercepts, one slopes"><label for="3">J intercepts, one slopes</label><br><input type="radio" name="answer_67616" id="67616_4" value="J intercepts, J slopes"><label for="4">J intercepts, J slopes</label><br><input type="submit" value="check">
+</form>
+<p id="result_67616">
+</p>
+<script> function validate_form_67616() {var x, text; var x = document.forms["form_67616"]["answer_67616"].value;if (x == "J intercepts, J slopes"){text = 'Well done :+1:';} else {text = 'Try again. You can do it!';} document.getElementById('result_67616').innerHTML = text; return false;} </script>
+<hr />
+</div>
+<div id="equations-and-path-diagram" class="section level3">
+<h3>Equations and path diagram</h3>
+{{% youtube "_jXGrTbHft4" %}}
+<p>Check your learning: Which combination of <span class="math inline">\(\tau_0\)</span> and <span class="math inline">\(\tau_1\)</span> best describes the graph below?</p>
+<p><img src="/courses/psyc575/lecture4_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+<form name="form_64510" onsubmit="return validate_form_64510()" method="post">
+<input type="radio" name="answer_64510" id="64510_1" value="tau_0 = 0.1, tau_1 = 0.2"><label for="1">tau_0 = 0.1, tau_1 = 0.2</label><br><input type="radio" name="answer_64510" id="64510_2" value="tau_0 = 0, tau_1 = 0.2"><label for="2">tau_0 = 0, tau_1 = 0.2</label><br><input type="radio" name="answer_64510" id="64510_3" value="tau_0 = 0.1, tau_1 = 0"><label for="3">tau_0 = 0.1, tau_1 = 0</label><br><input type="radio" name="answer_64510" id="64510_4" value="tau_0 = 0, tau_1 = 0"><label for="4">tau_0 = 0, tau_1 = 0</label><br><input type="submit" value="check">
+</form>
+<p id="result_64510">
+</p>
+<script> function validate_form_64510() {var x, text; var x = document.forms["form_64510"]["answer_64510"].value;if (x == "tau_0 = 0.1, tau_1 = 0.2"){text = 'Well done :+1:';} else {text = 'Try again. You can do it!';} document.getElementById('result_64510').innerHTML = text; return false;} </script>
+<hr />
+</div>
+<div id="interpretations" class="section level3">
+<h3>Interpretations</h3>
+{{% youtube "o6PDE4IEFfg" %}}
+<p>Check your learning: In a random-slope model, if <span class="math inline">\(\gamma_{10}\)</span> (the average slope) = 0.2, <span class="math inline">\(\tau^2_1 = 0.04\)</span>, what is the 68% plausible range for the slopes across clusters?</p>
+<form name="form_23336" onsubmit="return validate_form_23336()" method="post">
+<input type="radio" name="answer_23336" id="23336_1" value="[0, 0.4]"><label for="1">[0, 0.4]</label><br><input type="radio" name="answer_23336" id="23336_2" value="[-0.48, 0.88]"><label for="2">[-0.48, 0.88]</label><br><input type="radio" name="answer_23336" id="23336_3" value="[0.16, 0.24]"><label for="3">[0.16, 0.24]</label><br><input type="radio" name="answer_23336" id="23336_4" value="[0.12, 0.28]"><label for="4">[0.12, 0.28]</label><br><input type="submit" value="check">
+</form>
+<p id="result_23336">
+</p>
+<script> function validate_form_23336() {var x, text; var x = document.forms["form_23336"]["answer_23336"].value;if (x == "[0, 0.4]"){text = 'Well done :+1:';} else {text = 'Try again. You can do it!';} document.getElementById('result_23336').innerHTML = text; return false;} </script>
+<hr />
+</div>
+</div>
+<div id="cross-level-interaction" class="section level2">
+<h2>Cross-Level Interaction</h2>
+{{% youtube "kp3QzeNNNQc" %}}
+<p>Check your learning: Conceptually, a cross-level interaction is the same as</p>
+<form name="form_23747" onsubmit="return validate_form_23747()" method="post">
+<input type="radio" name="answer_23747" id="23747_1" value="An interaction between two level-1 predictors"><label for="1">An interaction between two level-1 predictors</label><br><input type="radio" name="answer_23747" id="23747_2" value="Using a cluster-level predictor to predict variations in level-1 slopes"><label for="2">Using a cluster-level predictor to predict variations in level-1 slopes</label><br><input type="radio" name="answer_23747" id="23747_3" value="Random slopes"><label for="3">Random slopes</label><br><input type="radio" name="answer_23747" id="23747_4" value="Adding the main effect of a cluster-level predictor"><label for="4">Adding the main effect of a cluster-level predictor</label><br><input type="submit" value="check">
+</form>
+<p id="result_23747">
+</p>
+<script> function validate_form_23747() {var x, text; var x = document.forms["form_23747"]["answer_23747"].value;if (x == "Using a cluster-level predictor to predict variations in level-1 slopes"){text = 'Well done :+1:';} else {text = 'Try again. You can do it!';} document.getElementById('result_23747').innerHTML = text; return false;} </script>
+<hr />
+</div>

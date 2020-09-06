@@ -1,0 +1,56 @@
+---
+title: Homework 4
+date: '2020-08-27'
+slug: homework-4
+categories: []
+tags: []
+linktitle: Homework 4
+summary: ~
+lastmod: '`r Sys.Date()`'
+type: docs
+menu:
+  psyc575:
+    parent: Week 4
+    weight: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(width = 100)
+comma <- function(x) format(x, digits = 2, big.mark = ",")
+```
+
+## Learning Objective
+
+- Independently analyze real data using statistical software for multilevel modeling
+
+## Assignment Description 
+
+In this assignment, you will continue to use the "happy_combined.sav" data set and analyze models using `income` as a predictor. 
+
+Follow the instructions and complete the assignment by **September 11**. This assignment is worth 6 points. 
+
+## Steps
+
+1. (Optional) Use the same [`hw3_template.Rmd` file](/hw_templates/hw3_template.Rmd). Rename it as `hw4_yourlastnameyourfirstname.Rmd` (e.g., `hw4_LaiMark.Rmd`), and write down your name inside the Rmd. 
+2. Compute the intraclass correlation (ICC) of the `income` variable across countries. Does the ICC suggest that there are substantial country-level variability for the `income` variable?
+3. Include `income` into the model to predict `happy`, and decompose its effect into the between-within effects. Also, allow the within-country slopes for `income` to vary across countries.
+    i. Write out the model equation(s)
+    ii. Write a paragraph to interpret the model results. In your write-up, it should include (a) the fixed-effects, (b) the random slope variance. You can reference the slides for how to interpret these coefficients. 
+4. From the previous model, include `gm_GNP` and its cross-level interaction with individual-level `income`. Random slopes of Income should be included too.
+    i. Write out the model equation(s)
+    ii. Report the [simple slope](../rcode4/#simple-slopes) for individual-level income when (a) `gm_GNP` = -1
+(i.e., 1 SD below the mean, which was a similar level as China in the 90s)  
+    and (b) `gm_GNP` = 2 (i.e., 2 SD above the mean, which was a similar level as Switzerland in the 90s)
+    iii. Provide a graph showing the relations between individual-level income and `happy` for countries with different levels of `gm_GNP`. You can use the `interactions::interact_plot()` function
+    iv. Compute an $R^2$ effect size for this model.
+5. Show a table summarizing the coefficients for the two models in (3) and (4). 
+6. Knit your Rmd file to HTML/PDF/Word, and submit the knitted file to Blackboard. 
+
+## Grading 
+
+Your instructor will use the rubric on Slack to grade this assignment. 
+
+## Additional Notes
+
+You may post your questions to the Slack channel to get help from your peers and instructor. 
