@@ -1,0 +1,73 @@
+---
+title: 'Exercise: Empirical Bayes Estimates'
+date: "9/03/2020"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load-pkg, message=FALSE, include=FALSE}
+library(here)  # makes reading data more consistent
+library(tidyverse)  # for data manipulation and plotting
+library(haven)  # for plotting interactions
+library(lme4)  # for running a mixed effect model
+theme_set(theme_bw())  # Theme; just my personal preference
+```
+
+```{r import_sav, message=FALSE}
+# Read in the data (pay attention to the directory)
+hsball <- read_sav(here("data_files", "hsball.sav"))
+```
+
+```{r, message=FALSE}
+m0 <- lmer(mathach ~ (1 | id), data = hsball)
+summary(m0)
+```
+
+Consider school 8367, which has 
+`r hsball %>% filter(id == "8367") %>% nrow()` students in our sample:
+
+```{r, echo=FALSE, results='asis'}
+hsball %>% 
+  filter(id == "8367") %>% 
+  knitr::kable()
+```
+
+The sample mean of `mathach` is:
+
+```{r}
+hsball %>% 
+  filter(id == "8367") %>% 
+  summarize(mean(mathach))
+```
+
+However, if we rely on the random intercept model, the estimate of $\beta_{0j}$ (i.e., the empirical Bayes estimate, $\hat \beta_{0j}$) is:
+
+```{r}
+predict(m0, newdata = data.frame(id = "8367", mathach = NA))
+```
+
+## Instruction
+
+First, select a group reporter. Then answer the following questions: 
+
+Questions:
+
+1. In the random intercept model, we want to know whether there are differences in the means of math achievement across schools. What statistical method you have learned answer a similar question?
+
+2. Why do you think there is such a difference?  
+
+3. Which one (sample mean, 4.55 or $\hat \beta_{0j} = 6.53$) do you think is
+closer to the actual mean for everyone (i.e., 153 students) in that school?
+
+4. The formula for the empirical Bayes estimate is 
+$$\hat \lambda_j \times \text{sample cluster mean} + (1 - \hat \lambda_j) \times \hat \gamma_{00}, $$
+where $\hat \lambda_j = \frac{\hat \tau^2_0}{\hat \tau^2_0 + \hat \sigma^2 / n_j}$ and $n_j$ is the sample cluster size for the $j$th cluster. 
+    i. Verify that $\hat \lambda_j = 0.755$ for school 8367. 
+    ii. Verify that $\hat \beta_{0j} = 6.53$ for school 8367. 
+
+5. What will be $\hat \beta_{0j}$ for school 8367 if instead there were 70 students in the sample (i.e., $n_j = 70$)? What does it say about the relation between shrinkage and cluster size?
