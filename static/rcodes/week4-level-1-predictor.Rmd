@@ -61,10 +61,12 @@ $$\text{mathach}_{ij} = \beta_{0j} + \beta_{1j} \text{ses_cmc}_{ij} + e_{ij}$$
 
 Lv-2:
 
-\begin{align*}
+$$
+\begin{aligned}
   \beta_{0j} & = \gamma_{00} + \gamma_{01} \text{meanses}_j + u_{0j}  \\
   \beta_{1j} & = \gamma_{10}
-\end{align*}
+\end{aligned}
+$$
 where
 
 - $\gamma_{10}$ = regression coefficient of student-level `ses` 
@@ -102,10 +104,12 @@ $$\text{mathach}_{ij} = \beta_{0j} + \beta_{1j} \text{ses}_{ij} + e_{ij}$$
 
 Lv-2:
 
-\begin{align*}
+$$
+\begin{aligned}
   \beta_{0j} & = \gamma_{00} + \gamma_{01} \text{meanses}_j + u_{0j}  \\
   \beta_{1j} & = \gamma_{10}
-\end{align*}
+\end{aligned}
+$$
 where
 
 - $\gamma_{10}$ = regression coefficient of student-level `ses` 
@@ -157,10 +161,12 @@ $$\text{mathach}_{ij} = \beta_{0j} + \beta_{1j} \text{ses_cmc}_{ij} + e_{ij}$$
 
 Lv-2:
 
-\begin{align*}
+$$
+\begin{aligned}
   \beta_{0j} & = \gamma_{00} + \gamma_{01} \text{meanses}_j + u_{0j}  \\
   \beta_{1j} & = \gamma_{10} + u_{1j}  
-\end{align*}
+\end{aligned}
+$$
 The additional term is $u_{1j}$, which represents the deviation of the slope of
 school $j$ from the average slope (i.e., $\gamma_{10}$). 
 
@@ -200,11 +206,13 @@ $$\text{mathach}_{ij} = \beta_{0j} + \beta_{1j} \text{ses_cmc}_{ij} + e_{ij}$$
 
 Lv-2:
 
-\begin{align*}
+$$
+\begin{aligned}
   \beta_{0j} & = \gamma_{00} + \gamma_{01} \text{meanses}_j + 
                  \gamma_{02} \text{sector}_j + u_{0j}  \\
   \beta_{1j} & = \gamma_{10} + \gamma_{11} \text{sector}_j + u_{1j}  
-\end{align*}
+\end{aligned}
+$$
 where
 - $\gamma_{02}$ = regression coefficient of school-level `sector` variable
 representing the expected difference in achievement between two students with 

@@ -4,7 +4,7 @@ linktitle: R Codes (wk 4)
 type: docs
 date: "2020-08-27T00:00:00+01:00"
 draft: false
-lastmod: '2020-09-06'
+lastmod: '2020-09-09'
 rmd: "rcodes/week4-level-1-predictor"
 menu:
   psyc575:
@@ -106,10 +106,12 @@ hsball %&gt;%
 <p>Lv-1:</p>
 <p><span class="math display">\[\text{mathach}_{ij} = \beta_{0j} + \beta_{1j} \text{ses_cmc}_{ij} + e_{ij}\]</span></p>
 <p>Lv-2:</p>
-<p><span class="math display">\[\begin{align*}
+<p><span class="math display">\[
+\begin{aligned}
   \beta_{0j} &amp; = \gamma_{00} + \gamma_{01} \text{meanses}_j + u_{0j}  \\
   \beta_{1j} &amp; = \gamma_{10}
-\end{align*}\]</span>
+\end{aligned}
+\]</span>
 where</p>
 <ul>
 <li><span class="math inline">\(\gamma_{10}\)</span> = regression coefficient of student-level <code>ses</code>
@@ -165,10 +167,12 @@ coefficient for the group mean variable becomes the <em>contextual</em> effect.<
 <p>Lv-1:</p>
 <p><span class="math display">\[\text{mathach}_{ij} = \beta_{0j} + \beta_{1j} \text{ses}_{ij} + e_{ij}\]</span></p>
 <p>Lv-2:</p>
-<p><span class="math display">\[\begin{align*}
+<p><span class="math display">\[
+\begin{aligned}
   \beta_{0j} &amp; = \gamma_{00} + \gamma_{01} \text{meanses}_j + u_{0j}  \\
   \beta_{1j} &amp; = \gamma_{10}
-\end{align*}\]</span>
+\end{aligned}
+\]</span>
 where</p>
 <ul>
 <li><span class="math inline">\(\gamma_{10}\)</span> = regression coefficient of student-level <code>ses</code>
@@ -237,10 +241,12 @@ ggplot(aes(x = ses, y = mathach)) +
 <p>Lv-1:</p>
 <p><span class="math display">\[\text{mathach}_{ij} = \beta_{0j} + \beta_{1j} \text{ses_cmc}_{ij} + e_{ij}\]</span></p>
 <p>Lv-2:</p>
-<p><span class="math display">\[\begin{align*}
+<p><span class="math display">\[
+\begin{aligned}
   \beta_{0j} &amp; = \gamma_{00} + \gamma_{01} \text{meanses}_j + u_{0j}  \\
   \beta_{1j} &amp; = \gamma_{10} + u_{1j}  
-\end{align*}\]</span>
+\end{aligned}
+\]</span>
 The additional term is <span class="math inline">\(u_{1j}\)</span>, which represents the deviation of the slope of
 school <span class="math inline">\(j\)</span> from the average slope (i.e., <span class="math inline">\(\gamma_{10}\)</span>).</p>
 </div>
@@ -297,11 +303,13 @@ school <span class="math inline">\(j\)</span> from the average slope (i.e., <spa
 <p>Lv-1:</p>
 <p><span class="math display">\[\text{mathach}_{ij} = \beta_{0j} + \beta_{1j} \text{ses_cmc}_{ij} + e_{ij}\]</span></p>
 <p>Lv-2:</p>
-<p><span class="math display">\[\begin{align*}
+<p><span class="math display">\[
+\begin{aligned}
   \beta_{0j} &amp; = \gamma_{00} + \gamma_{01} \text{meanses}_j + 
                  \gamma_{02} \text{sector}_j + u_{0j}  \\
   \beta_{1j} &amp; = \gamma_{10} + \gamma_{11} \text{sector}_j + u_{1j}  
-\end{align*}\]</span>
+\end{aligned}
+\]</span>
 where
 - <span class="math inline">\(\gamma_{02}\)</span> = regression coefficient of school-level <code>sector</code> variable
 representing the expected difference in achievement between two students with
