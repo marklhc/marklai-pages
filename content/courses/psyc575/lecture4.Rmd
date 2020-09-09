@@ -234,7 +234,7 @@ check_question("[0, 0.4]",
 <span style="color:red">There is a mistake in the path diagram, in that one of the circle should be $\beta_{1j}$, not $\beta_{0j}$</span>
 
 ```{r, echo=FALSE}
-blogdown::shortcode("youtube", "kp3QzeNNNQc")
+blogdown::shortcode("youtube", "7RzVD02fZHw")
 ```
 
 Check your learning: Conceptually, a cross-level interaction is the same as
