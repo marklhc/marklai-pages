@@ -194,6 +194,68 @@ augment(ran_slp, data = hsball) %>%  # augmented data (adding EB estimates)
   guides(color = FALSE)
 ```
 
+### Including the effect of `meanses`
+
+```{r plot-ran-slp-meanses}
+# augmented data (adding EB estimates)
+augment(ran_slp, data = hsball) %>%
+  ggplot(aes(x = ses, y = mathach, color = factor(id))) +
+  # Add points
+  geom_point(size = 0.2, alpha = 0.2) + 
+  # Add within-cluster lines
+  geom_smooth(aes(y = .fitted), 
+              method = "lm", se = FALSE, size = 0.5) + 
+  # Add group means
+  stat_summary(aes(x = meanses, y = mathach, 
+                   fill = factor(id)), 
+               color = "red",  # add border
+               fun = mean, 
+               geom = "point",
+               shape = 24,
+               # use triangles
+               size = 2.5) + 
+  # Add between coefficient
+  geom_smooth(aes(x = meanses, y = .fitted), 
+              method = "lm", se = FALSE, 
+              color = "black") + 
+  labs(y = "Math Achievement") + 
+  # Suppress legend
+  guides(color = FALSE, fill = FALSE)
+```
+
+Or on separate graphs:
+
+```{r plot-ran-slp-meanses-arrange}
+# Create a common base graph
+pbase <- augment(ran_slp, data = hsball) %>%
+  ggplot(aes(x = ses, y = mathach, color = factor(id))) +
+  # Add points
+  geom_point(size = 0.2, alpha = 0.2) + 
+  labs(y = "Math Achievement") + 
+  # Suppress legend
+  guides(color = FALSE)
+# Lv-1 effect
+p1 <- pbase + 
+  # Add within-cluster lines
+  geom_smooth(aes(y = .fitted), 
+              method = "lm", se = FALSE, size = 0.5)
+# Lv-2 effect
+p2 <- pbase + 
+  # Add group means
+  stat_summary(aes(x = meanses, y = mathach), 
+               fun = mean, 
+               geom = "point",
+               shape = 17,
+               # use triangles
+               size = 2.5) + 
+  # Add between coefficient
+  geom_smooth(aes(x = meanses, y = .fitted), 
+              method = "lm", se = FALSE, 
+              color = "black")
+# Put the two graphs together (need the gridExtra package)
+gridExtra::grid.arrange(p1, p2, ncol = 2)  # in two columns
+```
+
 # Analyzing Cross-Level Interactions
 
 `sector` is added to the level-2 intercept and slope equations

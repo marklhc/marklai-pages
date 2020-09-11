@@ -1,0 +1,78 @@
+---
+title: 'Exercise: Decomposing Effects'
+date: "9/10/2020"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load-pkg, message=FALSE, include=FALSE}
+library(here)  # makes reading data more consistent
+library(tidyverse)  # for data manipulation and plotting
+library(haven)  # for plotting interactions
+library(lme4)  # for running a mixed effect model
+library(broom.mixed)
+library(modelsummary)
+theme_set(theme_bw())  # Theme; just my personal preference
+```
+
+## Data Description: Hoffman (2014, p. 24)
+
+The data is the first wave of the Cognition, Health, and Aging Project. 
+
+> The Cognition, Health, and Aging Project (CHAP) consists of a sample of both younger and older adults collected using a measurement burst design. A single measurement burst included six observations over a two-week period. Bursts were then separated by 6-month intervals. In this manner, both shorter-term (within-burst) and longer-term (between-burst) change was observed during the study. A variety of measures of physical, cognitive, and emotional well-being were collected (for more information about the CHAP data, see Sliwinski, Almeida, Smyth, & Stawski, 2009; Sliwinski, Smyth, Hofer, & Stawski, 2006; and Stawski, Sliwinski, Almeida, & Smyth, 2008). 
+
+```{r import_sav, message=FALSE}
+# Download from the Internet, unzip, and read in
+tmp <- tempfile()
+download.file("https://www.pilesofvariance.com/Chapter8/SPSS/SPSS_Chapter8.zip", tmp)
+stress_data <- read_sav(unz(tmp, "SPSS_Chapter8/SPSS_Chapter8.sav"))
+stress_data
+```
+
+Here is a quick plot between negative mood (`mood`) and daily number of symptoms (`symptoms`):
+
+```{r scatter, warning=FALSE}
+ggplot(stress_data, aes(x = mood, y = symptoms)) + 
+  geom_jitter(width = 0.2, height = 0.2, alpha = 0.2) + 
+  geom_smooth()
+```
+
+
+## Instruction
+
+First, select a group reporter. Then answer the following questions: 
+
+Questions:
+
+1. Describe the hierarchical structure of the data. Which level is level 1 and which is level 2? What is the sample size ($N$ and $J$) for each level?
+
+2. Use the `modelsummary::datasummary()` function to obtain the mean, median, sd, minimum, and maximum values of negative mood (`mood`), age at baseline (`baseage`), and number of physical symptoms (`symptoms`). Copy your R syntax to the spreadsheet
+```{r descriptive, indent='    '}
+# Modify the code below. You need to use `Min()` instead of `min()` as there are
+# missing data
+datasummary(mood ~ (Mean + SD), data = stress_data)
+```
+
+3. Run an MLM with negative mood predicting number of physical symptoms. What is the estimated fixed-effect coefficient? Does the 95% CI include zero?
+```{r smushed, indent='    '}
+
+```
+
+4. Run an MLM that separates the association of negative mood and physical symptoms into the between-person and the within-person associations. Record the corresponding fixed-effect coefficient estimates. Are they similar? Do the 95% CIs include zero?
+```{r m_bw, indent='    '}
+# Cluster-mean centering (edit the code below)
+stress_data <- stress_data %>% 
+  group_by() %>% 
+  mutate()
+# Model
+
+```
+5. Use a graph (either by hand or with R) to show the between-person and within-person slopes of negative mood predicting symptoms. 
+
+6. How would you interpret the contextual effect in this context?
+

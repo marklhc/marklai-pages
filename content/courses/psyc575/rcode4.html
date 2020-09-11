@@ -4,7 +4,7 @@ linktitle: R Codes (wk 4)
 type: docs
 date: "2020-08-27T00:00:00+01:00"
 draft: false
-lastmod: '2020-09-09'
+lastmod: '2020-09-11'
 rmd: "rcodes/week4-level-1-predictor"
 menu:
   psyc575:
@@ -46,7 +46,10 @@ weight: 2
 <li><a href="#explore-variations-in-slopes">Explore Variations in Slopes</a></li>
 <li><a href="#model-equation-2">Model Equation</a></li>
 <li><a href="#running-in-r-2">Running in R</a></li>
-<li><a href="#plotting-random-slopes">Plotting Random Slopes</a></li>
+<li><a href="#plotting-random-slopes">Plotting Random Slopes</a>
+<ul>
+<li><a href="#including-the-effect-of-meanses">Including the effect of <code>meanses</code></a></li>
+</ul></li>
 </ul></li>
 <li><a href="#analyzing-cross-level-interactions">Analyzing Cross-Level Interactions</a>
 <ul>
@@ -293,6 +296,68 @@ school <span class="math inline">\(j\)</span> from the average slope (i.e., <spa
   guides(color = FALSE)</code></pre>
 <pre><code>&gt;# `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
 <p><img src="/courses/psyc575/rcode4_files/figure-html/plot-ran-slp-1.png" width="672" /></p>
+<div id="including-the-effect-of-meanses" class="section level3">
+<h3>Including the effect of <code>meanses</code></h3>
+<pre class="r"><code># augmented data (adding EB estimates)
+augment(ran_slp, data = hsball) %&gt;%
+  ggplot(aes(x = ses, y = mathach, color = factor(id))) +
+  # Add points
+  geom_point(size = 0.2, alpha = 0.2) + 
+  # Add within-cluster lines
+  geom_smooth(aes(y = .fitted), 
+              method = &quot;lm&quot;, se = FALSE, size = 0.5) + 
+  # Add group means
+  stat_summary(aes(x = meanses, y = mathach, 
+                   fill = factor(id)), 
+               color = &quot;red&quot;,  # add border
+               fun = mean, 
+               geom = &quot;point&quot;,
+               shape = 24,
+               # use triangles
+               size = 2.5) + 
+  # Add between coefficient
+  geom_smooth(aes(x = meanses, y = .fitted), 
+              method = &quot;lm&quot;, se = FALSE, 
+              color = &quot;black&quot;) + 
+  labs(y = &quot;Math Achievement&quot;) + 
+  # Suppress legend
+  guides(color = FALSE, fill = FALSE)</code></pre>
+<pre><code>&gt;# `geom_smooth()` using formula &#39;y ~ x&#39;
+&gt;# `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="/courses/psyc575/rcode4_files/figure-html/plot-ran-slp-meanses-1.png" width="672" /></p>
+<p>Or on separate graphs:</p>
+<pre class="r"><code># Create a common base graph
+pbase &lt;- augment(ran_slp, data = hsball) %&gt;%
+  ggplot(aes(x = ses, y = mathach, color = factor(id))) +
+  # Add points
+  geom_point(size = 0.2, alpha = 0.2) + 
+  labs(y = &quot;Math Achievement&quot;) + 
+  # Suppress legend
+  guides(color = FALSE)
+# Lv-1 effect
+p1 &lt;- pbase + 
+  # Add within-cluster lines
+  geom_smooth(aes(y = .fitted), 
+              method = &quot;lm&quot;, se = FALSE, size = 0.5)
+# Lv-2 effect
+p2 &lt;- pbase + 
+  # Add group means
+  stat_summary(aes(x = meanses, y = mathach), 
+               fun = mean, 
+               geom = &quot;point&quot;,
+               shape = 17,
+               # use triangles
+               size = 2.5) + 
+  # Add between coefficient
+  geom_smooth(aes(x = meanses, y = .fitted), 
+              method = &quot;lm&quot;, se = FALSE, 
+              color = &quot;black&quot;)
+# Put the two graphs together (need the gridExtra package)
+gridExtra::grid.arrange(p1, p2, ncol = 2)  # in two columns</code></pre>
+<pre><code>&gt;# `geom_smooth()` using formula &#39;y ~ x&#39;
+&gt;# `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="/courses/psyc575/rcode4_files/figure-html/plot-ran-slp-meanses-arrange-1.png" width="672" /></p>
+</div>
 </div>
 </div>
 <div id="analyzing-cross-level-interactions" class="section level1">
