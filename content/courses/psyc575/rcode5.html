@@ -1,0 +1,668 @@
+---
+title: Using R for Week 5
+linktitle: R Codes (wk 5)
+type: docs
+date: "2020-09-05T21:27:00+01:00"
+draft: false
+lastmod: '2020-09-12'
+rmd: "rcodes/week5-estimation-testing"
+menu:
+  psyc575:
+    parent: Week 5
+    weight: 2
+output:
+  blogdown::html_page:
+    toc: true
+    df_print: paged
+header-includes:
+  - \newcommand{\bv}[1]{\boldsymbol{\mathbf{#1}}}
+# Prev/next pager order (if `docs_section_pager` enabled in `params.toml`)
+weight: 2
+---
+
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+<link href="/rmarkdown-libs/pagedtable/css/pagedtable.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/pagedtable/js/pagedtable.js"></script>
+<script src="/rmarkdown-libs/kePrint/kePrint.js"></script>
+<link href="/rmarkdown-libs/lightable/lightable.css" rel="stylesheet" />
+
+<div id="TOC">
+<ul>
+<li><a href="#load-packages-and-import-data">Load Packages and Import Data</a>
+<ul>
+<li><a href="#import-data">Import Data</a></li>
+</ul></li>
+<li><a href="#log-likelihood-function-ell">Log-Likelihood Function <span class="math inline">\(\ell\)</span></a>
+<ul>
+<li><a href="#example-ellgamma_01">Example: <span class="math inline">\(\ell(\gamma_{01})\)</span></a></li>
+</ul></li>
+<li><a href="#ml-vs-reml">ML vs REML</a></li>
+<li><a href="#testing-fixed-effects">Testing Fixed Effects</a>
+<ul>
+<li><a href="#small-sample-correction-kenward-roger-approximation-of-degrees-of-freedom">Small-Sample Correction: Kenward-Roger Approximation of Degrees of Freedom</a></li>
+</ul></li>
+<li><a href="#testing-random-slopes">Testing Random Slopes</a></li>
+<li><a href="#bootstrap">Bootstrap</a>
+<ul>
+<li><a href="#fixed-effects">Fixed Effects</a></li>
+<li><a href="#variance-components">Variance Components</a></li>
+<li><a href="#r2"><span class="math inline">\(R^2\)</span></a></li>
+</ul></li>
+</ul>
+</div>
+
+{{% rmd-buttons %}}
+{{% youtube "UHUBZtmd9X4" %}}
+{{% youtube "kjkkNplhE4g" %}}
+<div id="load-packages-and-import-data" class="section level2">
+<h2>Load Packages and Import Data</h2>
+<pre class="r"><code># To install a package, run the following ONCE (and only once on your computer)
+# install.packages(&quot;psych&quot;)  
+library(here)  # makes reading data more consistent
+library(tidyverse)  # for data manipulation and plotting
+library(haven)  # for importing SPSS/SAS/Stata data
+library(lme4)  # for multilevel analysis
+library(MuMIn)  # for computing r-squared
+library(broom.mixed)  # for summarizing results
+library(modelsummary)  # for making tables
+theme_set(theme_bw())  # Theme; just my personal preference</code></pre>
+<p>In addition, because the table obtained from <code>modelsummary::msummary()</code> mixed up the ordering of the fixed- and the random-effect coefficients, I provided a quick fix to that by defining the <code>msummary_mixed()</code> function, which you need to load every time if you want to use it:</p>
+<pre class="r"><code>msummary_mixed &lt;- function(models, coef_map = NULL, ...) {
+  if (is.null(coef_map)) {
+    if (!&quot;list&quot; %in% class(models)) {
+      models &lt;- list(models)
+    }
+    for (model in models) {
+      coef_map &lt;- union(coef_map, tidy(model)$term)
+    }
+  }
+  ranef_index &lt;- grep(&quot;^(sd|cor)__&quot;, x = coef_map)
+  coef_map &lt;- c(coef_map[-ranef_index], coef_map[ranef_index])
+  names(coef_map) &lt;- coef_map
+  modelsummary::msummary(models, coef_map = coef_map, ...)
+}</code></pre>
+<div id="import-data" class="section level3">
+<h3>Import Data</h3>
+<pre class="r"><code># Read in the data (pay attention to the directory)
+hsball &lt;- read_sav(here(&quot;data_files&quot;, &quot;hsball.sav&quot;))</code></pre>
+<p>To demonstrate differences in smaller samples, we will use a subset of 16 schools</p>
+<pre class="r"><code># Randomly select 16 school ids
+set.seed(840)  # use the same seed so that the same 16 schools are selected
+random_ids &lt;- sample(unique(hsball$id), size = 16)
+hsbsub &lt;- hsball %&gt;%
+    filter(id %in% random_ids)</code></pre>
+</div>
+</div>
+<div id="log-likelihood-function-ell" class="section level1">
+<h1>Log-Likelihood Function <span class="math inline">\(\ell\)</span></h1>
+<p>The log-likelihood function for a multilevel model is
+<span class="math display">\[\ell(\boldsymbol{\mathbf{\gamma}}, \boldsymbol{\mathbf{\tau}}, \sigma; \boldsymbol{\mathbf{y}}) = - \frac{1}{2} \left\{\log | \boldsymbol{\mathbf{V}}(\boldsymbol{\mathbf{\tau}}, \sigma)| + (\boldsymbol{\mathbf{y}} - \boldsymbol{\mathbf{X}} \boldsymbol{\mathbf{\gamma}})^\top \boldsymbol{\mathbf{V}}^{-1}(\boldsymbol{\mathbf{\tau}}, \sigma) (\boldsymbol{\mathbf{y}} - \boldsymbol{\mathbf{X}} \boldsymbol{\mathbf{\gamma}}) \right\} + K\]</span>
+For this course the formula is not that important (except for students interested in quant methods). In the equation above, <span class="math inline">\(\boldsymbol{\mathbf{\gamma}}\)</span> is a <span class="math inline">\(N \times p\)</span> vector of fixed effects, <span class="math inline">\(\boldsymbol{\mathbf{\tau}}\)</span> is a vector of random effect variances, <span class="math inline">\(\sigma\)</span> is the level-1 error term, <span class="math inline">\(\boldsymbol{\mathbf{y}}\)</span> is the <span class="math inline">\(N \times 1\)</span> vector of response variable, <span class="math inline">\(\boldsymbol{\mathbf{V}}(\boldsymbol{\mathbf{\tau}}, \boldsymbol{\mathbf{\sigma}})\)</span> is the variance-covariance matrix generated by <span class="math inline">\(\boldsymbol{\mathbf{\tau}}\)</span> and <span class="math inline">\(\sigma\)</span>, <span class="math inline">\(\boldsymbol{\mathbf{X}}\)</span> is a <span class="math inline">\(N \times p\)</span> design matrix of predictors, and <span class="math inline">\(K\)</span> is a constant that does not affect the maximization. Check out <a href="https://cran.r-project.org/web/packages/lme4/vignettes/lmer.pdf">this paper</a> if you want to learn more about the log likelihood function used in <code>lme4</code>.</p>
+<blockquote>
+<p>Note: When statistician says log it means the natural logarithm, i.e., log with base e (sometimes written as ln)</p>
+</blockquote>
+<div id="example-ellgamma_01" class="section level2">
+<h2>Example: <span class="math inline">\(\ell(\gamma_{01})\)</span></h2>
+<p>We’ll use the model with <code>meanses</code> as the predictor on the full data set (<code>hsball</code>), and use R to write the log-likelihood function for <span class="math inline">\(\gamma_{01}\)</span></p>
+<pre class="r"><code># Extract V from the model
+V_m_lv2 &lt;- (crossprod(getME(m_lv2, &quot;A&quot;)) + Matrix::Diagonal(7185)) *
+  sigma(m_lv2)^2
+# Log-likelihood function with respect to gamma01
+llfun &lt;- function(gamma01, 
+                  gamma00 = fixef(m_lv2)[1], 
+                  y = m_lv2@resp$y, 
+                  X = cbind(1, m_lv2@frame$meanses), 
+                  V = V_m_lv2) {
+  gamma &lt;- c(gamma00, gamma01)
+  y_minus_Xgamma &lt;- y - X %*% gamma
+  as.numeric(
+   - crossprod(y_minus_Xgamma, solve(V, y_minus_Xgamma)) / 2
+  )
+}
+# Vectorize
+llfun &lt;- Vectorize(llfun)
+# Plot
+ggplot(tibble(gamma01 = c(5, 7)), aes(x = gamma01)) + 
+  stat_function(fun = llfun) + 
+  labs(x = expression(gamma[0][1]), y = &quot;log(Likelihood)&quot;)</code></pre>
+<p><img src="/courses/psyc575/rcode5_files/figure-html/loglik-meanses-1.png" width="672" /></p>
+</div>
+</div>
+<div id="ml-vs-reml" class="section level1">
+<h1>ML vs REML</h1>
+<p>We’ll use the cross-level interaction model on the subset</p>
+<pre class="r"><code># Cluster-mean centering
+hsbsub &lt;- hsbsub %&gt;% 
+  group_by(id) %&gt;%   # operate within schools
+  mutate(ses_cm = mean(ses),   # create cluster means (the same as `meanses`)
+         ses_cmc = ses - ses_cm) %&gt;%   # cluster-mean centered
+  ungroup()  # exit the &quot;editing within groups&quot; mode
+# Default is REML
+crlv_int &lt;- lmer(mathach ~ meanses + sector * ses_cmc + (ses_cmc | id), 
+                 data = hsbsub)</code></pre>
+<pre><code>&gt;# boundary (singular) fit: see ?isSingular</code></pre>
+<pre class="r"><code># Use REML = FALSE for ML
+crlv_int_ml &lt;- lmer(mathach ~ meanses + sector * ses_cmc + (ses_cmc | id), 
+                    data = hsbsub, REML = FALSE)</code></pre>
+<pre><code>&gt;# boundary (singular) fit: see ?isSingular</code></pre>
+<pre class="r"><code># Alternatively, you can use refitML()
+# refitML(crlv_int_ml)
+# Compare the models
+msummary_mixed(list(&quot;REML&quot; = crlv_int, 
+                    &quot;ML&quot; = crlv_int_ml))</code></pre>
+<table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:left;">
+REML
+</th>
+<th style="text-align:left;">
+ML
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:left;">
+11.728
+</td>
+<td style="text-align:left;">
+11.728
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+(0.670)
+</td>
+<td style="text-align:left;">
+(0.605)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+meanses
+</td>
+<td style="text-align:left;">
+6.633
+</td>
+<td style="text-align:left;">
+6.492
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+(1.139)
+</td>
+<td style="text-align:left;">
+(1.035)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sector
+</td>
+<td style="text-align:left;">
+1.890
+</td>
+<td style="text-align:left;">
+1.901
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+(0.903)
+</td>
+<td style="text-align:left;">
+(0.815)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ses_cmc
+</td>
+<td style="text-align:left;">
+2.860
+</td>
+<td style="text-align:left;">
+2.862
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+(0.464)
+</td>
+<td style="text-align:left;">
+(0.459)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sector:ses_cmc
+</td>
+<td style="text-align:left;">
+-0.885
+</td>
+<td style="text-align:left;">
+-0.888
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+(0.661)
+</td>
+<td style="text-align:left;">
+(0.655)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sd__(Intercept)
+</td>
+<td style="text-align:left;">
+1.520
+</td>
+<td style="text-align:left;">
+1.317
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+cor__(Intercept).ses_cmc
+</td>
+<td style="text-align:left;">
+1.000
+</td>
+<td style="text-align:left;">
+1.000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sd__ses_cmc
+</td>
+<td style="text-align:left;">
+0.354
+</td>
+<td style="text-align:left;">
+0.311
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sd__Observation
+</td>
+<td style="text-align:left;">
+5.698
+</td>
+<td style="text-align:left;">
+5.689
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AIC
+</td>
+<td style="text-align:left;">
+4365.1
+</td>
+<td style="text-align:left;">
+4369.2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+BIC
+</td>
+<td style="text-align:left;">
+4405.9
+</td>
+<td style="text-align:left;">
+4410.0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Log.Lik.
+</td>
+<td style="text-align:left;">
+-2173.563
+</td>
+<td style="text-align:left;">
+-2175.612
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+REMLcrit
+</td>
+<td style="text-align:left;">
+4347.125
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+</tbody>
+</table>
+<p>Notice that the standard errors are generally larger for REML than for ML, and it’s generally more accurate with REML in small samples. Also the <span class="math inline">\(\tau^2\)</span> estimates (i.e., labelled <code>sd__(Intercept)</code> for <span class="math inline">\(\tau^2_0\)</span> and <code>sd__ses_cmc</code> for <span class="math inline">\(\tau^2_1\)</span>) are larger (and more accurately estimated) for REML.</p>
+<p>To see more details on how <code>lme4</code> iteratively tries to arrive at the REML/ML estimates, try</p>
+<pre class="r"><code>crlv_int2 &lt;- lmer(mathach ~ meanses + sector * ses_cmc + (ses_cmc | id), 
+                  data = hsbsub, verbose = 1)</code></pre>
+<pre><code>&gt;# iteration: 1
+&gt;#  f(x) = 4396.943300
+&gt;# iteration: 2
+&gt;#  f(x) = 4410.471845
+&gt;# iteration: 3
+&gt;#  f(x) = 4398.478905
+&gt;# iteration: 4
+&gt;#  f(x) = 4411.654851
+&gt;# iteration: 5
+&gt;#  f(x) = 4377.931282
+&gt;# iteration: 6
+&gt;#  f(x) = 4399.307646
+&gt;# iteration: 7
+&gt;#  f(x) = 4371.367019
+&gt;# iteration: 8
+&gt;#  f(x) = 4347.537222
+&gt;# iteration: 9
+&gt;#  f(x) = 4367.879802
+&gt;# iteration: 10
+&gt;#  f(x) = 4350.984197
+&gt;# iteration: 11
+&gt;#  f(x) = 4351.658449
+&gt;# iteration: 12
+&gt;#  f(x) = 4349.986861
+&gt;# iteration: 13
+&gt;#  f(x) = 4347.709342
+&gt;# iteration: 14
+&gt;#  f(x) = 4347.884914
+&gt;# iteration: 15
+&gt;#  f(x) = 4347.701287
+&gt;# iteration: 16
+&gt;#  f(x) = 4347.194148
+&gt;# iteration: 17
+&gt;#  f(x) = 4347.172072
+&gt;# iteration: 18
+&gt;#  f(x) = 4347.140652
+&gt;# iteration: 19
+&gt;#  f(x) = 4347.137326
+&gt;# iteration: 20
+&gt;#  f(x) = 4347.127020
+&gt;# iteration: 21
+&gt;#  f(x) = 4347.128477
+&gt;# iteration: 22
+&gt;#  f(x) = 4347.143600
+&gt;# iteration: 23
+&gt;#  f(x) = 4347.125497
+&gt;# iteration: 24
+&gt;#  f(x) = 4347.125875
+&gt;# iteration: 25
+&gt;#  f(x) = 4347.125844
+&gt;# iteration: 26
+&gt;#  f(x) = 4347.125305
+&gt;# iteration: 27
+&gt;#  f(x) = 4347.125138
+&gt;# iteration: 28
+&gt;#  f(x) = 4347.125098
+&gt;# iteration: 29
+&gt;#  f(x) = 4347.125226
+&gt;# iteration: 30
+&gt;#  f(x) = 4347.125068
+&gt;# iteration: 31
+&gt;#  f(x) = 4347.125119
+&gt;# iteration: 32
+&gt;#  f(x) = 4347.125062
+&gt;# iteration: 33
+&gt;#  f(x) = 4347.125065
+&gt;# iteration: 34
+&gt;#  f(x) = 4347.125063
+&gt;# iteration: 35
+&gt;#  f(x) = 4347.125066
+&gt;# iteration: 36
+&gt;#  f(x) = 4347.125059
+&gt;# iteration: 37
+&gt;#  f(x) = 4347.125056
+&gt;# iteration: 38
+&gt;#  f(x) = 4347.125056</code></pre>
+<pre><code>&gt;# boundary (singular) fit: see ?isSingular</code></pre>
+<p>The numbers shown above are the <em>deviance</em>, that is, -2 <span class="math inline">\(\times\)</span> log-likelihood. Because probabilities (as well as likelihood) are less than or equal to 1, the log will be less than or equal to 0, meaning that the log likelihood values are generally negative. Multiplying it by -2 results in positive deviance that is a bit easier to work with (and the factor 2 is related to converting a normal distribution to a <span class="math inline">\(\chi^2\)</span> distribution).</p>
+</div>
+<div id="testing-fixed-effects" class="section level1">
+<h1>Testing Fixed Effects</h1>
+<p>To test the null that a predictor has a non-zero coefficient given other predictors in the model, an easy way is to use the likelihood-based 95% CI (also called the profile-likelihood CI, as discussed in your text):</p>
+<pre class="r"><code># Use parm = &quot;beta_&quot; for only fixed effects
+confint(crlv_int, parm = &quot;beta_&quot;)</code></pre>
+<pre><code>&gt;# Computing profile confidence intervals ...</code></pre>
+<pre><code>&gt;#                     2.5 %     97.5 %
+&gt;# (Intercept)    10.4692542 12.9863640
+&gt;# meanses         4.0885277  8.9516323
+&gt;# sector          0.1915185  3.5912387
+&gt;# ses_cmc         1.9257690  3.7740789
+&gt;# sector:ses_cmc -2.1748867  0.4629693</code></pre>
+<p>If 0 is not in the 95% CI, the null is rejected at .05 significance level. This is basically equivalent to the likelihood ratio test, which can be obtained with the <code>drop1()</code> function and adding the formula:</p>
+<pre class="r"><code># Note: lme4 will refit the model to use ML when performing LRT for fixed
+# effects
+drop1(crlv_int, ~ meanses + sector * ses_cmc, test = &quot;Chisq&quot;)</code></pre>
+<pre><code>&gt;# boundary (singular) fit: see ?isSingular
+&gt;# boundary (singular) fit: see ?isSingular
+&gt;# boundary (singular) fit: see ?isSingular</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["npar"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["AIC"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["LRT"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Pr(Chi)"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"NA","2":"4369.224","3":"NA","4":"NA","_rn_":"<none>"},{"1":"1","2":"4384.833","3":"17.608673","4":"2.713480e-05","_rn_":"meanses"},{"1":"1","2":"4371.809","3":"4.584619","4":"3.226015e-02","_rn_":"sector"},{"1":"1","2":"4387.059","3":"19.834709","4":"8.443547e-06","_rn_":"ses_cmc"},{"1":"1","2":"4368.962","3":"1.737714","4":"1.874287e-01","_rn_":"sector:ses_cmc"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<div id="small-sample-correction-kenward-roger-approximation-of-degrees-of-freedom" class="section level2">
+<h2>Small-Sample Correction: Kenward-Roger Approximation of Degrees of Freedom</h2>
+<p>In small sample situation (with &lt; 50 clusters), the Kenward-Roger (KR) approximation of degrees of freedom will give more accurate tests. To do this in R, you should load the <code>lmerTest</code> package before running the model. Since I’ve already run the model, I will load the package and rerun the model:</p>
+<pre class="r"><code>library(lmerTest)
+crlv_int &lt;- lmer(mathach ~ meanses + sector * ses_cmc + (ses_cmc | id), 
+                 data = hsbsub)
+# Try anova()
+anova(crlv_int, ddf = &quot;Kenward-Roger&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Sum Sq"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["Mean Sq"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["NumDF"],"name":[3],"type":["int"],"align":["right"]},{"label":["DenDF"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["F value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Pr(>F)"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"959.83014","2":"959.83014","3":"1","4":"13.024083","5":"29.567836","6":"0.0001128538","_rn_":"meanses"},{"1":"141.61295","2":"141.61295","3":"1","4":"13.225789","5":"4.362426","6":"0.0566180874","_rn_":"sector"},{"1":"1150.21954","2":"1150.21954","3":"1","4":"8.655918","5":"35.432835","6":"0.0002504787","_rn_":"ses_cmc"},{"1":"55.15321","2":"55.15321","3":"1","4":"11.734050","5":"1.699010","6":"0.2174123495","_rn_":"sector:ses_cmc"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>You can see now <code>sector</code> was actually not significant (although it’s part of an interaction so the test of the conditional effect may not be very meaningful). Note KR actually requires using REML.</p>
+<hr />
+<p>If you’re interested in knowing more, KR is based on an <span class="math inline">\(F\)</span> test, as opposed to a <span class="math inline">\(\chi^2\)</span> test for LRT. When the denominator degrees of freedom for <span class="math inline">\(F\)</span> is large, which happens in large sample (with many clusters), the <span class="math inline">\(F\)</span> distribution converges to a <span class="math inline">\(\chi^2\)</span> distribution, so there is no need to know exactly the degrees of freedom. However, in small samples, these two look different, and to get more accurate <span class="math inline">\(p\)</span> values one needs to have a good estimate of the denominator degrees of freedom, but it’s not straightforward with MLM, especially with unbalanced data (i.e., clusters having different sizes). There are several methods to approximate the degrees of freedom, but KR has generally been found to perform the best.</p>
+<hr />
+</div>
+</div>
+<div id="testing-random-slopes" class="section level1">
+<h1>Testing Random Slopes</h1>
+<p>To test the null hypothesis that the random slope variance, <span class="math inline">\(\tau^2_1\)</span>, is zero, one can again rely on the LRT. However, because <span class="math inline">\(\tau^2_1\)</span> is non-negative (i.e., zero or positive), using the regular LRT will lead to a overly conservative test, meaning that power is too small. Technically, as pointed out in your text, under the null the sampling distribution of the LRT will follow approximately a mixture <span class="math inline">\(\chi^2\)</span> distribution. There are several ways to improve the test, but as shown in LaHuis and Ferguson (2009, <a href="https://doi.org/10.1177/1094428107308984" class="uri">https://doi.org/10.1177/1094428107308984</a>), a simple way is to divide the <span class="math inline">\(p\)</span> value you obtain from software by 2 so that it resembles a one-tailed test.</p>
+<pre class="r"><code>ran_slp &lt;- lmer(mathach ~ meanses + ses_cmc + (ses_cmc | id), data = hsbsub)
+# Compare to the model without random slopes
+m_bw &lt;- lmer(mathach ~ meanses + ses_cmc + (1 | id), data = hsbsub)
+# Compute the difference in deviance (4356.769 - 4356.754)
+REMLcrit(m_bw) - REMLcrit(ran_slp)</code></pre>
+<pre><code>&gt;# [1] 0.01432169</code></pre>
+<pre class="r"><code># Find the p value from a chi-squared distribution
+pchisq(REMLcrit(m_bw) - REMLcrit(ran_slp), df = 2, lower.tail = FALSE)</code></pre>
+<pre><code>&gt;# [1] 0.9928647</code></pre>
+<pre class="r"><code># Need to divide the p by 2 for a one-tailed test</code></pre>
+<p>So the <span class="math inline">\(p\)</span> value in our example for testing the random slope variance was 0.5, which suggested that <strong>for the subsample, there was insufficient evidence that the slope between <code>ses_cmc</code> and <code>mathach</code> varied across schools.</strong></p>
+<p>You can also use <code>ranova()</code> to get the same results (again, the <span class="math inline">\(p\)</span> values need to be divded by 2)</p>
+<pre class="r"><code>ranova(ran_slp)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["npar"],"name":[1],"type":["int"],"align":["right"]},{"label":["logLik"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["AIC"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["LRT"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["Df"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Pr(>Chisq)"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"7","2":"-2178.377","3":"4370.754","4":"NA","5":"NA","6":"NA","_rn_":"<none>"},{"1":"5","2":"-2178.384","3":"4366.769","4":"0.01432169","5":"2","6":"0.9928647","_rn_":"ses_cmc in (ses_cmc | id)"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="bootstrap" class="section level1">
+<h1>Bootstrap</h1>
+<p>The bootstrap is a simulation-based method to approximate the sampling distribution of parameter estimates. Indeed, you’ve already seen a version of it in previous weeks when we talk about simulation. In the previous weeks, we generated data assuming that the sample model perfectly described the population, which notably includes the normality assumption. That simulation method is also called <em>parametric bootstrap</em>. Here we’ll use another version of the bootstrap, called the <em>residual bootstrap</em>, which does not assume that the normality assumptions hold for the population. You can check out <a href="https://doi.org/10.1080/00273171.2020.1746902">Lai (2020)</a>.</p>
+<p>To perform the bootstrap, you’ll need to supply functions that extract different parameter estimates or other quantities (e.g., effect sizes) from a fitted model. Below are some examples:</p>
+<div id="fixed-effects" class="section level2">
+<h2>Fixed Effects</h2>
+<pre class="r"><code>library(boot)
+# If you have not installed bootmlm, you can uncomment the following line:
+# remotes::install_github(&quot;marklhc/bootmlm&quot;)
+library(bootmlm)</code></pre>
+<blockquote>
+<p>Note: Because running the bootstrap takes a long time, you can include the chunk option <code>chache=TRUE</code> so that when knitting the file, it will not rerun the chunk unless the content of it has been changed.</p>
+</blockquote>
+<pre class="r"><code># This takes a few minutes to run
+boot_crlv_int &lt;- bootstrap_mer(
+  crlv_int,  # model
+  # function for extracting information from model (fixef = fixed effect)
+  fixef,
+  nsim = 999,  # number of bootstrap samples
+  type = &quot;residual&quot;  # residual bootstrap
+)</code></pre>
+<pre><code>&gt;# 927 message(s) : boundary (singular) fit: see ?isSingular
+&gt;# 
+&gt;# 1 warning(s) in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv,     lbound = lower) : Model failed to converge with max|grad| = 0.00200206 (tol = 0.002, component 1)
+&gt;# 1 warning(s) in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv,     lbound = lower) : Model failed to converge with max|grad| = 0.00202423 (tol = 0.002, component 1)
+&gt;# 1 warning(s) in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv,     lbound = lower) : Model failed to converge with max|grad| = 0.0020536 (tol = 0.002, component 1)
+&gt;# 1 warning(s) in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv,     lbound = lower) : Model failed to converge with max|grad| = 0.00211057 (tol = 0.002, component 1)
+&gt;# 58 warning(s) in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv,     lbound = lower) : Model failed to converge: degenerate  Hessian with 1 negative eigenvalues
+&gt;# 58 warning(s) in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv,     lbound = lower) : unable to evaluate scaled gradient</code></pre>
+<pre class="r"><code># Bootstrap CI for cross-level interaction (index = 5 for 5th coefficient)
+# Note: type = &quot;perc&quot; extracts the percentile CI, which is one of the several
+# possible CI options with the bootstrap
+boot.ci(boot_crlv_int, index = 5, type = &quot;perc&quot;)</code></pre>
+<pre><code>&gt;# BOOTSTRAP CONFIDENCE INTERVAL CALCULATIONS
+&gt;# Based on 999 bootstrap replicates
+&gt;# 
+&gt;# CALL : 
+&gt;# boot.ci(boot.out = boot_crlv_int, type = &quot;perc&quot;, index = 5)
+&gt;# 
+&gt;# Intervals : 
+&gt;# Level     Percentile     
+&gt;# 95%   (-2.1586,  0.4343 )  
+&gt;# Calculations and Intervals on Original Scale</code></pre>
+</div>
+<div id="variance-components" class="section level2">
+<h2>Variance Components</h2>
+<p>Extracting variance components from <code>lmer()</code> results requires a little bit more efforts.</p>
+<pre class="r"><code># Define function to extract variance components
+get_vc &lt;- function(object) {
+  vc_df &lt;- data.frame(VarCorr(object))
+  vc_df[ , &quot;vcov&quot;]
+}
+# Verfiy that the function extracts the right quantities
+get_vc(ran_slp)</code></pre>
+<pre><code>&gt;# [1]  3.04994425  0.04159963  0.08850399 32.55971461</code></pre>
+<pre class="r"><code># This again takes a few minutes to run
+boot_ran_slp &lt;- bootstrap_mer(
+  ran_slp,  # model
+  # function for extracting information from model (fixef = fixed effect)
+  get_vc,
+  nsim = 999,  # number of bootstrap samples
+  type = &quot;residual&quot;  # residual bootstrap
+)</code></pre>
+<pre><code>&gt;# 633 message(s) : boundary (singular) fit: see ?isSingular
+&gt;# 
+&gt;# 1 warning(s) in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv,     lbound = lower) : Model failed to converge with max|grad| = 0.00208218 (tol = 0.002, component 1)
+&gt;# 1 warning(s) in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv,     lbound = lower) : Model failed to converge with max|grad| = 0.00232681 (tol = 0.002, component 1)
+&gt;# 1 warning(s) in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv,     lbound = lower) : Model failed to converge with max|grad| = 0.0026567 (tol = 0.002, component 1)
+&gt;# 1 warning(s) in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv,     lbound = lower) : Model failed to converge with max|grad| = 0.00269465 (tol = 0.002, component 1)
+&gt;# 1 warning(s) in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv,     lbound = lower) : Model failed to converge with max|grad| = 0.00292063 (tol = 0.002, component 1)
+&gt;# 1 warning(s) in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv,     lbound = lower) : Model failed to converge with max|grad| = 0.00292703 (tol = 0.002, component 1)
+&gt;# 1 warning(s) in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv,     lbound = lower) : Model failed to converge with max|grad| = 0.00309511 (tol = 0.002, component 1)
+&gt;# 1 warning(s) in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv,     lbound = lower) : Model failed to converge with max|grad| = 0.00312573 (tol = 0.002, component 1)
+&gt;# 1 warning(s) in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv,     lbound = lower) : Model failed to converge with max|grad| = 0.00328956 (tol = 0.002, component 1)
+&gt;# 1 warning(s) in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv,     lbound = lower) : Model failed to converge with max|grad| = 0.00358341 (tol = 0.002, component 1)
+&gt;# 1 warning(s) in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv,     lbound = lower) : Model failed to converge with max|grad| = 0.00364599 (tol = 0.002, component 1)
+&gt;# 1 warning(s) in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv,     lbound = lower) : Model failed to converge with max|grad| = 0.00440758 (tol = 0.002, component 1)
+&gt;# 1 warning(s) in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv,     lbound = lower) : Model failed to converge with max|grad| = 0.00466378 (tol = 0.002, component 1)
+&gt;# 1 warning(s) in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv,     lbound = lower) : Model failed to converge with max|grad| = 0.00475189 (tol = 0.002, component 1)
+&gt;# 1 warning(s) in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv,     lbound = lower) : Model failed to converge with max|grad| = 0.00512606 (tol = 0.002, component 1)
+&gt;# 1 warning(s) in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv,     lbound = lower) : Model failed to converge with max|grad| = 0.00631135 (tol = 0.002, component 1)
+&gt;# 1 warning(s) in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv,     lbound = lower) : Model failed to converge with max|grad| = 0.00719048 (tol = 0.002, component 1)
+&gt;# 1 warning(s) in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv,     lbound = lower) : Model failed to converge with max|grad| = 0.00748861 (tol = 0.002, component 1)
+&gt;# 1 warning(s) in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv,     lbound = lower) : Model failed to converge with max|grad| = 0.00872723 (tol = 0.002, component 1)
+&gt;# 1 warning(s) in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv,     lbound = lower) : Model failed to converge with max|grad| = 0.0136017 (tol = 0.002, component 1)
+&gt;# 1 warning(s) in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv,     lbound = lower) : Model failed to converge with max|grad| = 0.0171513 (tol = 0.002, component 1)
+&gt;# 1 warning(s) in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv,     lbound = lower) : Model failed to converge with max|grad| = 0.0539496 (tol = 0.002, component 1)
+&gt;# 2 warning(s) in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv,     lbound = lower) : Model failed to converge: degenerate  Hessian with 1 negative eigenvalues
+&gt;# 2 warning(s) in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv,     lbound = lower) : unable to evaluate scaled gradient</code></pre>
+<pre class="r"><code># Bootstrap CI for random slope variance (index = 2)
+boot.ci(boot_ran_slp, index = 2, type = &quot;perc&quot;)</code></pre>
+<pre><code>&gt;# BOOTSTRAP CONFIDENCE INTERVAL CALCULATIONS
+&gt;# Based on 999 bootstrap replicates
+&gt;# 
+&gt;# CALL : 
+&gt;# boot.ci(boot.out = boot_ran_slp, type = &quot;perc&quot;, index = 2)
+&gt;# 
+&gt;# Intervals : 
+&gt;# Level     Percentile     
+&gt;# 95%   ( 0.0004,  1.3443 )  
+&gt;# Calculations and Intervals on Original Scale</code></pre>
+</div>
+<div id="r2" class="section level2">
+<h2><span class="math inline">\(R^2\)</span></h2>
+<pre class="r"><code># This again takes a few minutes
+boot_r2 &lt;- bootstrap_mer(crlv_int, MuMIn::r.squaredGLMM, nsim = 999, 
+                         type = &quot;residual&quot;)</code></pre>
+<pre><code>&gt;# Warning: &#39;r.squaredGLMM&#39; now calculates a revised statistic. See the help page.</code></pre>
+<pre><code>&gt;# 934 message(s) : boundary (singular) fit: see ?isSingular
+&gt;# 
+&gt;# 58 warning(s) in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv,     lbound = lower) : Model failed to converge: degenerate  Hessian with 1 negative eigenvalues
+&gt;# 58 warning(s) in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv,     lbound = lower) : unable to evaluate scaled gradient</code></pre>
+<pre class="r"><code>boot.ci(boot_r2, index = 1, type = &quot;perc&quot;)  # index = 1 for marginal R2</code></pre>
+<pre><code>&gt;# BOOTSTRAP CONFIDENCE INTERVAL CALCULATIONS
+&gt;# Based on 999 bootstrap replicates
+&gt;# 
+&gt;# CALL : 
+&gt;# boot.ci(boot.out = boot_r2, type = &quot;perc&quot;, index = 1)
+&gt;# 
+&gt;# Intervals : 
+&gt;# Level     Percentile     
+&gt;# 95%   ( 0.1705,  0.3370 )  
+&gt;# Calculations and Intervals on Original Scale</code></pre>
+<p>You can check the bootstrap sampling distribution using</p>
+<pre class="r"><code>plot(boot_r2, index = 1)</code></pre>
+<p><img src="/courses/psyc575/rcode5_files/figure-html/plot-boot-r2-1.png" width="672" /></p>
+</div>
+</div>

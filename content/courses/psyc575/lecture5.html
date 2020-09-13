@@ -1,0 +1,281 @@
+---
+title: Week 5
+linktitle: Lecture videos (wk 5)
+type: docs
+date: "2020-09-03T00:00:00+01:00"
+draft: false
+slides: "psyc575/05_model_estimation_and_testing"
+menu:
+  psyc575:
+    parent: Week 5
+    weight: 1
+output:
+  blogdown::html_page:
+    toc: true
+    df_print: paged
+# Prev/next pager order (if `docs_section_pager` enabled in `params.toml`)
+weight: 1
+---
+
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+<link href="/rmarkdown-libs/pagedtable/css/pagedtable.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/pagedtable/js/pagedtable.js"></script>
+<script src="/rmarkdown-libs/kePrint/kePrint.js"></script>
+<link href="/rmarkdown-libs/lightable/lightable.css" rel="stylesheet" />
+
+<div id="TOC">
+<ul>
+<li><a href="#estimation-methods">Estimation Methods</a>
+<ul>
+<li><a href="#maximum-likelihood">Maximum likelihood</a></li>
+<li><a href="#estimation-methods-for-mlm">Estimation methods for MLM</a></li>
+</ul></li>
+<li><a href="#testing">Testing</a>
+<ul>
+<li><a href="#likelihood-ratio-test-lrt-for-fixed-effects">Likelihood ratio test (LRT) for fixed effects</a></li>
+<li><a href="#f-test-with-small-sample-correction"><span class="math inline">\(F\)</span> test with small-sample correction</a></li>
+<li><a href="#lrt-for-random-slope-variance">LRT for random slope variance</a></li>
+</ul></li>
+<li><a href="#reporting">Reporting</a></li>
+</ul>
+</div>
+
+{{% slide-buttons %}}
+<div id="estimation-methods" class="section level2">
+<h2>Estimation Methods</h2>
+{{% youtube "xhR-WPB3f7w" %}}
+<p>Check your learning: The values you obtained from MLM software (e.g., <code>lme4</code>) are</p>
+<form name="form_14832" onsubmit="return validate_form_14832()" method="post">
+<input type="radio" name="answer_14832" id="14832_1" value="Parameter values"><label for="1">Parameter values</label><br><input type="radio" name="answer_14832" id="14832_2" value="Sample estimates"><label for="2">Sample estimates</label><br><input type="submit" value="check">
+</form>
+<p id="result_14832">
+</p>
+<script> function validate_form_14832() {var x, text; var x = document.forms["form_14832"]["answer_14832"].value;if (x == "Sample estimates"){text = 'Your statistical knowledge is getting better and better :+1:';} else {text = 'Try again. You can do it!';} document.getElementById('result_14832').innerHTML = text; return false;} </script>
+<hr />
+<div id="maximum-likelihood" class="section level3">
+<h3>Maximum likelihood</h3>
+{{% youtube "SMXoJWWAVtg" %}}
+<p>Check your learning: Using R, verify that, if <span class="math inline">\(\mu = 10\)</span> and <span class="math inline">\(\sigma = 8\)</span> for a normally distributed population, the probability (joint density) of getting students with scores of 23, 16, 5, 14, 7.</p>
+{{% youtube "usrdjkqzCkg" %}}
+<p>Check your learning: Using the principle of maximum likelihood, the best estimate for a parameter is one that</p>
+<form name="form_31519" onsubmit="return validate_form_31519()" method="post">
+<input type="radio" name="answer_31519" id="31519_1" value="results in the least squared error"><label for="1">results in the least squared error</label><br><input type="radio" name="answer_31519" id="31519_2" value="is the sample mean"><label for="2">is the sample mean</label><br><input type="radio" name="answer_31519" id="31519_3" value="maximizes the log-likelihood function"><label for="3">maximizes the log-likelihood function</label><br><input type="submit" value="check">
+</form>
+<p id="result_31519">
+</p>
+<script> function validate_form_31519() {var x, text; var x = document.forms["form_31519"]["answer_31519"].value;if (x == "maximizes the log-likelihood function"){text = 'Your statistical knowledge is getting better and better :+1:';} else {text = 'Try again. You can do it!';} document.getElementById('result_31519').innerHTML = text; return false;} </script>
+<p>Thought exercise: Because a probability is less than 1, the logarithm of it will be a negative number. By that logic, if the log-likelihood is -16.5 with <span class="math inline">\(N = 5\)</span>, what should it be with a larger sample size (e.g., <span class="math inline">\(N = 50\)</span>)?</p>
+<form name="form_4428" onsubmit="return validate_form_4428()" method="post">
+<input type="radio" name="answer_4428" id="4428_1" value="more negative (e.g., -160.5)"><label for="1">more negative (e.g., -160.5)</label><br><input type="radio" name="answer_4428" id="4428_2" value="unchanged (i.e., -16.5"><label for="2">unchanged (i.e., -16.5</label><br><input type="radio" name="answer_4428" id="4428_3" value="more positive (e.g., -1.65)"><label for="3">more positive (e.g., -1.65)</label><br><input type="submit" value="check">
+</form>
+<p id="result_4428">
+</p>
+<script> function validate_form_4428() {var x, text; var x = document.forms["form_4428"]["answer_4428"].value;if (x == "more negative (e.g., -160.5)"){text = 'Nice job :+1:';} else {text = 'Try again. You can do it!';} document.getElementById('result_4428').innerHTML = text; return false;} </script>
+<div id="more-about-maximum-likelihood-estimation" class="section level4">
+<h4>More about maximum likelihood estimation</h4>
+<p>If <span class="math inline">\(\sigma\)</span> is not known, the maximum likelihood estimate is
+<span class="math display">\[\hat \sigma = \sqrt{\frac{\sum_{i = 1}^N (Y_i - \bar X)^2}{N}},\]</span>
+which uses <span class="math inline">\(N\)</span> in the denominator instead of <span class="math inline">\(N - 1\)</span>. Because of this, in small sample, maximum likelihood estimate tends to be biased, meaning that on average it tends to underestimate the population variance.</p>
+<p>One useful property of maximum likelihood estimation is that the standard error can be approximated by the inverse of the curvature of the likelihood function at the peak. The two graphs below show that with a larger sample, the likelihood function has a higher curvature (i.e., steeper around the peak), which results in a smaller estimated standard error.</p>
+<p><img src="/courses/psyc575/lecture5_files/figure-html/mle-curve-1.png" width="672" /></p>
+<hr />
+</div>
+</div>
+<div id="estimation-methods-for-mlm" class="section level3">
+<h3>Estimation methods for MLM</h3>
+{{% youtube "dEQoz5-xBOs" %}}
+<p>Check your learning: The deviance is</p>
+<form name="form_35831" onsubmit="return validate_form_35831()" method="post">
+<input type="radio" name="answer_35831" id="35831_1" value="2 x likelihood"><label for="1">2 x likelihood</label><br><input type="radio" name="answer_35831" id="35831_2" value="2 x log-likelihood"><label for="2">2 x log-likelihood</label><br><input type="radio" name="answer_35831" id="35831_3" value="-2 x log-likelihood"><label for="3">-2 x log-likelihood</label><br><input type="submit" value="check">
+</form>
+<p id="result_35831">
+</p>
+<script> function validate_form_35831() {var x, text; var x = document.forms["form_35831"]["answer_35831"].value;if (x == "-2 x log-likelihood"){text = 'Nice job :+1:';} else {text = 'Try again. You can do it!';} document.getElementById('result_35831').innerHTML = text; return false;} </script>
+<hr />
+</div>
+</div>
+<div id="testing" class="section level2">
+<h2>Testing</h2>
+<div id="likelihood-ratio-test-lrt-for-fixed-effects" class="section level3">
+<h3>Likelihood ratio test (LRT) for fixed effects</h3>
+{{% youtube "_CnSRV_hmqE" %}}
+<p>The LRT has been used widely across many statistical methods, so it’s useful to get familiar to doing it by hand (as it may not be available in all software in all procedures).</p>
+<p>Practice yourself: Consider the two models below</p>
+<table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:left;">
+Model 1
+</th>
+<th style="text-align:left;">
+Model 2
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:left;">
+12.650
+</td>
+<td style="text-align:left;">
+12.662
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+(0.148)
+</td>
+<td style="text-align:left;">
+(0.148)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+meanses
+</td>
+<td style="text-align:left;">
+5.863
+</td>
+<td style="text-align:left;">
+3.674
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+(0.359)
+</td>
+<td style="text-align:left;">
+(0.375)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sd__(Intercept)
+</td>
+<td style="text-align:left;">
+1.610
+</td>
+<td style="text-align:left;">
+1.627
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sd__Observation
+</td>
+<td style="text-align:left;">
+6.258
+</td>
+<td style="text-align:left;">
+6.084
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ses
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+2.191
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+(0.109)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AIC
+</td>
+<td style="text-align:left;">
+46967.1
+</td>
+<td style="text-align:left;">
+46573.8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+BIC
+</td>
+<td style="text-align:left;">
+46994.6
+</td>
+<td style="text-align:left;">
+46608.2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Log.Lik.
+</td>
+<td style="text-align:left;">
+-23479.554
+</td>
+<td style="text-align:left;">
+-23281.902
+</td>
+</tr>
+</tbody>
+</table>
+<p>Using R and the <code>pchisq()</code> function, what is the <span class="math inline">\(\chi^2\)</span> (or X2) test statistic and the <span class="math inline">\(p\)</span> value for the fixed effect coefficient for <code>ses</code>?</p>
+<form name="form_97680" onsubmit="return validate_form_97680()" method="post">
+<input type="radio" name="answer_97680" id="97680_1" value="X2 = 395.3, df = 1, p < .001"><label for="1">X2 = 395.3, df = 1, p &lt; .001</label><br><input type="radio" name="answer_97680" id="97680_2" value="X2 = 198, df = 1, p < .001"><label for="2">X2 = 198, df = 1, p &lt; .001</label><br><input type="radio" name="answer_97680" id="97680_3" value="F = 20.1, df = 1, p < .001"><label for="3">F = 20.1, df = 1, p &lt; .001</label><br><input type="submit" value="check">
+</form>
+<p id="result_97680">
+</p>
+<script> function validate_form_97680() {var x, text; var x = document.forms["form_97680"]["answer_97680"].value;if (x == "X2 = 395.3, df = 1, p < .001"){text = 'Nice job :+1:';} else {text = 'Try again. You can do it!';} document.getElementById('result_97680').innerHTML = text; return false;} </script>
+<hr />
+</div>
+<div id="f-test-with-small-sample-correction" class="section level3">
+<h3><span class="math inline">\(F\)</span> test with small-sample correction</h3>
+{{% youtube "bKd16_fxjgw" %}}
+<hr />
+</div>
+<div id="lrt-for-random-slope-variance" class="section level3">
+<h3>LRT for random slope variance</h3>
+{{% youtube "inNGu6fqDtE" %}}
+<p>Check your learning: When testing whether the variance of a random slope term is zero, what needs to be done?</p>
+<form name="form_29383" onsubmit="return validate_form_29383()" method="post">
+<input type="radio" name="answer_29383" id="29383_1" value="The p value needs to be divided by 2, because the random slope variance can only be zero or positive"><label for="1">The p value needs to be divided by 2, because the random slope variance can only be zero or positive</label><br><input type="radio" name="answer_29383" id="29383_2" value="The p value needs to be divided by 2 so that the results will be a two-tailed test"><label for="2">The p value needs to be divided by 2 so that the results will be a two-tailed test</label><br><input type="radio" name="answer_29383" id="29383_3" value="The p value needs to be divided by 2, because it is a two degrees of freedom test"><label for="3">The p value needs to be divided by 2, because it is a two degrees of freedom test</label><br><input type="submit" value="check">
+</form>
+<p id="result_29383">
+</p>
+<script> function validate_form_29383() {var x, text; var x = document.forms["form_29383"]["answer_29383"].value;if (x == "The p value needs to be divided by 2, because the random slope variance can only be zero or positive"){text = 'Your statistical knowledge is getting better and better :+1:';} else {text = 'Try again. You can do it!';} document.getElementById('result_29383').innerHTML = text; return false;} </script>
+</div>
+</div>
+<div id="reporting" class="section level2">
+<h2>Reporting</h2>
+<p>With what you have learned so far, a good way to consolidate the knowledge is to apply what you have learned to evaluate a published article that uses MLM. Please read the chapter by <a href="https://www-taylorfrancis-com.libproxy2.usc.edu/books/e/9781315755649/chapters/10.4324/9781315755649-22">McCoach (2019)</a> (requires USC SSO) and complete <a href="../homework-5">HW 5</a>.</p>
+</div>

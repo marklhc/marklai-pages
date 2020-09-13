@@ -359,7 +359,7 @@ Student feedback is essential to the instructor and the Department to keep impro
 </td>
 <td>
 
-- Exercise: Effect decomposition
+- Exercise: [Effect decomposition][10]
 - [HW 4](../homework-4)
 
 </td>
@@ -382,7 +382,7 @@ Student feedback is essential to the instructor and the Department to keep impro
 <td>
 
 - Exercise: Maximum likelihood estimation (MLE)
-- [HW 5](#)
+- [HW 5](../homework-5)
 
 </td>
 </tr>
@@ -397,7 +397,7 @@ Student feedback is essential to the instructor and the Department to keep impro
 <td>
 
 - SB 12.1
-- Supplemental materials
+- Hamaker & Klugkist (2011) chapter
 
 </td>
 <td>
@@ -574,6 +574,7 @@ Final paper (due **11/24, 10:00 am**)
 [7]: https://statmodeling.stat.columbia.edu/wp-content/uploads/2020/07/raos_tips.pdf
 [8]: /exercise/02-interaction.Rmd
 [9]: /exercise/03-empirical_bayes.Rmd
+[10]: /exercise/04-decomposing_effects.Rmd
 
 <!-- from https://graduateschool.usc.edu/faculty-n-staff/academic-conduct-n-support-systems/ --> 
 

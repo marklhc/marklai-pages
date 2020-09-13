@@ -1,0 +1,208 @@
+---
+title: Week 5
+linktitle: Lecture videos (wk 5)
+type: docs
+date: "2020-09-03T00:00:00+01:00"
+draft: false
+slides: "psyc575/05_model_estimation_and_testing"
+menu:
+  psyc575:
+    parent: Week 5
+    weight: 1
+output:
+  blogdown::html_page:
+    toc: true
+    df_print: paged
+# Prev/next pager order (if `docs_section_pager` enabled in `params.toml`)
+weight: 1
+---
+
+`r blogdown::shortcode("slide-buttons")`
+
+```{r, include=FALSE}
+library(checkdown)
+right_ans <- c("Nice job :+1:", 
+               "Your statistical knowledge is getting better and better :+1:")
+wrong_ans <- "Try again. You can do it!"
+```
+
+## Estimation Methods
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "xhR-WPB3f7w")
+```
+
+Check your learning: The values you obtained from MLM software (e.g., `lme4`) are
+
+```{r echo=FALSE, results="asis"}
+check_question("Sample estimates", 
+               options = c("Parameter values", 
+                           "Sample estimates"), 
+               type = "radio", 
+               right = sample(right_ans, 1, prob = c(.7, .3)), 
+               wrong = wrong_ans)
+```
+
+***
+
+### Maximum likelihood
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "SMXoJWWAVtg")
+```
+
+Check your learning: Using R, verify that, if $\mu = 10$ and $\sigma = 8$ for a normally distributed population, the probability (joint density) of getting students with scores of 23, 16, 5, 14, 7. 
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "usrdjkqzCkg")
+```
+
+Check your learning: Using the principle of maximum likelihood, the best estimate for a parameter is one that
+
+```{r echo=FALSE, results="asis"}
+check_question("maximizes the log-likelihood function", 
+               options = c("results in the least squared error", 
+                           "is the sample mean", 
+                           "maximizes the log-likelihood function"), 
+               type = "radio", 
+               right = sample(right_ans, 1, prob = c(.7, .3)), 
+               wrong = wrong_ans)
+```
+
+Thought exercise: Because a probability is less than 1, the logarithm of it will be a negative number. By that logic, if the log-likelihood is -16.5 with $N = 5$, what should it be with a larger sample size (e.g., $N = 50$)?
+
+```{r echo=FALSE, results="asis"}
+check_question("more negative (e.g., -160.5)", 
+               options = c("more negative (e.g., -160.5)", 
+                           "unchanged (i.e., -16.5", 
+                           "more positive (e.g., -1.65)"), 
+               type = "radio", 
+               right = sample(right_ans, 1, prob = c(.7, .3)), 
+               wrong = wrong_ans)
+```
+
+#### More about maximum likelihood estimation
+
+If $\sigma$ is not known, the maximum likelihood estimate is
+$$\hat \sigma = \sqrt{\frac{\sum_{i = 1}^N (Y_i - \bar X)^2}{N}},$$
+which uses $N$ in the denominator instead of $N - 1$. Because of this, in small sample, maximum likelihood estimate tends to be biased, meaning that on average it tends to underestimate the population variance. 
+
+One useful property of maximum likelihood estimation is that the standard error can be approximated by the inverse of the curvature of the likelihood function at the peak. The two graphs below show that with a larger sample, the likelihood function has a higher curvature (i.e., steeper around the peak), which results in a smaller estimated standard error. 
+
+```{r mle-curve, echo=FALSE, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(gridExtra)
+llfun <- function(x) 
+  sum(dnorm(x = c(23, 16, 5, 14, 7), mean = x, sd = 8, log = TRUE))
+# Vectorize
+llfun <- Vectorize(llfun)
+p1 <- ggplot(tibble(mu = c(8, 18)), aes(x = mu)) + 
+  geom_function(fun = llfun) + 
+  ylim(-17.5, -16.5) + 
+  labs(x = expression(mu), y = "log-likelihood", 
+       title = expression(italic(N) == 5))
+llfun <- function(x) 
+  sum(dnorm(x = rep(c(23, 16, 5, 14, 7), 4), 
+            mean = x, sd = 8, log = TRUE))
+# Vectorize
+llfun <- Vectorize(llfun)
+p2 <- ggplot(tibble(mu = c(8, 18)), aes(x = mu)) + 
+  geom_function(fun = llfun) + 
+  ylim(-67.5, -66.5) + 
+  labs(x = expression(mu), y = "log-likelihood", 
+       title = expression(italic(N) == 20))
+grid.arrange(p1, p2, nrow = 1)
+```
+
+
+***
+
+### Estimation methods for MLM
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "dEQoz5-xBOs")
+```
+
+Check your learning: The deviance is
+
+```{r echo=FALSE, results="asis"}
+check_question("-2 x log-likelihood", 
+               options = c("2 x likelihood", 
+                           "2 x log-likelihood", 
+                           "-2 x log-likelihood"), 
+               type = "radio", 
+               right = sample(right_ans, 1, prob = c(.7, .3)), 
+               wrong = wrong_ans)
+```
+
+***
+
+## Testing
+
+### Likelihood ratio test (LRT) for fixed effects
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "_CnSRV_hmqE")
+```
+
+The LRT has been used widely across many statistical methods, so it's useful to get familiar to doing it by hand (as it may not be available in all software in all procedures).
+
+Practice yourself: Consider the two models below
+
+```{r m_lv2, message=FALSE, echo=FALSE}
+library(haven)
+library(here)
+library(lme4)
+library(broom.mixed)
+library(modelsummary)
+# Read in the data (pay attention to the directory)
+hsball <- read_sav(here("data_files", "hsball.sav"))
+m_lv2 <- lmer(mathach ~ meanses + (1 | id), data = hsball, REML = FALSE)
+m_contextual <- lmer(mathach ~ meanses + ses + (1 | id), 
+                     data = hsball, REML = FALSE)
+msummary(list(m_lv2, m_contextual))
+```
+
+Using R and the `pchisq()` function, what is the $\chi^2$ (or X2) test statistic and the $p$ value for the fixed effect coefficient for `ses`?
+
+```{r echo=FALSE, results="asis"}
+check_question("X2 = 395.3, df = 1, p < .001", 
+               options = c("X2 = 395.3, df = 1, p < .001", 
+                           "X2 = 198, df = 1, p < .001", 
+                           "F = 20.1, df = 1, p < .001"), 
+               type = "radio", 
+               right = sample(right_ans, 1, prob = c(.7, .3)), 
+               wrong = wrong_ans)
+```
+
+***
+
+### $F$ test with small-sample correction
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "bKd16_fxjgw")
+```
+
+***
+
+### LRT for random slope variance
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "inNGu6fqDtE")
+```
+
+Check your learning: When testing whether the variance of a random slope term is zero, what needs to be done?
+
+```{r echo=FALSE, results="asis"}
+check_question("The p value needs to be divided by 2, because the random slope variance can only be zero or positive", 
+               options = c("The p value needs to be divided by 2, because the random slope variance can only be zero or positive", 
+                           "The p value needs to be divided by 2 so that the results will be a two-tailed test", 
+                           "The p value needs to be divided by 2, because it is a two degrees of freedom test"), 
+               type = "radio", 
+               right = sample(right_ans, 1, prob = c(.7, .3)), 
+               wrong = wrong_ans)
+```
+
+## Reporting
+
+With what you have learned so far, a good way to consolidate the knowledge is to apply what you have learned to evaluate a published article that uses MLM. Please read the chapter by [McCoach (2019)](https://www-taylorfrancis-com.libproxy2.usc.edu/books/e/9781315755649/chapters/10.4324/9781315755649-22) (requires USC SSO) and complete [HW 5](../homework-5). 

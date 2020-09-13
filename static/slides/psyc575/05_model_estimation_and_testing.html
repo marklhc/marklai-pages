@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Model Estimation, Testing, and Reporting</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Mark Lai" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
+    <script src="libs/kePrint/kePrint.js"></script>
+    <link href="libs/lightable/lightable.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Model Estimation, Testing, and Reporting
+## PSYC 575
+### Mark Lai
+### University of Southern California
+### 2020/09/01 (updated: 2020-09-05)
+
+---
+
+
+`$$\newcommand{\bv}[1]{\boldsymbol{\mathbf{#1}}}$$`
+
+
+
+
+
+# Week Learning Objectives
+
+- Describe conceptually what **likelihood function** and maximum likelihood estimation are
+
+- Describe the differences between **maximum likelihood** and **restricted maximum likelihood**
+
+- Conduct statistical tests for fixed effects
+
+- Use the **likelihood ratio test** to test random slopes
+
+- Report results of a multilevel analysis based on established guidelines
+
+---
+
+# Estimation
+
+&lt;img src="img/model_sample.png" width="621" height="40%" /&gt;
+
+Regression: OLS
+
+MLM: Maximum likelihood, Bayesian
+
+---
+class: middle
+
+# Why should I learn about estimation methods?
+
+--
+
+- ## Understand software options
+
+--
+
+- ## Know when to use better methods
+
+--
+
+- ## Needed for reporting
+
+---
+class: inverse, middle, center
+
+# Maximum Likelihood Estimation
+
+---
+
+### The most commonly used methods in MLM are 
+### maximum likelihood (ML) and restricted maximum likelihood (REML)
+
+
+```
+*&gt;# Linear mixed model fit by REML ['lmerMod']
+&gt;# Formula: Reaction ~ Days + (Days | Subject)
+&gt;#    Data: sleepstudy
+&gt;# REML criterion at convergence: 1743.628
+&gt;# Random effects:
+&gt;#  Groups   Name        Std.Dev. Corr
+&gt;#  Subject  (Intercept) 24.741       
+&gt;#           Days         5.922   0.07
+&gt;#  Residual             25.592       
+&gt;# Number of obs: 180, groups:  Subject, 18
+&gt;# Fixed Effects:
+&gt;# (Intercept)         Days  
+&gt;#      251.41        10.47
+```
+
+--
+
+## But what is "Likelihood"?
+
+---
+
+# Likelihood 
+
+.pull-left[
+### Let’s say we want to estimate the population mean math achievement score `\((\mu)\)`
+
+We need to make some assumptions:
+
+- Known *SD*: `\(\sigma = 8\)`
+
+- The scores are normally distributed in the population
+
+]
+
+.pull-right[
+
+&lt;img src="05_model_estimation_and_testing_files/figure-html/lik-pop-1.png" width="100%" /&gt;
+
+]
+
+---
+
+# Learning the Parameter From the Sample
+
+Assume that we have scores from 5 representative students
+
+
+| Student| Score|
+|-------:|-----:|
+|       1|    23|
+|       2|    16|
+|       3|     5|
+|       4|    14|
+|       5|     7|
+
+---
+
+# Likelihood
+
+If we **assume** that `\(\mu = 10\)`, how likely will we get 5 students with these scores?
+
+.pull-left[
+&lt;img src="05_model_estimation_and_testing_files/figure-html/lik-pop-10-1.png" width="90%" /&gt;
+]
+
+--
+
+.pull-right[
+
+
+| Student| Score| `\(P(Y_i = y_i \mid \mu = 10)\)`|
+|-------:|-----:|----------------------------:|
+|       1|    23|                    0.0133173|
+|       2|    16|                    0.0376422|
+|       3|     5|                    0.0410201|
+|       4|    14|                    0.0440082|
+|       5|     7|                    0.0464819|
+
+Multiplying them all together:
+`$$P(Y_1 = 23, Y_2 = 16, Y_3 = 5, Y_4 = 14, Y_5 = 7 | \mu = 10)$$` 
+= Product of the probabilities = 
+
+
+```r
+prod(dnorm(c(23, 16, 5, 14, 7), mean = 10, sd = 8))
+```
+
+```
+&gt;# [1] 4.20634e-08
+```
+
+
+]
+
+---
+
+# If `\(\mu = 13\)`
+
+.pull-left[
+
+&lt;img src="05_model_estimation_and_testing_files/figure-html/lik-pop-13-1.png" width="100%" /&gt;
+
+]
+
+--
+
+.pull-right[
+
+
+| Student| Score| `\(P(Y_i = y_i \mid \mu = 13)\)`|
+|-------:|-----:|----------------------------:|
+|       1|    23|                    0.0228311|
+|       2|    16|                    0.0464819|
+|       3|     5|                    0.0302463|
+|       4|    14|                    0.0494797|
+|       5|     7|                    0.0376422|
+
+Multiplying them all together:
+`$$P(Y_1 = 23, Y_2 = 16, Y_3 = 5, Y_4 = 14, Y_5 = 7 | \mu = 13)$$` 
+= Product of the probabilities = 
+
+
+```r
+prod(dnorm(c(23, 16, 5, 14, 7), mean = 13, sd = 8))
+```
+
+```
+&gt;# [1] 5.978414e-08
+```
+
+]
+
+---
+
+Compute the likelihood for a range of `\(\mu\)` values
+
+.pull-left[
+
+# Likelihood Function
+
+&lt;img src="05_model_estimation_and_testing_files/figure-html/lik-func-1.png" width="90%" /&gt;
+
+]
+
+--
+
+.pull-right[
+
+# Log-Likelihood (LL) Function
+
+&lt;img src="05_model_estimation_and_testing_files/figure-html/llik-func-1.png" width="90%" /&gt;
+
+]
+
+---
+
+.pull-left[
+
+# Maximum Likelihood
+
+`\(\hat \mu = 13\)` maximizes the (log) likelihood function
+
+Maximum likelihood estimator (MLE)
+
+]
+
+--
+
+.pull-right[
+
+## Estimating `\(\sigma\)`
+
+&lt;img src="05_model_estimation_and_testing_files/figure-html/llik-func-sigma-1.png" width="90%" /&gt;
+
+]
+
+---
+
+# Curvature and Standard Errors
+
+.pull-left[
+
+`\(N = 5\)`
+
+&lt;img src="05_model_estimation_and_testing_files/figure-html/mle-ase1-1.png" width="90%" /&gt;
+
+]
+
+.pull-right[
+
+`\(N = 20\)`
+
+&lt;img src="05_model_estimation_and_testing_files/figure-html/mle-ase2-1.png" width="90%" /&gt;
+
+]
+
+
+---
+class: inverse, center, middle
+
+# Estimation Methods for MLM
+
+---
+
+# For MLM
+
+Find `\(\gamma\)`s, `\(\tau\)`s, and `\(\sigma\)` that maximizes the likelihood function
+
+`$$\ell(\bv \gamma, \bv \tau, \sigma; \bv y) = - \frac{1}{2} \left\{\log | \bv V(\bv \tau, \sigma)| + (\bv y - \bv X \bv \gamma)^\top \bv V^{-1}(\bv \tau, \sigma) (\bv y - \bv X \bv \gamma) \right\} + K$$`
+
+Here's the log-likelihood function for the coefficient of `meanses` (see code in the provided Rmd):
+
+
+
+.pull-left[
+
+&lt;img src="05_model_estimation_and_testing_files/figure-html/loglik-meanses-1.png" width="396" /&gt;
+
+]
+
+.pull-right[
+
+&lt;img src="05_model_estimation_and_testing_files/figure-html/deviance-gamma01-1.png" width="396" /&gt;
+
+]
+
+---
+
+# Numerical Algorithms
+
+.pull-left[
+
+
+```r
+m_lv2 &lt;- lmer(mathach ~ meanses + (1 | id), data = hsball, verbose = 1)
+```
+
+```
+&gt;# iteration: 1
+&gt;# 	f(x) = 47022.519159
+&gt;# iteration: 2
+&gt;# 	f(x) = 47151.291766
+&gt;# iteration: 3
+&gt;# 	f(x) = 47039.480137
+&gt;# iteration: 4
+&gt;# 	f(x) = 46974.909593
+&gt;# iteration: 5
+&gt;# 	f(x) = 46990.872588
+&gt;# iteration: 6
+&gt;# 	f(x) = 46966.453125
+&gt;# iteration: 7
+&gt;# 	f(x) = 46961.719993
+&gt;# iteration: 8
+&gt;# 	f(x) = 46965.890703
+&gt;# iteration: 9
+&gt;# 	f(x) = 46961.367013
+&gt;# iteration: 10
+&gt;# 	f(x) = 46961.288830
+&gt;# iteration: 11
+&gt;# 	f(x) = 46961.298898
+&gt;# iteration: 12
+&gt;# 	f(x) = 46961.284848
+&gt;# iteration: 13
+&gt;# 	f(x) = 46961.285238
+&gt;# iteration: 14
+&gt;# 	f(x) = 46961.284845
+&gt;# iteration: 15
+&gt;# 	f(x) = 46961.284848
+&gt;# iteration: 16
+&gt;# 	f(x) = 46961.284845
+```
+
+]
+
+.pull-right[
+
+&lt;img src="05_model_estimation_and_testing_files/figure-html/deviance-gamma01-2-1.png" width="396" /&gt;
+
+]
+
+---
+
+# ML vs. REML
+
+REML has corrected degrees of freedom for the variance component estimates (like dividing by `\(N - 1\)` instead of by `\(N\)` in estimating variance)
+
+- REML is generally preferred in smaller samples
+
+- The difference is small with large number of clusters
+
+Technically, REML only estimates the variance components&lt;sup&gt;1&lt;/sup&gt;
+
+.footnote[
+
+[1] The fixed effects are integrated out and are not part of the likelihood function. They are solved in a second step, usually by the generalized least squares (GLS) method
+
+]
+
+---
+
+.pull-left[
+
+### 160 Schools
+
+&lt;table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt;   &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; REML &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; ML &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; (Intercept) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 12.649 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 12.650 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; (0.149) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; (0.148) &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; meanses &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 5.864 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 5.863 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; (0.361) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; (0.359) &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; sd__(Intercept) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 1.624 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 1.610 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt;  &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; sd__Observation &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 6.258 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 6.258 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt;  &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; AIC &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 46969.3 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 46967.1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; BIC &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 46996.8 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 46994.6 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Log.Lik. &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; -23480.642 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; -23479.554 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; REMLcrit &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 46961.285 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt;  &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+]
+
+--
+
+.pull-right[
+
+### 16 Schools
+
+
+
+&lt;table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt;   &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; REML &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; ML &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; (Intercept) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 12.809 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 12.808 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; (0.504) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; (0.471) &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; meanses &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 6.577 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 6.568 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; (1.281) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; (1.197) &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; sd__(Intercept) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 1.726 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 1.581 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt;  &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; sd__Observation &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 5.944 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 5.944 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt;  &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt;  &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; AIC &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 4419.6 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 4422.2 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; BIC &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 4437.7 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 4440.3 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Log.Lik. &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; -2205.796 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; -2207.099 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; REMLcrit &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 4411.591 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt;  &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+]
+
+---
+
+# Other Estimation Methods
+
+### Generalized estimating equations (GEE)
+
+- Robust to some misspecification and non-normality
+- Maybe inefficient in small samples (i.e., with lower power)
+- See Snijders &amp; Bosker 12.2; the `geepack` R package
+
+### Markov Chain Monte Carlo (MCMC)/Bayesian
+
+---
+class: inverse, middle, center
+
+# Testing
+
+---
+
+### Fixed effects `\((\gamma)\)`
+
+- Usually the likelihood-based CI/likelihood-ratio (LRT; `\(\chi^2\)`) test is sufficient
+- Small sample (10--50 clusters): Kenward-Roger approximation of degrees of freedom
+- Non-normality: Residual bootstrap&lt;sup&gt;1&lt;/sup&gt;
+    
+### Random effects `\((\tau)\)`
+
+- LRT (with `\(p\)` values divided by 2)
+
+.footnote[
+
+[1]: See [van der Leeden et al. (2008)](https://link-springer-com.libproxy1.usc.edu/chapter/10.1007/978-0-387-73186-5_11) and [Lai (2020)](https://doi.org/10.1080/00273171.2020.1746902) 
+
+]
+
+---
+
+# Likelihood Ratio (Deviance) Test
+
+`$$H_0: \gamma = 0$$`
+--
+
+Likelihood ratio: `\(\dfrac{L(\gamma = 0)}{L(\gamma = \hat \gamma)}\)`
+
+Deviance: `\(-2 \times \log\left(\frac{L(\gamma = 0)}{L(\gamma = \hat \gamma)}\right)\)`  
+= `\(-2 \mathrm{LL}(\gamma = 0) - [-2 \mathrm{LL}(\gamma = \hat \gamma)]\)`  
+= `\(\mathrm{Deviance} \mid_{\gamma = 0} - \mathrm{Deviance} \mid_{\gamma = \hat \gamma}\)`
+
+ML (instead of REML) should be used
+
+---
+
+# Example
+
+
+```
+...
+&gt;# Linear mixed model fit by maximum likelihood  ['lmerMod']
+&gt;# Formula: mathach ~ (1 | id)
+&gt;#       AIC       BIC    logLik  deviance  df.resid 
+&gt;#  47121.81  47142.45 -23557.91  47115.81      7182 
+...
+```
+
+
+```
+...
+&gt;# Linear mixed model fit by maximum likelihood  ['lmerMod']
+&gt;# Formula: mathach ~ meanses + (1 | id)
+&gt;#       AIC       BIC    logLik  deviance  df.resid 
+&gt;#  46967.11  46994.63 -23479.55  46959.11      7181 
+...
+```
+
+
+```r
+pchisq(47115.81 - 46959.11, df = 1, lower.tail = FALSE)
+```
+
+```
+&gt;# [1] 5.952567e-36
+```
+
+
+In `lme4`, use 
+
+
+```r
+drop1(m_lv2, test = "Chisq")  # Automatically use ML
+```
+
+---
+
+# `\(F\)` Test With Small-Sample Correction
+
+### Needs approximation of degrees of freedom (*df*)
+
+Kenward-Roger approximation generally performs well with &lt; 50 clusters
+
+
+```r
+library(lmerTest)
+m_contextual &lt;- lmer(mathach ~ meanses + ses + (1 | id), 
+                     data = hsbsub)
+anova(m_contextual, ddf = "Kenward-Roger")
+```
+
+```
+&gt;# Type III Analysis of Variance Table with Kenward-Roger's method
+&gt;#          Sum Sq Mean Sq NumDF  DenDF F value    Pr(&gt;F)    
+&gt;# meanses  324.39  324.39     1  15.51  9.9573  0.006317 ** 
+&gt;# ses     1874.34 1874.34     1 669.03 57.5331 1.116e-13 ***
+&gt;# ---
+&gt;# Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+---
+
+# LRT for Random Slopes
+
+.pull-left[
+
+### Should you include random slopes?
+
+Theoretically yes unless you're certain that the slopes are the same for every groups
+
+However, frequentist methods usually crash with more than two random slopes
+
+- Test the random slopes one by one, and identify which one is needed
+- Bayesian methods are more equipped for complex models
+
+]
+
+--
+
+.pull-right[
+
+### "One-tailed" LRT
+
+LRT `\((\chi^2)\)` is generally a two-tailed test. But for random slopes, 
+
+`\(H_0: \tau_1 = 0\)` is a one-tailed hypothesis
+
+A quick solution is to divide the resulting `\(p\)` by 2&lt;sup&gt;1&lt;/sup&gt;
+
+.footnote[
+
+[1]: Originally proposed by Snijders &amp; Bosker; tested in simulation by LaHuis &amp; Ferguson (2009, https://doi.org/10.1177/1094428107308984)
+
+]
+
+]
+
+---
+
+# Example: LRT for `\(\tau^2_1\)`
+
+
+
+.pull-left[
+
+
+```
+...
+&gt;# Formula: mathach ~ meanses + ses_cmc + (ses_cmc | id)
+&gt;#    Data: hsball
+&gt;# REML criterion at convergence: 46557.65
+...
+```
+
+
+```
+...
+&gt;# Formula: mathach ~ meanses + ses_cmc + (1 | id)
+&gt;#    Data: hsball
+&gt;# REML criterion at convergence: 46568.58
+...
+```
+
+]
+
+--
+
+.pull-right[
+
+.center[
+
+### G Matrix
+
+`$$\begin{bmatrix}
+     \tau^2_0 &amp;  \\
+     \tau_{01} &amp; \tau^2_1 \\
+  \end{bmatrix}$$`
+
+`$$\begin{bmatrix}
+     \tau^2_0 &amp; \\
+     {\color{red}0} &amp; {\color{red}0} \\
+  \end{bmatrix}$$`
+  
+]
+
+]
+
+--
+
+
+```r
+pchisq(10.92681, df = 2, lower.tail = FALSE)
+```
+
+```
+&gt;# [1] 0.004239097
+```
+
+Need to divide by 2
+
+---
+class: inverse, middle, center
+
+# Reporting
+
+## McCoach (2019 chapter), see HW 5
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
