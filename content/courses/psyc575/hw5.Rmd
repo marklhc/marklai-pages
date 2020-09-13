@@ -33,6 +33,7 @@ In addition, because we will need to do Bayesian MLM moving forward, it's import
 ## Steps
 
 1. Make a copy or Download the ["HW 5 Template" file](https://docs.google.com/spreadsheets/d/14euZtytxkIPNUwcYzg5baGh0aLFyz50Wko5BtWobGcI). One way to do it is to make a copy of the file to your own Google Drive. 
+
 ### Part 1
 
 2. Follow the instruction on https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started to install the `rstan` package, which will be needed moving forward. Pay attention to the instruction as installing `rstan` is not as straight forward as installing other packages, depending on what operating system and what version of it you are using. 
