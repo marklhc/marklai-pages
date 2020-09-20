@@ -1,0 +1,86 @@
+---
+title: Homework 6
+date: '2020-09-17'
+slug: homework-6
+categories: []
+tags: []
+linktitle: Homework 6
+summary: ~
+lastmod: '`r Sys.Date()`'
+type: docs
+output:
+  blogdown::html_page:
+    df_print: paged
+menu:
+  psyc575:
+    parent: Week 7
+    weight: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(width = 100)
+comma <- function(x) format(x, digits = 2, big.mark = ",")
+```
+
+## Learning Objective
+
+- Independently analyze real data using statistical software for multilevel modeling
+
+## Assignment Description 
+
+In this assignment, you will replicate the analyses described in https://www.ling.uni-potsdam.de/~vasishth/statistics/BayesLMMs.html, which uses the data by Gibson & Wu (2013 doi: 10.1080/01690965.2010.536656). The research question is to evaluate the claim that
+
+> [I]n Chinese, object relatives are easier to process than subject relatives at a particular point in the sentence (the head noun of the relative clause) (p. 178). 
+
+(Don't worry if you don't fully understand the context like me; maybe check with your classmates who knows more about psycholinguistics.) The data contains 37 participants (`subj`) and 15 items. You will run a Bayesian analysis with two crossed levels, perform convergence diagnostics, and report results. 
+
+## Steps
+
+```{r load-pkg, message=FALSE, include=FALSE}
+# To install a package, run the following ONCE (and only once on your computer)
+# install.packages("psych")  
+library(here)  # makes reading data more consistent
+library(tidyverse)  # for data manipulation and plotting
+library(haven)  # for importing SPSS/SAS/Stata data
+library(lme4)  # for multilevel analysis
+library(MuMIn)  # for computing r-squared
+library(broom.mixed)  # for summarizing results
+library(modelsummary)  # for making tables
+library(interactions)  # for plotting interactions
+theme_set(theme_bw())  # Theme; just my personal preference
+```
+
+1. Make a copy or Download the ["HW 6 Template" file](/hw_templates/hw6_template.Rmd). One way to do it is to make a copy of the file to your own Google Drive. 
+
+2. Import the data, which is available at https://github.com/vasishth/BayesLMMTutorial/tree/master/data. One way to do it is 
+```{r, indent='    '}
+language_dat <- read.table("https://github.com/vasishth/BayesLMMTutorial/raw/master/data/gibsonwu2012datarepeat.txt")
+language_dat
+```
+
+3. Do a log-transformation on response time `rt`, and run an unconditional model with random intercepts of both `subj` and `item`. You can use either `lme4` or `brms`. Report the design effects for each of the two crossed levels. 
+4. The experimental manipulation is `condition`, which has two values: `obj-ext` if the item is presented in object relatives, and `subj-ext` if the item is presented in subject relatives. It's pretty much counter-balanced so that each item was presented in `obj-ext` half of the times, and `subj-ext` in another half of the times. 
+```{r, indent='    '}
+count(language_dat, item, condition)
+```
+    i. Because the hypothesis is phrased such that `obj-ext` is easier to process, we'll make `subj-ext` the reference group by making the variable a `factor` with `subj-ext` as the first category
+```{r recode-factor, indent='        '}
+language_dat <- language_dat %>% 
+  mutate(condition = factor(condition, levels = c("subj-ext", "obj-ext")))
+```
+    ii. Is the experimental manipulation a subject-level variable, an item-level variable, or a within-cell variable? (Hint: Think about whether it has variations within the same person or within the same item.)
+5. Fit a Bayesian multilevel model to estimate the effect of `condition` on response time. To deal with the skewness and non-negativity of `rt`, you can either use log-transformation, or use the `brms(..., family = lognormal()` option. Make sure to include random slopes that apply.
+    i. Summarize model convergence (you may reference the [sample language]( ../rcode6/#sample-language-for-describing-the-bayesian-analysis) section for the Bayesian module)
+    ii. Provide a table to summarize the results
+    iii. Provide a plot to show the effect of `condition` across 4-8 participants (see the sample code in the [Plotting](../rcode7/#plotting-1) section for the experimental designs module)
+    iv. Briefly describe (in a sentence or two) what the slope variances mean. 
+6. Knit your Rmd file to HTML/PDF/Word, and submit the knitted file to Blackboard. 
+
+## Grading 
+
+Your instructor will use the rubric on Slack to grade this assignment. 
+
+## Additional Notes
+
+You may post your questions to the Slack channel to get help from your peers and instructor. 

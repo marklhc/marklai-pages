@@ -1,0 +1,83 @@
+---
+title: "Bayesian Multilevel Models in R with `brms`"
+output:
+  html_document:
+    df_print: paged
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = ">#")
+```
+
+## Load Packages and Import Data
+
+```{r load-pkg, message=FALSE}
+# To install a package, run the following ONCE (and only once on your computer)
+# install.packages("psych")  
+library(here)  # makes reading data more consistent
+library(tidyverse)  # for data manipulation and plotting
+library(haven)  # for importing SPSS/SAS/Stata data
+library(brms)  # for Bayesian multilevel analysis
+library(lattice)  # for dotplot (working with lme4)
+library(sjPlot)  # for plotting effects
+library(broom.mixed)  # for summarizing results
+library(modelsummary)  # for making tables
+# Add the following so that the LOO will be included in the msummary table
+glance_custom.brmsfit <- function(x) {
+  broom.mixed::glance(x, looic = TRUE)
+}
+theme_set(theme_bw())  # Theme; just my personal preference
+```
+
+Because Bayesian estimation is a bit more intensive, you may want to set up parallel processing using the `future` package
+
+```{r setup-brms}
+# (Optional) Set multiple cores
+library(future)
+plan(multiprocess(
+  # Here I use at most two cores
+  workers = min(future::availableCores() - 1, 2L)
+))
+# Set global option
+options(future = TRUE)
+```
+
+Cluster-randomized trial: https://www.sciencedirect.com/science/article/abs/pii/S0022103117300860
+
+```{r}
+# Data from OSF
+hiring_dat <- read_csv("https://osf.io/yd72p/download")
+hiring_dat <- hiring_dat %>% 
+  mutate(
+    # Compute number of female hires
+    num_female_hires = NH_NumFacURMF + NH_NumFacAsianF + NH_NumFacWHF, 
+    # Also recode EXPDEPT and POST to factors
+    EXPDEPT = factor(EXPDEPT, levels = c(0, 1), 
+                     labels = c("control", "intervention")), 
+    POST = factor(POST, levels = c(0, 1), 
+                  labels = c("pre", "post")))
+# Plot pre-post difference
+hiring_dat %>% 
+  # Compute proportion of female hires
+  mutate(prop_female_hires = num_female_hires / NH_NumFac) %>% 
+  # Convert to wide format
+  pivot_wider(id = c(DEPT_RAND, PAIR_RAND, EXPDEPT), names_from = POST, 
+              values_from = c(prop_female_hires, NH_NumFac)) %>% 
+  ggplot(aes(x = prop_female_hires_0, y = prop_female_hires_1)) + 
+  geom_jitter(width = 0.05, height = 0.05, alpha = 0.5) + 
+  geom_abline(intercept = 0, slope = 1) + 
+  facet_wrap( ~ EXPDEPT)
+```
+
+```{r}
+m1 <- brm(num_female_hires | trials(NH_NumFac) ~ EXPDEPT * POST + 
+            (1 | PAIR_RAND/DEPT_RAND), 
+          data = hiring_dat %>% filter(NH_NumFac > 0), 
+          family = binomial("logit"), 
+          chains = 2,
+          iter = 3000)
+conditional_effects(m1)
+```
+
+
