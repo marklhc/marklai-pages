@@ -31,6 +31,7 @@ By the end of this module, you will be able to
 
 1. Review the resources (lecture videos and slides)
 2. Complete the assigned readings
+    * Snijders & Bosker 13.1
     * [Hoffman & Rovine (2007)](https://link.springer.com/content/pdf/10.3758/BF03192848.pdf)
 3. Attend the synchronous Zoom session to do an exercise on identifying data structure
     * If unable to attend, complete an alternative assignment
