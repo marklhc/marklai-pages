@@ -362,9 +362,9 @@ There are multiple ways to standardize. For me, the goal of standardization is u
 $$d = \frac{\hat \gamma}{\sqrt{\tau_{u_0}^2 + \sigma^2}},$$
 where $\hat \gamma$ is an estimated treatment effect in the original unit (log response time). 
 
-For `c_mean` (from 1 to 5, a 4 units change) as 
+For `c_mean` (from 0 to 5, a 5-unit change) as 
 $$d = \frac{-0.0508 \times 5}{\sqrt{0.1803 + 0.3899}} = `r -0.0508 * 5 / sqrt(0.1803 + 0.3899)`$$
-For `c_sal` (from 0 to 5, a 5 units change), the average effect size can be computed as
+For `c_sal` (from 0 to 5, a 5-unit change), the average effect size can be computed as
 $$d = \frac{-0.13127 \times 5}{\sqrt{0.1803 + 0.3899}} = `r -0.13127 * 5 / sqrt(0.1803 + 0.3899)`$$
 For `oldage` (not a manipulated variable), 
 $$d = \frac{0.80607}{\sqrt{0.1803 + 0.3899}} = `r 0.80607 / sqrt(0.1803 + 0.3899)`$$

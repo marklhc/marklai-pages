@@ -4,7 +4,7 @@ linktitle: R Codes (wk 6)
 type: docs
 date: "2020-09-10T21:27:00+01:00"
 draft: false
-lastmod: '2020-09-20'
+lastmod: '2020-09-21'
 rmd: "rcodes/week7-mlm-exp"
 menu:
   psyc575:
@@ -438,9 +438,9 @@ gridExtra::grid.arrange(p1, p2, p3, ncol = 2)</code></pre>
 <p>There are multiple ways to standardize. For me, the goal of standardization is usually to put the effects in a unit that represents the natural standard deviation in the population. In this case, we think about the natural variation in reaction time across persons, without the experimental manipulation, which should be the between-person variance component (stable individual differences, <span class="math inline">\(\tau_{u_0}^2\)</span>) plus the random error (<span class="math inline">\(\sigma^2\)</span>) from the unconditional model. So we’ll define Cohen’s <span class="math inline">\(d\)</span> as
 <span class="math display">\[d = \frac{\hat \gamma}{\sqrt{\tau_{u_0}^2 + \sigma^2}},\]</span>
 where <span class="math inline">\(\hat \gamma\)</span> is an estimated treatment effect in the original unit (log response time).</p>
-<p>For <code>c_mean</code> (from 1 to 5, a 4 units change) as
+<p>For <code>c_mean</code> (from 0 to 5, a 5-unit change) as
 <span class="math display">\[d = \frac{-0.0508 \times 5}{\sqrt{0.1803 + 0.3899}} = -0.3363722\]</span>
-For <code>c_sal</code> (from 0 to 5, a 5 units change), the average effect size can be computed as
+For <code>c_sal</code> (from 0 to 5, a 5-unit change), the average effect size can be computed as
 <span class="math display">\[d = \frac{-0.13127 \times 5}{\sqrt{0.1803 + 0.3899}} = -0.8692043\]</span>
 For <code>oldage</code> (not a manipulated variable),
 <span class="math display">\[d = \frac{0.80607}{\sqrt{0.1803 + 0.3899}} = 1.0674785\]</span></p>

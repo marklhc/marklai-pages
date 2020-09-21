@@ -6,7 +6,7 @@ categories: []
 tags: []
 linktitle: Homework 6
 summary: ~
-lastmod: '2020-09-20'
+lastmod: '2020-09-21'
 type: docs
 output:
   blogdown::html_page:
@@ -34,7 +34,7 @@ menu:
 <blockquote>
 <p>[I]n Chinese, object relatives are easier to process than subject relatives at a particular point in the sentence (the head noun of the relative clause) (p. 178).</p>
 </blockquote>
-<p>(Don’t worry if you don’t fully understand the context like me; maybe check with your classmates who knows more about psycholinguistics.) The data contains 37 participants (<code>subj</code>) and 15 items. You will run a Bayesian analysis with two crossed levels, perform convergence diagnostics, and report results.</p>
+<p>(Don’t worry if you don’t fully understand the context—I certainly don’t; maybe check with your classmates who knows more about psycholinguistics.) The data contains 37 participants (<code>subj</code>) and 15 items. You will run a Bayesian analysis with two crossed levels, perform convergence diagnostics, and report results.</p>
 </div>
 <div id="steps" class="section level2">
 <h2>Steps</h2>
@@ -62,7 +62,7 @@ language_dat</code></pre>
   mutate(condition = factor(condition, levels = c(&quot;subj-ext&quot;, &quot;obj-ext&quot;)))</code></pre></li>
 <li><p>Is the experimental manipulation a subject-level variable, an item-level variable, or a within-cell variable? (Hint: Think about whether it has variations within the same person or within the same item.)</p></li>
 </ol></li>
-<li><p>Fit a Bayesian multilevel model to estimate the effect of <code>condition</code> on response time. To deal with the skewness and non-negativity of <code>rt</code>, you can either use log-transformation, or use the <code>brms(..., family = lognormal()</code> option. Make sure to include random slopes that apply.</p>
+<li><p>Fit a Bayesian multilevel model to estimate the effect of <code>condition</code> on response time. To deal with the skewness and non-negativity of <code>rt</code>, you can either use log-transformation, or use the <code>brms(..., family = lognormal())</code> option. Make sure to include random slopes that apply.</p>
 <ol style="list-style-type: lower-roman">
 <li>Summarize model convergence (you may reference the <a href="../rcode6/#sample-language-for-describing-the-bayesian-analysis">sample language</a> section for the Bayesian module)</li>
 <li>Provide a table to summarize the results</li>
