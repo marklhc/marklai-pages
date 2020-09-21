@@ -27,6 +27,8 @@ weight: 2
 <script src="/rmarkdown-libs/viz/viz.js"></script>
 <link href="/rmarkdown-libs/DiagrammeR-styles/styles.css" rel="stylesheet" />
 <script src="/rmarkdown-libs/grViz-binding/grViz.js"></script>
+<script src="/rmarkdown-libs/kePrint/kePrint.js"></script>
+<link href="/rmarkdown-libs/lightable/lightable.css" rel="stylesheet" />
 
 <div id="TOC">
 <ul>
@@ -46,6 +48,7 @@ weight: 2
 <ul>
 <li><a href="#equations">Equations</a></li>
 <li><a href="#testing-random-slopes">Testing random slopes</a></li>
+<li><a href="#coefficients">Coefficients</a></li>
 </ul></li>
 <li><a href="#effect-size">Effect Size</a></li>
 <li><a href="#bayesian-analyses">Bayesian Analyses</a>
@@ -66,6 +69,7 @@ library(tidyverse)  # for data manipulation and plotting
 library(haven)  # for importing SPSS/SAS/Stata data
 library(lme4)  # for multilevel analysis
 library(lmerTest)  # for testing coefficients
+library(MuMIn)  # for R^2
 library(lattice)  # for dotplot (working with lme4)
 library(sjPlot)  # for plotting effects
 library(broom.mixed)  # for summarizing results
@@ -402,6 +406,274 @@ anova(m2_rs, m3_rs)  # not significant</code></pre>
   </script>
 </div>
 <pre class="r"><code># So we keep the additive model (i.e., no interaction)</code></pre>
+</div>
+<div id="coefficients" class="section level3">
+<h3>Coefficients</h3>
+<pre class="r"><code>msummary(m1_rs)</code></pre>
+<table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:left;">
+Model 1
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:left;">
+1.304
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+(0.051)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+c_mean
+</td>
+<td style="text-align:left;">
+-0.064
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+(0.025)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+c_sal
+</td>
+<td style="text-align:left;">
+-0.142
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+(0.044)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+oldageOver Age 40
+</td>
+<td style="text-align:left;">
+0.830
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+(0.044)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+c_mean × c_sal
+</td>
+<td style="text-align:left;">
+-0.003
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+(0.021)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+c_mean × oldageOver Age 40
+</td>
+<td style="text-align:left;">
+0.038
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+(0.018)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+c_sal × oldageOver Age 40
+</td>
+<td style="text-align:left;">
+0.012
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+(0.033)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+c_mean × c_sal × oldageOver Age 40
+</td>
+<td style="text-align:left;">
+-0.024
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+(0.015)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sd__(Intercept)
+</td>
+<td style="text-align:left;">
+0.167
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sd__(Intercept)
+</td>
+<td style="text-align:left;">
+0.319
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+cor__(Intercept).c_sal
+</td>
+<td style="text-align:left;">
+0.032
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sd__c_sal
+</td>
+<td style="text-align:left;">
+0.048
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+cor__(Intercept).oldageOver Age 40
+</td>
+<td style="text-align:left;">
+-0.279
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sd__oldageOver Age 40
+</td>
+<td style="text-align:left;">
+0.210
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sd__Observation
+</td>
+<td style="text-align:left;">
+0.613
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AIC
+</td>
+<td style="text-align:left;">
+14824.8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+BIC
+</td>
+<td style="text-align:left;">
+14929.0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Log.Lik.
+</td>
+<td style="text-align:left;">
+-7397.415
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+REMLcrit
+</td>
+<td style="text-align:left;">
+14794.830
+</td>
+</tr>
+</tbody>
+</table>
+<p>Note that there are a few repeated rows (e.g., <code>sd__(Intercept)</code>), but one is for the person level and the other is for the item level. Currently <code>msummary()</code> does not yet know to separate them by different names.</p>
 <div id="plot-the-3-way-interaction" class="section level4">
 <h4>Plot the 3-way interaction</h4>
 <p>Even though the 3-way interaction was not statistically significant, given that it was part of the prespecified hypothesis, let’s plot it</p>
@@ -452,6 +724,35 @@ For <code>oldage</code> (not a manipulated variable),
 <pre class="r"><code>MuMIn::r.squaredGLMM(m1_rs)</code></pre>
 <pre><code>&gt;#            R2m      R2c
 &gt;# [1,] 0.2696931 0.463021</code></pre>
+<p>With counterbalancing, the item-level (<code>c_mean</code> and <code>c_sal</code>) and the person-level (<code>oldage</code>) predictors are orthogonal, so we can get an <span class="math inline">\(R^2\)</span> for the item-level predictors and an <span class="math inline">\(R^2\)</span> for the person-level predictor, and they should add up to the total. For example:</p>
+<pre class="r"><code># Person-level (oldage)
+m3_rs_oldage &lt;- lmer(lg_rt ~ oldage + (1 | id) + 
+                       (oldage | Item), data = driving_dat)
+r.squaredGLMM(m3_rs_oldage)</code></pre>
+<pre><code>&gt;#            R2m       R2c
+&gt;# [1,] 0.2168664 0.4550552</code></pre>
+<pre class="r"><code># Item-level (salience + meaning)
+m3_rs_sal_mean &lt;- lmer(lg_rt ~ c_sal + c_mean + (c_sal | id) + 
+                         (1 | Item), data = driving_dat)
+r.squaredGLMM(m3_rs_sal_mean)</code></pre>
+<pre><code>&gt;#             R2m       R2c
+&gt;# [1,] 0.05162687 0.4464777</code></pre>
+<p>The two above adds up close to the total <span class="math inline">\(R^2\)</span>. However, <code>c_sal</code> and <code>c_mean</code> are positively correlated, so their individual contributions to the <span class="math inline">\(R^2\)</span> would not add up to the value when both are included (as there are some overlap in their individual <span class="math inline">\(R^2\)</span>). In this case, you can still report the individaul <span class="math inline">\(R^2\)</span>, but remember to also report the total.</p>
+<pre class="r"><code># Salience only
+m3_rs_sal &lt;- lmer(lg_rt ~ c_sal + (c_sal | id) + 
+                         (1 | Item), data = driving_dat)</code></pre>
+<pre><code>&gt;# Warning in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv, :
+&gt;# Model failed to converge with max|grad| = 0.00463336 (tol = 0.002, component 1)</code></pre>
+<pre class="r"><code>r.squaredGLMM(m3_rs_sal)</code></pre>
+<pre><code>&gt;#             R2m       R2c
+&gt;# [1,] 0.03857116 0.4451034</code></pre>
+<pre class="r"><code># Meaning only
+m3_rs_mean &lt;- lmer(lg_rt ~ c_mean + (1 | id) + 
+                         (1 | Item), data = driving_dat)
+r.squaredGLMM(m3_rs_mean)</code></pre>
+<pre><code>&gt;#             R2m       R2c
+&gt;# [1,] 0.02353606 0.4414036</code></pre>
+<p>As a final word on effect size, the <span class="math inline">\(R^2\)</span>s presented above are analogous to the <span class="math inline">\(\eta^2\)</span> effect sizes in ANOVA.</p>
 </div>
 <div id="bayesian-analyses" class="section level2">
 <h2>Bayesian Analyses</h2>
@@ -463,12 +764,259 @@ For <code>oldage</code> (not a manipulated variable),
 &gt;# to the package is available through vignette(&#39;brms_overview&#39;).</code></pre>
 <pre><code>&gt;# 
 &gt;# Attaching package: &#39;brms&#39;</code></pre>
+<pre><code>&gt;# The following object is masked from &#39;package:MuMIn&#39;:
+&gt;# 
+&gt;#     loo</code></pre>
 <pre><code>&gt;# The following object is masked from &#39;package:lme4&#39;:
 &gt;# 
 &gt;#     ngrps</code></pre>
 <pre><code>&gt;# The following object is masked from &#39;package:stats&#39;:
 &gt;# 
 &gt;#     ar</code></pre>
+<pre class="r"><code># Recode missing to 60
+driving_dat &lt;- driving_dat %&gt;% 
+  mutate(rt_sec2 = replace_na(rt_sec, 60),  # rescale by a factor of 10
+         censored = as.numeric(is.na(rt_sec)))
+# Warning: This takes a long time (10 minutes) to run
+m3_brm_ln &lt;- brm(rt_sec2 | cens(censored) ~ c_mean + c_sal + oldage +
+                   (c_sal | id) +  
+                   (oldage | Item), 
+                 # prior = c(prior(lkj(2), class = &quot;cor&quot;)),
+                 # control = list(adapt_delta = .99, max_treedepth = 15),
+                 chains = 2L, cores = 2L, 
+                 family = lognormal(),
+                 data = driving_dat)</code></pre>
+<pre><code>&gt;# Compiling Stan program...</code></pre>
+<pre><code>&gt;# Start sampling</code></pre>
+<pre class="r"><code>msummary(m3_brm_ln, statistic = &quot;conf.int&quot;)</code></pre>
+<pre><code>&gt;# Warning in tidy.brmsfit(model, conf.int = TRUE, conf.level = conf_level, : some
+&gt;# parameter names contain underscores: term naming may be unreliable!</code></pre>
+<table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:left;">
+Model 1
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:left;">
+1.322
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+[1.220, 1.415]
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+c_mean
+</td>
+<td style="text-align:left;">
+-0.057
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+[-0.102, -0.007]
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+c_sal
+</td>
+<td style="text-align:left;">
+-0.138
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+[-0.222, -0.050]
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+oldageOverAge40
+</td>
+<td style="text-align:left;">
+0.863
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+[0.765, 0.958]
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sd__(Intercept)
+</td>
+<td style="text-align:left;">
+0.188
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sd__(Intercept)
+</td>
+<td style="text-align:left;">
+0.333
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+[0.161, 0.218]
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+[0.269, 0.414]
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sd__c_sal
+</td>
+<td style="text-align:left;">
+0.048
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+[0.012, 0.073]
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sd__oldageOverAge40
+</td>
+<td style="text-align:left;">
+0.245
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+[0.192, 0.307]
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+cor__(Intercept).c_sal
+</td>
+<td style="text-align:left;">
+-0.140
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+[-0.543, 0.240]
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+cor__(Intercept).oldageOverAge40
+</td>
+<td style="text-align:left;">
+-0.224
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+[-0.497, 0.070]
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sd__Observation
+</td>
+<td style="text-align:left;">
+0.680
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+[0.669, 0.691]
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Num.Obs.
+</td>
+<td style="text-align:left;">
+7803
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+algorithm
+</td>
+<td style="text-align:left;">
+sampling
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+elpd_loo
+</td>
+<td style="text-align:left;">
+-20598.505
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+looic
+</td>
+<td style="text-align:left;">
+41197.011
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+p_loo
+</td>
+<td style="text-align:left;">
+255.989
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+pss
+</td>
+<td style="text-align:left;">
+2000.000
+</td>
+</tr>
+</tbody>
+</table>
 <div id="posterior-predictive-check" class="section level3">
 <h3>Posterior predictive check</h3>
 <p>You can check whether data simulated data based on the log-normal model have a similar distribution as the observed data using the <code>pp_check()</code> function</p>

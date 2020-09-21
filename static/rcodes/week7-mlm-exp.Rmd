@@ -20,6 +20,7 @@ library(tidyverse)  # for data manipulation and plotting
 library(haven)  # for importing SPSS/SAS/Stata data
 library(lme4)  # for multilevel analysis
 library(lmerTest)  # for testing coefficients
+library(MuMIn)  # for R^2
 library(lattice)  # for dotplot (working with lme4)
 library(sjPlot)  # for plotting effects
 library(broom.mixed)  # for summarizing results
@@ -324,6 +325,14 @@ anova(m2_rs, m3_rs)  # not significant
 # So we keep the additive model (i.e., no interaction)
 ```
 
+### Coefficients
+
+```{r msummary-m1_rs}
+msummary(m1_rs)
+```
+
+Note that there are a few repeated rows (e.g., `sd__(Intercept)`), but one is for the person level and the other is for the item level. Currently `msummary()` does not yet know to separate them by different names. 
+
 #### Plot the 3-way interaction
 
 Even though the 3-way interaction was not statistically significant, given that it was part of the prespecified hypothesis, let's plot it
@@ -379,6 +388,33 @@ MuMIn::r.squaredGLMM(m3_rs)
 MuMIn::r.squaredGLMM(m1_rs)
 ```
 
+With counterbalancing, the item-level (`c_mean` and `c_sal`) and the person-level (`oldage`) predictors are orthogonal, so we can get an $R^2$ for the item-level predictors and an $R^2$ for the person-level predictor, and they should add up to the total. For example:
+
+```{r r2-m3_rs_part}
+# Person-level (oldage)
+m3_rs_oldage <- lmer(lg_rt ~ oldage + (1 | id) + 
+                       (oldage | Item), data = driving_dat)
+r.squaredGLMM(m3_rs_oldage)
+# Item-level (salience + meaning)
+m3_rs_sal_mean <- lmer(lg_rt ~ c_sal + c_mean + (c_sal | id) + 
+                         (1 | Item), data = driving_dat)
+r.squaredGLMM(m3_rs_sal_mean)
+```
+
+The two above adds up close to the total $R^2$. However, `c_sal` and `c_mean` are positively correlated, so their individual contributions to the $R^2$ would not add up to the value when both are included (as there are some overlap in their individual $R^2$). In this case, you can still report the individaul $R^2$, but remember to also report the total. 
+
+```{r r2-m3_rs_part2}
+# Salience only
+m3_rs_sal <- lmer(lg_rt ~ c_sal + (c_sal | id) + 
+                         (1 | Item), data = driving_dat)
+r.squaredGLMM(m3_rs_sal)
+# Meaning only
+m3_rs_mean <- lmer(lg_rt ~ c_mean + (1 | id) + 
+                         (1 | Item), data = driving_dat)
+r.squaredGLMM(m3_rs_mean)
+```
+
+As a final word on effect size, the $R^2$s presented above are analogous to the $\eta^2$ effect sizes in ANOVA. 
 
 ## Bayesian Analyses
 
@@ -389,7 +425,7 @@ library(brms)
 ```
 
 
-```{r m3_brm_ln, cache=TRUE, include=FALSE, echo=TRUE}
+```{r m3_brm_ln, cache=TRUE, echo=TRUE, results='hide'}
 # Recode missing to 60
 driving_dat <- driving_dat %>% 
   mutate(rt_sec2 = replace_na(rt_sec, 60),  # rescale by a factor of 10
@@ -403,6 +439,10 @@ m3_brm_ln <- brm(rt_sec2 | cens(censored) ~ c_mean + c_sal + oldage +
                  chains = 2L, cores = 2L, 
                  family = lognormal(),
                  data = driving_dat)
+```
+
+```{r msummary-m3_brm_ln}
+msummary(m3_brm_ln, statistic = "conf.int")
 ```
 
 ### Posterior predictive check
