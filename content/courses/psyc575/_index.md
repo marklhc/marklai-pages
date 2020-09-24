@@ -40,6 +40,7 @@ menu:
 - <i class="far fa-calendar"></i> Thursday 10:00-11:50 am (live Zoom session)
 - <i class="fas fa-map-marker"></i> Online
 - <i class="fab fa-slack"></i> <a href="https://uscdornsifeclass.slack.com" target="_blank">Slack channel</a> (USC SSO required)
+- <i class="fab fa-youtube"></i> <a href="https://www.youtube.com/playlist?list=PL8yE0xYJxnw3d1bIbHDqJv3RL6VOCh5-M" target="_blank">Youtube Playlist</a>
 - <i class="fas fa-question-circle"></i>Contact Help Desk at Dornsife for IT support 
     * <i class="fas fa-envelope"></i> ts@dornsife.usc.edu
     * <i class="fas fa-phone"></i> ext. 02775
