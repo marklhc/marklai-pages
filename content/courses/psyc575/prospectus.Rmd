@@ -31,7 +31,7 @@ Note: If you're working as a group, only one member needs to submit the prospect
 
 ## Steps
 
-1. Before you start, schedule an appointment with your instructor during the week of October 5--12 (Link will be available on Thursday)
+1. Before you start, schedule an appointment with your instructor during the week of October 5--12 (Sign-up Link is on Slack)
 2. You can use R Markdown or other word processing software for writing your prospectus. 
 3. Write down your name(s)
 4. Indicate whether you/your group will do a paper or a presentation. Only one paper/presentation is required for each group. 
