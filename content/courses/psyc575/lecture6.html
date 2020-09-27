@@ -1,0 +1,117 @@
+---
+title: Week 7
+linktitle: Lecture videos (wk 7)
+type: docs
+date: "2020-09-10T00:00:00+01:00"
+draft: false
+slides: "psyc575/06_Bayesian_mlm"
+menu:
+  psyc575:
+    parent: Week 7
+    weight: 1
+output:
+  blogdown::html_page:
+    toc: true
+    df_print: paged
+# Prev/next pager order (if `docs_section_pager` enabled in `params.toml`)
+weight: 1
+---
+
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+<link href="/rmarkdown-libs/pagedtable/css/pagedtable.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/pagedtable/js/pagedtable.js"></script>
+
+<div id="TOC">
+<ul>
+<li><a href="#bayesian-methods">Bayesian methods</a>
+<ul>
+<li><a href="#bayesian-vs.-frequentist-probabilities">Bayesian vs. Frequentist Probabilities</a></li>
+<li><a href="#why-bayesian">Why Bayesian?</a></li>
+</ul></li>
+<li><a href="#the-prior-distribution">The Prior Distribution</a></li>
+<li><a href="#bayess-theorem">Bayes’s Theorem</a></li>
+<li><a href="#the-posterior-distribution">The Posterior Distribution</a></li>
+<li><a href="#markov-chain-monte-carlo">Markov Chain Monte Carlo</a></li>
+<li><a href="#handling-assumption-violations">Handling Assumption Violations</a></li>
+</ul>
+</div>
+
+{{% slide-buttons2 %}}
+<div id="bayesian-methods" class="section level2">
+<h2>Bayesian methods</h2>
+{{% youtube "NqDqaNKf6DE" %}}
+<hr />
+<p>Check your learning: What does MCMC stand for?</p>
+<form name="form_8995" onsubmit="return validate_form_8995()" method="post">
+<input type="radio" name="answer_8995" id="8995_1" value="Multiple-Chain Monte Carlo"><label for="1">Multiple-Chain Monte Carlo</label><br><input type="radio" name="answer_8995" id="8995_2" value="Markov Chain Monte Carlo"><label for="2">Markov Chain Monte Carlo</label><br><input type="submit" value="check">
+</form>
+<p id="result_8995">
+</p>
+<script> function validate_form_8995() {var x, text; var x = document.forms["form_8995"]["answer_8995"].value;if (x == "Markov Chain Monte Carlo"){text = 'You got it :+1:';} else {text = 'Try again. You can do it!';} document.getElementById('result_8995').innerHTML = text; return false;} </script>
+<hr />
+<div id="bayesian-vs.-frequentist-probabilities" class="section level3">
+<h3>Bayesian vs. Frequentist Probabilities</h3>
+{{% youtube "UxRi9sakqmk" %}}
+<hr />
+<p>Check your learning: Which of the following is allowed with Bayesian but not with Frequentist interpretations of probability?</p>
+<form name="form_96739" onsubmit="return validate_form_96739()" method="post">
+<input type="radio" name="answer_96739" id="96739_1" value="Assigning a probability to a model parameter"><label for="1">Assigning a probability to a model parameter</label><br><input type="radio" name="answer_96739" id="96739_2" value="Computing the probability of the data"><label for="2">Computing the probability of the data</label><br><input type="radio" name="answer_96739" id="96739_3" value="Use probability to describe the distribution of fixed-effect estimates"><label for="3">Use probability to describe the distribution of fixed-effect estimates</label><br><input type="submit" value="check">
+</form>
+<p id="result_96739">
+</p>
+<script> function validate_form_96739() {var x, text; var x = document.forms["form_96739"]["answer_96739"].value;if (x == "Assigning a probability to a model parameter"){text = 'Your statistical knowledge is getting better and better :+1:';} else {text = 'Try again. You can do it!';} document.getElementById('result_96739').innerHTML = text; return false;} </script>
+<hr />
+</div>
+<div id="why-bayesian" class="section level3">
+<h3>Why Bayesian?</h3>
+{{% youtube "huC96JA_OPY" %}}
+</div>
+</div>
+<div id="the-prior-distribution" class="section level2">
+<h2>The Prior Distribution</h2>
+{{% youtube "augKnNQIRYo" %}}
+<hr />
+<p>Check your learning: In a model predicting happiness from income, how do you understand the prior distribution for the slope coefficient?</p>
+<form name="form_78564" onsubmit="return validate_form_78564()" method="post">
+<input type="radio" name="answer_78564" id="78564_1" value="The sampling distribution of the estimate across repeated samples"><label for="1">The sampling distribution of the estimate across repeated samples</label><br><input type="radio" name="answer_78564" id="78564_2" value="The probability distribution that describes our uncertainty in the data"><label for="2">The probability distribution that describes our uncertainty in the data</label><br><input type="radio" name="answer_78564" id="78564_3" value="The probability distribution that describes the prior belief of what the slope should be, without information from the data"><label for="3">The probability distribution that describes the prior belief of what the slope should be, without information from the data</label><br><input type="submit" value="check">
+</form>
+<p id="result_78564">
+</p>
+<script> function validate_form_78564() {var x, text; var x = document.forms["form_78564"]["answer_78564"].value;if (x == "The probability distribution that describes the prior belief of what the slope should be, without information from the data"){text = 'You got it :+1:';} else {text = 'Try again. You can do it!';} document.getElementById('result_78564').innerHTML = text; return false;} </script>
+<hr />
+</div>
+<div id="bayess-theorem" class="section level2">
+<h2>Bayes’s Theorem</h2>
+{{% youtube "jWfrTfsJYq4" %}}
+<hr />
+<p>Check your learning: Based on the Bayes’s theorem, what is <span class="math inline">\(P(\gamma | y)\)</span>?</p>
+<form name="form_15426" onsubmit="return validate_form_15426()" method="post">
+<input type="radio" name="answer_15426" id="15426_1" value="The likelihood function of gamma"><label for="1">The likelihood function of gamma</label><br><input type="radio" name="answer_15426" id="15426_2" value="The prior distribution of gamma"><label for="2">The prior distribution of gamma</label><br><input type="radio" name="answer_15426" id="15426_3" value="The posterior distribution of gamma, incorporating the information from data y"><label for="3">The posterior distribution of gamma, incorporating the information from data y</label><br><input type="submit" value="check">
+</form>
+<p id="result_15426">
+</p>
+<script> function validate_form_15426() {var x, text; var x = document.forms["form_15426"]["answer_15426"].value;if (x == "The posterior distribution of gamma, incorporating the information from data y"){text = 'You got it :+1:';} else {text = 'Try again. You can do it!';} document.getElementById('result_15426').innerHTML = text; return false;} </script>
+<hr />
+</div>
+<div id="the-posterior-distribution" class="section level2">
+<h2>The Posterior Distribution</h2>
+{{% youtube "4i5ER_Qrgus" %}}
+<hr />
+<p>Check your learning: The Bayes estimation of <span class="math inline">\(\gamma_{01}\)</span> is</p>
+<form name="form_75851" onsubmit="return validate_form_75851()" method="post">
+<input type="radio" name="answer_75851" id="75851_1" value="The median value in the posterior distribution of gamma_01"><label for="1">The median value in the posterior distribution of gamma_01</label><br><input type="radio" name="answer_75851" id="75851_2" value="The mean value in the prior distribution of gamma_01"><label for="2">The mean value in the prior distribution of gamma_01</label><br><input type="radio" name="answer_75851" id="75851_3" value="The mean value in the posterior distribution of gamma_01"><label for="3">The mean value in the posterior distribution of gamma_01</label><br><input type="radio" name="answer_75851" id="75851_4" value="The maximum value in the likelihood function of gamma_01"><label for="4">The maximum value in the likelihood function of gamma_01</label><br><input type="submit" value="check">
+</form>
+<p id="result_75851">
+</p>
+<script> function validate_form_75851() {var x, text; var x = document.forms["form_75851"]["answer_75851"].value;if (x == "The posterior distribution of gamma, incorporating the information from data y"){text = 'Your statistical knowledge is getting better and better :+1:';} else {text = 'Try again. You can do it!';} document.getElementById('result_75851').innerHTML = text; return false;} </script>
+<hr />
+</div>
+<div id="markov-chain-monte-carlo" class="section level2">
+<h2>Markov Chain Monte Carlo</h2>
+{{% youtube "6Wg7iLR8IDE" %}}
+{{% youtube "4VEVyPz_62w" %}}
+</div>
+<div id="handling-assumption-violations" class="section level2">
+<h2>Handling Assumption Violations</h2>
+<p>Please check out examples in <a href="../rcode6/#using-brms-to-relax-assumptions">R code</a></p>
+</div>
