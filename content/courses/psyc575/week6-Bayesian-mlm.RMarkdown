@@ -100,7 +100,7 @@ get_prior(mathach ~ meanses + ses_cmc + (ses_cmc | id),
 ```
 
 - Flat (Uniform) priors on the $\gamma$s (i.e., `class = b`), except for the intercept
-- Weakly informative Student-$t$ prior on $\tau_0$ and $\tau_1$
+- Weakly informative half-$t$ prior on $\tau_0$ and $\tau_1$ (it's "half-" because $\tau_0$ and $\tau_1$ are non-negative)
 - Flat (Uniform) prior on the correlation between the random intercepts and the random slopes (`lkj(1)`)
 
 ```{r ran_slp, message=FALSE, cache=TRUE}

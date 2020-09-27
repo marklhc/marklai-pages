@@ -4,7 +4,7 @@ linktitle: R Codes (wk 7)
 type: docs
 date: "2020-09-10T21:27:00+01:00"
 draft: false
-lastmod: '2020-09-26'
+lastmod: '2020-09-27'
 rmd: "rcodes/week6-Bayesian-mlm"
 menu:
   psyc575:
@@ -140,7 +140,7 @@ summary(m_mses)</code></pre>
 </div>
 <ul>
 <li>Flat (Uniform) priors on the <span class="math inline">\(\gamma\)</span>s (i.e., <code>class = b</code>), except for the intercept</li>
-<li>Weakly informative Student-<span class="math inline">\(t\)</span> prior on <span class="math inline">\(\tau_0\)</span> and <span class="math inline">\(\tau_1\)</span></li>
+<li>Weakly informative half-<span class="math inline">\(t\)</span> prior on <span class="math inline">\(\tau_0\)</span> and <span class="math inline">\(\tau_1\)</span> (it’s “half-” because <span class="math inline">\(\tau_0\)</span> and <span class="math inline">\(\tau_1\)</span> are non-negative)</li>
 <li>Flat (Uniform) prior on the correlation between the random intercepts and the random slopes (<code>lkj(1)</code>)</li>
 </ul>
 <pre class="r"><code># This takes a few minutes. Use the `cache=TRUE` option to avoid rerunning
