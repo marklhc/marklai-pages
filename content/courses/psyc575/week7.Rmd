@@ -35,7 +35,7 @@ By the end of this module, you will be able to
     * [Hoffman & Rovine (2007)](https://link.springer.com/content/pdf/10.3758/BF03192848.pdf)
 3. Attend the synchronous Zoom session to do an exercise on identifying data structure
     * If unable to attend, complete an alternative assignment
-4. Think about your project---Prospectus will be due in two weeks (Monday, October 5)
+4. Think about your project---Prospectus will be due in two weeks (Monday, October 5, at 9 am PDT)
 5. No HW due this week, but you may start ahead with [HW 6](../homework-6), which is due next week
 6. Additional resources for learning MLM for experimental designs
     * [This paper](https://www.annualreviews.org/doi/abs/10.1146/annurev-psych-122414-033702) by Judd et al. 
