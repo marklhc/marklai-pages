@@ -130,7 +130,7 @@ blogdown::shortcode("youtube", "4i5ER_Qrgus")
 Check your learning: The Bayes estimation of $\gamma_{01}$ is
 
 ```{r echo=FALSE, results="asis"}
-check_question("The posterior distribution of gamma, incorporating the information from data y", 
+check_question("The mean value in the posterior distribution of gamma_01", 
                options = c("The median value in the posterior distribution of gamma_01", 
                            "The mean value in the prior distribution of gamma_01", 
                            "The mean value in the posterior distribution of gamma_01", 

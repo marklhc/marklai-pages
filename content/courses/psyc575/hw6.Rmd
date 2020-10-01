@@ -73,7 +73,7 @@ language_dat <- language_dat %>%
 5. Fit a Bayesian multilevel model to estimate the effect of `condition` on response time. To deal with the skewness and non-negativity of `rt`, you can either use log-transformation, or use the `brms(..., family = lognormal())` option. Make sure to include random slopes that apply.
     i. Summarize model convergence (you may reference the [sample language]( ../rcode6/#sample-language-for-describing-the-bayesian-analysis) section for the Bayesian module)
     ii. Provide a table to summarize the results
-    iii. Provide a plot to show the effect of `condition` across 4-8 participants (see the sample code in the [Plotting](../rcode7/#plotting-1) section for the experimental designs module)
+    iii. Provide a plot to show the effect of `condition` across a random sample of 4-8 participants (see the sample code in the [Plotting](../rcode7/#plotting-1) section for the experimental designs module)
     iv. Briefly describe (in a sentence or two) what the slope variances mean. 
 6. Knit your Rmd file to HTML/PDF/Word, and submit the knitted file to Blackboard. 
 

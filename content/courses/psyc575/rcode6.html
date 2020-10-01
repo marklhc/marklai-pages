@@ -4,7 +4,7 @@ linktitle: R Codes (wk 7)
 type: docs
 date: "2020-09-10T21:27:00+01:00"
 draft: false
-lastmod: '2020-09-27'
+lastmod: '2020-09-30'
 rmd: "rcodes/week6-Bayesian-mlm"
 menu:
   psyc575:
@@ -212,7 +212,7 @@ ran_slp &lt;- brm(mathach ~ meanses + ses_cmc + (ses_cmc | id),
 <div id="sample-language-for-describing-the-bayesian-analysis" class="section level3">
 <h3>Sample language for describing the Bayesian analysis</h3>
 <blockquote>
-<p>The multilevel models were fitted using the <code>brms</code> package <a href="https://doi.org/10.18637/jss.v080.i01">(Bürkner, 2017)</a> in R, which performs Markdov Chain Monte Carlo approximation with the No U-Turn Sampler to approximate the posterior distributions of the model parameters. For each model, we used 4 chains, each with 2,000 iterations (1,000 warmup). The default priors from <code>brms</code> were used, which include uniform non-informative priors on the fixed-effect parameters and weakly informative Student-<span class="math inline">\(t\)</span> priors on the standard deviations of the random effects (i.e., <span class="math inline">\(\tau\)</span>s and <span class="math inline">\(\sigma\)</span>). For all models, <span class="math inline">\(\hat R &lt; 1.01\)</span> <a href="https://doi.org/10.1214/20-BA1221">(Vehtari et al., 2020)</a>, indicating convergence of the chains to a stationary posterior distributions. The posterior distributions of the model parameters are summarized using the posterior means and the 95% equal-tailed credible intervals.</p>
+<p>The multilevel models were fitted using the <code>brms</code> package <a href="https://doi.org/10.18637/jss.v080.i01">(Bürkner, 2017)</a> in R, which performs Markdov Chain Monte Carlo approximation with the No U-Turn Sampler to approximate the posterior distributions of the model parameters. For each model, we used 4 chains, each with 2,000 iterations (1,000 warmup). The default priors from <code>brms</code> were used, which include uniform non-informative priors on the fixed-effect parameters and weakly informative half-Student-<span class="math inline">\(t\)</span> priors on the standard deviations of the random effects (i.e., <span class="math inline">\(\tau\)</span>s and <span class="math inline">\(\sigma\)</span>). For all models, <span class="math inline">\(\hat R &lt; 1.01\)</span> <a href="https://doi.org/10.1214/20-BA1221">(Vehtari et al., 2020)</a>, indicating convergence of the chains to a stationary posterior distributions. The posterior distributions of the model parameters are summarized using the posterior means and the 95% equal-tailed credible intervals.</p>
 </blockquote>
 <p>See also the <a href="https://apastyle.apa.org/jars/quant-table-8.pdf">JARS Table by APA</a></p>
 </div>
