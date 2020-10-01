@@ -38,5 +38,9 @@ blogdown::shortcode("youtube", "W0c_cSgOGjc")
 blogdown::shortcode("youtube", "V6Hqdz4Z9oc")
 ```
 
+## Compare `lme4::lmer()` and `brms::brm()`
+
+![](/files/lmer_vs_brm.png)
+
 ```{r child='week6-Bayesian-mlm.RMarkdown'}
 ```
