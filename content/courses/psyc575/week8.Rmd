@@ -1,0 +1,24 @@
+---
+title: Week 8
+linktitle: Week 8
+type: docs
+date: "2020-09-10T21:09:00+01:00"
+draft: false
+lastmod: '`r Sys.Date()`'
+menu:
+  psyc575:
+    name: Week 8
+    weight: 8
+
+# Prev/next pager order (if `docs_section_pager` enabled in `params.toml`)
+weight: 1
+---
+
+## Week Learning Objectives
+
+Work on your research project
+
+## Instructions
+
+1. Submit your prospectus (due Monday 10/5)
+2. Meet with your instructor

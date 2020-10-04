@@ -424,7 +424,7 @@ Student feedback is essential to the instructor and the Department to keep impro
 <td>
 
 - Exercise: Identifying data structure
-- [HW 6](#)
+- [HW 6](../homework-6)
 
 </td>
 </tr>
@@ -434,7 +434,7 @@ Student feedback is essential to the instructor and the Department to keep impro
 <td colspan="2">Individual meeting on final research project (No class meeting</td>
 <td>
 
-- Project Prospectus (10/5, 9 am PDT)
+- Project [Prospectus](../prospectus) (10/5, 9 am PDT)
 
 </td>
 </tr>
@@ -454,7 +454,7 @@ Student feedback is essential to the instructor and the Department to keep impro
 <td>
 
 - Exercise: Autoregressive covariance structure
-- [HW 7](#)
+- [HW 7](../homework-7)
 
 </td>
 </tr>

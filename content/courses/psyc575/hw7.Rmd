@@ -1,0 +1,137 @@
+---
+title: Homework 7
+date: '2020-09-28'
+slug: homework-7
+categories: []
+tags: []
+linktitle: Homework 7
+summary: ~
+lastmod: '`r Sys.Date()`'
+type: docs
+output:
+  blogdown::html_page:
+    df_print: paged
+menu:
+  psyc575:
+    parent: Week 9
+    weight: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(width = 100)
+comma <- function(x) format(x, digits = 2, big.mark = ",")
+```
+
+## Learning Objective
+
+- Independently analyze real data using statistical software for multilevel modeling
+
+## Assignment Description 
+
+In this assignment, you will use the data from the brief report by [Raykos et al. (2018)](http://dx.doi.org/10.1037/ccp0000319), which included 134 patients receiving an enhanced cognitive–behavioral therapy from public eating disorders service. All patients met the DSM-5 criteria for anorexia nervosa (AN). You will fit growth models on the eating disorder symptoms (on a range of 0 to 6) over five weekly intervals throughout treatment. Then, you will choose from a list of covariates to predict differences in the symptom trajectories. 
+
+## Steps
+
+```{r load-pkg, message=FALSE, include=FALSE}
+# To install a package, run the following ONCE (and only once on your computer)
+# install.packages("psych")  
+library(here)  # makes reading data more consistent
+library(tidyverse)  # for data manipulation and plotting
+library(haven)  # for importing SPSS/SAS/Stata data
+library(brms)  # for multilevel analysis
+library(broom.mixed)  # for summarizing results
+library(modelsummary)  # for making tables
+# Add the following so that the LOO will be included in the msummary table
+msummary_mixed <- function(models, coef_map = NULL, add_rows = NULL, ...) {
+  if (is.null(coef_map)) {
+    if (!"list" %in% class(models)) {
+      models <- list(models)
+    }
+    for (model in models) {
+      coef_map <- union(coef_map, tidy(model)$term)
+    }
+  }
+  ranef_index <- grep("^(sd|cor)__", x = coef_map)
+  coef_map <- c(coef_map[-ranef_index], coef_map[ranef_index])
+  names(coef_map) <- coef_map
+  rows <- data.frame(term = c("Fixed Effects", "Random Effects"))
+  rows <- cbind(rows, rbind(rep("", length(models)), 
+                            rep("", length(models))))
+  length_fes <- length(coef_map) - length(ranef_index)
+  attr(rows, 'position') <- c(1, (length_fes + 1) * 2)
+  modelsummary::msummary(models, coef_map = coef_map, add_rows = rows, ...)
+}
+glance_custom.brmsfit <- function(x) {
+  broom.mixed::glance(x, looic = TRUE)
+}
+library(interactions)  # for plotting interactions
+theme_set(theme_bw())  # Theme; just my personal preference
+```
+
+1. Start with one of the templates from your previous homework. 
+
+2. Download the data from OSF: https://osf.io/6jg78/, and save it to your `data_files` folder. The data is in `rda` format, which you can import into R using the `load()` function. 
+```{r import, indent='    '}
+# Import R data
+load(here("data_files", "dat.rda"))
+# You should see an object called `dat` on the R environment, which is the
+# imported data
+```
+
+```{r, include=FALSE, }
+an_dat <- dat %>% 
+  select(id, age, edeq_0:edeq_4) %>% 
+  pivot_longer(edeq_0:edeq_4,
+               names_to = c(".value", "time"), 
+               names_pattern = "(edeq)_([0-4])", 
+               names_transform = list(time = as.integer))
+```
+Here is a spaghetti plot of the data:
+```{r, echo=FALSE, warning=FALSE, indent='    '}
+ggplot(an_dat, aes(x = time, y = edeq)) + 
+  # add lines to connect the data
+  geom_line(aes(group = id), 
+            position = position_dodge(0.4), alpha = 0.5) + 
+  stat_summary(fun = "mean", col = "red", size = 1, 
+               geom = "line")  # add a mean trajectory
+```
+3. The following is the data summary of a list of covariates of interest, as well as the `edeq` variables:  
+```{r}
+# `age`
+# `ed_chronicity`: duration of AN; time since the onset of AN in months
+datasummary_skim(dat %>% select(age, ed_chronicity, edeq_0:edeq_4))
+# `employed_m`: whether the participant was employed
+# `education_m`: 
+# `sosh`: attempted suicide or self-harmed?
+datasummary_skim(dat %>% select(employed_m, education_m, sosh), 
+                 type = "categorical")
+```
+
+Provide a table to compare those without missing data and those with at least one missing data on the `edeq` variables on the covariates. You can use the `datasummary_balance` function:  
+
+```{r, eval=FALSE}
+# First, add in the code for computing the complete and incomplete groups
+
+# Then run the following:
+datasummary_balance(~ complete, 
+                    data = dat %>% 
+                      select(complete, age, ed_chronicity, edeq_0, 
+                             employed_m, education_m, sosh))
+```
+4. Select the `id` variable, the `edeq_0` to `edeq_4` variables, and the covariates listed above, and convert the data set to long format (you may refer to [here](../rcode8/#wide-to-long)). 
+5. Fit a linear growth model with random slope of time. 
+    a. Show the relevant output
+    b. Interpret the fixed effect coefficients, the random intercept variance, and slope variances. 
+6. Choose one of the covariates, and include your chosen variable into the model as well as its interaction with the rate of change (i.e., cross-level interaction). 
+    a. Interpret the main and interaction fixed effects involving your chosen covariate in the model. 
+    b. Include a plot to show the interaction.
+
+## Grading 
+
+Your instructor will use the rubric on Slack to grade this assignment. 
+
+## Additional Notes
+
+You may post your questions to the Slack channel to get help from your peers and instructor. 
+
