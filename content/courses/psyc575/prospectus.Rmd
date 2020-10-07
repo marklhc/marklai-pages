@@ -41,8 +41,9 @@ Note: If you're working as a group, only one member needs to submit the prospect
     c. A preliminary plan for statistical analysis
     d. Additional information that would facilitate discussions (e.g., network graphs of the data structure, flow chart of experimental designs, etc)
 6. Create a repository for your project. One easy way is to do it with the Open Science Framework (OSF; see https://help.osf.io/hc/en-us/articles/360019737594-Create-a-Project), and you can log in with your USC credential (go to https://accounts.osf.io/login, then select "Sign in through institution"). Alternatively, if you're familiar with GitHub (or other similar platforms), you can use that as well. 
-7. At the end of your prospectus (before references and any supplemental materials), include the following statement:
-> The data analytic scripts and supplemental materials for this project will be available at [insert the link to your repository]
+7. At the end of your prospectus (before references and any supplemental materials), include the following statement:  
+    
+    > The data analytic scripts and supplemental materials for this project will be available at [insert the link to your repository]  
 
     * Note: If your repository is private, you'll need to create a view-only link: https://help.osf.io/hc/en-us/articles/360019930333-Create-a-View-only-Link-for-a-Project
 8. Submit your prospectus (in PDF/WORD) to Blackboard. 

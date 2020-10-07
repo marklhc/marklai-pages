@@ -175,9 +175,7 @@ The two groups are pretty similar, except that the group with missing seem to ha
 
 Of course, the two groups could still be different in important characteristics that are not included in the data. It requires careful investigation of why the data were missing
 
-# Linear Growth Models
-
-## Simple Random Intercept Model With Time
+# Unconditional Model
 
 ```{r m00, message=FALSE, cache=TRUE, results='hide'}
 m00 <- brm(read ~ (1 | id), data = curran_long, 
@@ -189,11 +187,14 @@ summary(m00)
 post_samples <- posterior_samples(m00, pars = c("sd", "sigma"))
 # Posterior of ICC: tau_0^2 / (tau_0^2 + sigma^2)
 icc_samples <- post_samples$sd_id__Intercept^2 / 
-  (post_samples$sd_id__Intercept^2 + post_samples$sigma)
+  (post_samples$sd_id__Intercept^2 + post_samples$sigma^2)
 # Posterior mean of ICC
 mean(icc_samples)
 ```
 
+# Linear Growth Models
+
+## Linear Model With Time
 
 ```{r m_gca, results='hide', cache=TRUE}
 # Make 0 the initial time

@@ -4,7 +4,7 @@ linktitle: R Codes (wk 9)
 type: docs
 date: "2020-09-29T21:27:00+01:00"
 draft: false
-lastmod: '2020-10-03'
+lastmod: '2020-10-06'
 rmd: "rcodes/week9-longitudinal-1"
 menu:
   psyc575:
@@ -38,9 +38,10 @@ weight: 2
 <li><a href="#temporal-covariances-and-correlations">Temporal Covariances and Correlations</a></li>
 <li><a href="#attrition-analyses">Attrition Analyses</a></li>
 </ul></li>
+<li><a href="#unconditional-model">Unconditional Model</a></li>
 <li><a href="#linear-growth-models">Linear Growth Models</a>
 <ul>
-<li><a href="#simple-random-intercept-model-with-time">Simple Random Intercept Model With Time</a></li>
+<li><a href="#linear-model-with-time">Linear Model With Time</a></li>
 </ul></li>
 <li><a href="#piecewise-growth-model">Piecewise Growth Model</a>
 <ul>
@@ -168,7 +169,7 @@ trajectory of change.</p>
   geom_point() + 
   geom_line() +  # add lines to connect the data for each person
   facet_wrap( ~ id, ncol = 10)</code></pre>
-<pre><code>&gt;# Warning: Removed 24 rows containing missing values (geom_point).</code></pre>
+<pre><code>&gt;# Warning: Removed 27 rows containing missing values (geom_point).</code></pre>
 <pre><code>&gt;# Warning: Removed 2 row(s) containing missing values (geom_path).</code></pre>
 <p><img src="/courses/psyc575/rcode8_files/figure-html/facet-traj-1.png" width="672" /></p>
 </div>
@@ -372,10 +373,8 @@ homeemo
 <p>Of course, the two groups could still be different in important characteristics that are not included in the data. It requires careful investigation of why the data were missing</p>
 </div>
 </div>
-<div id="linear-growth-models" class="section level1">
-<h1>Linear Growth Models</h1>
-<div id="simple-random-intercept-model-with-time" class="section level2">
-<h2>Simple Random Intercept Model With Time</h2>
+<div id="unconditional-model" class="section level1">
+<h1>Unconditional Model</h1>
 <pre class="r"><code>m00 &lt;- brm(read ~ (1 | id), data = curran_long, 
            seed = 2152)</code></pre>
 <pre><code>&gt;# Warning: Rows containing NAs were excluded from the model.</code></pre>
@@ -383,10 +382,15 @@ homeemo
 <pre class="r"><code>post_samples &lt;- posterior_samples(m00, pars = c(&quot;sd&quot;, &quot;sigma&quot;))
 # Posterior of ICC: tau_0^2 / (tau_0^2 + sigma^2)
 icc_samples &lt;- post_samples$sd_id__Intercept^2 / 
-  (post_samples$sd_id__Intercept^2 + post_samples$sigma)
+  (post_samples$sd_id__Intercept^2 + post_samples$sigma^2)
 # Posterior mean of ICC
 mean(icc_samples)</code></pre>
-<pre><code>&gt;# [1] 0.1592389</code></pre>
+<pre><code>&gt;# [1] 0.1095045</code></pre>
+</div>
+<div id="linear-growth-models" class="section level1">
+<h1>Linear Growth Models</h1>
+<div id="linear-model-with-time" class="section level2">
+<h2>Linear Model With Time</h2>
 <pre class="r"><code># Make 0 the initial time
 curran_long &lt;- curran_long %&gt;% 
   mutate(time = time - 1)
