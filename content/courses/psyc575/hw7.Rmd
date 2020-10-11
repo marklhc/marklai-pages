@@ -29,7 +29,7 @@ comma <- function(x) format(x, digits = 2, big.mark = ",")
 
 ## Assignment Description 
 
-In this assignment, you will use the data from the brief report by [Raykos et al. (2018)](http://dx.doi.org/10.1037/ccp0000319), which included 134 patients receiving an enhanced cognitive–behavioral therapy from public eating disorders service. All patients met the DSM-5 criteria for anorexia nervosa (AN). You will fit growth models on the eating disorder symptoms (on a range of 0 to 6) over five weekly intervals throughout treatment. Then, you will choose from a list of covariates to predict differences in the symptom trajectories. 
+In this assignment, you will use the data from the brief report by [Raykos et al. (2018)](http://dx.doi.org/10.1037/ccp0000319), which included 134 patients receiving an enhanced cognitive–behavioral therapy from public eating disorders service. All patients met the DSM-5 criteria for anorexia nervosa (AN). You will fit growth models on the eating disorder symptoms (`edeq`; on a range of 0 to 6) over five weekly intervals throughout treatment. Then, you will choose from a list of covariates to predict differences in the symptom trajectories. 
 
 ## Steps
 
@@ -126,6 +126,7 @@ datasummary_balance(~ complete,
 6. Choose one of the covariates, and include your chosen variable into the model as well as its interaction with the rate of change (i.e., cross-level interaction). 
     a. Interpret the main and interaction fixed effects involving your chosen covariate in the model. 
     b. Include a plot to show the interaction.
+7. Knit your Rmd file to HTML/PDF/Word, and submit the knitted file to Blackboard. 
 
 ## Grading 
 
