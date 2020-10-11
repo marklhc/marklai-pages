@@ -4,7 +4,7 @@ linktitle: R Codes (wk 9)
 type: docs
 date: "2020-09-29T21:27:00+01:00"
 draft: false
-lastmod: '2020-10-06'
+lastmod: '2020-10-10'
 rmd: "rcodes/week9-longitudinal-1"
 menu:
   psyc575:
@@ -55,6 +55,9 @@ weight: 2
 </div>
 
 {{% rmd-buttons %}}
+{{% youtube "5MjpANrrHi0" %}}
+{{% youtube "2QxEh2L9f1A" %}}
+{{% youtube "JzRrnwLYLYM" %}}
 <div id="load-packages-and-import-data" class="section level2">
 <h2>Load Packages and Import Data</h2>
 <pre class="r"><code># To install a package, run the following ONCE (and only once on your computer)
@@ -87,9 +90,6 @@ msummary_mixed &lt;- function(models, coef_map = NULL, add_rows = NULL, ...) {
   length_fes &lt;- length(coef_map) - length(ranef_index)
   attr(rows, &#39;position&#39;) &lt;- c(1, (length_fes + 1) * 2)
   modelsummary::msummary(models, coef_map = coef_map, add_rows = rows, ...)
-}
-glance_custom.brmsfit &lt;- function(x) {
-  broom.mixed::glance(x, looic = TRUE)
 }
 theme_set(theme_bw())  # Theme; just my personal preference</code></pre>
 <p>Because Bayesian estimation is a bit more intensive, you may want to set up parallel processing if your computers have two cores or more.</p>
@@ -169,7 +169,7 @@ trajectory of change.</p>
   geom_point() + 
   geom_line() +  # add lines to connect the data for each person
   facet_wrap( ~ id, ncol = 10)</code></pre>
-<pre><code>&gt;# Warning: Removed 27 rows containing missing values (geom_point).</code></pre>
+<pre><code>&gt;# Warning: Removed 34 rows containing missing values (geom_point).</code></pre>
 <pre><code>&gt;# Warning: Removed 2 row(s) containing missing values (geom_path).</code></pre>
 <p><img src="/courses/psyc575/rcode8_files/figure-html/facet-traj-1.png" width="672" /></p>
 </div>
@@ -391,6 +391,15 @@ mean(icc_samples)</code></pre>
 <h1>Linear Growth Models</h1>
 <div id="linear-model-with-time" class="section level2">
 <h2>Linear Model With Time</h2>
+<p>Level 1: Within-Person</p>
+<p><span class="math display">\[\text{read}_{ti} = \beta_{0i} + \beta_{1i} \text{time}_{ti} + e_{ti}\]</span></p>
+<p>Level 2: Between-Person</p>
+<p><span class="math display">\[
+  \begin{aligned}
+    \beta_{0i} = \gamma_{00} + u_{0i}  \\
+    \beta_{1i} = \gamma_{10} + u_{1i}
+  \end{aligned}
+\]</span></p>
 <pre class="r"><code># Make 0 the initial time
 curran_long &lt;- curran_long %&gt;% 
   mutate(time = time - 1)
@@ -667,7 +676,8 @@ interact_plot(m_pw_homecog,
                     &quot;GCA&quot; = m_gca, 
                     &quot;Piecewise&quot; = m_pw, 
                     &quot;Piecewise + homecog&quot; = m_pw_homecog), 
-               statistic = &quot;conf.int&quot;)</code></pre>
+               statistic = &quot;conf.int&quot;, 
+               looic = TRUE)</code></pre>
 <pre><code>&gt;# Warning: Found 115 observations with a pareto_k &gt; 0.7 in model &#39;x&#39;. It is
 &gt;# recommended to set &#39;moment_match = TRUE&#39; in order to perform moment matching for
 &gt;# problematic observations.</code></pre>

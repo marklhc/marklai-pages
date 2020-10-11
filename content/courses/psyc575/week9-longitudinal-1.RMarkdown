@@ -44,9 +44,6 @@ msummary_mixed <- function(models, coef_map = NULL, add_rows = NULL, ...) {
   attr(rows, 'position') <- c(1, (length_fes + 1) * 2)
   modelsummary::msummary(models, coef_map = coef_map, add_rows = rows, ...)
 }
-glance_custom.brmsfit <- function(x) {
-  broom.mixed::glance(x, looic = TRUE)
-}
 theme_set(theme_bw())  # Theme; just my personal preference
 ```
 
@@ -195,6 +192,20 @@ mean(icc_samples)
 # Linear Growth Models
 
 ## Linear Model With Time
+
+Level 1: Within-Person
+
+$$\text{read}_{ti} = \beta_{0i} + \beta_{1i} \text{time}_{ti} + e_{ti}$$
+
+Level 2: Between-Person
+
+$$
+  \begin{aligned}
+    \beta_{0i} = \gamma_{00} + u_{0i}  \\
+    \beta_{1i} = \gamma_{10} + u_{1i}
+  \end{aligned}
+$$
+
 
 ```{r m_gca, results='hide', cache=TRUE}
 # Make 0 the initial time
@@ -385,5 +396,6 @@ msummary_mixed(list("Compound Symmetry" = m00,
                     "GCA" = m_gca, 
                     "Piecewise" = m_pw, 
                     "Piecewise + homecog" = m_pw_homecog), 
-               statistic = "conf.int")
+               statistic = "conf.int", 
+               looic = TRUE)
 ```

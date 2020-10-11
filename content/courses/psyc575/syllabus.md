@@ -468,7 +468,7 @@ Student feedback is essential to the instructor and the Department to keep impro
 </td>
 <td>
 
-- Hoffman ch 8
+- [Hoffman (2014) ch 8](https://www-taylorfrancis-com.libproxy1.usc.edu/books/9781315744094/chapters/10.4324/9781315744094-17)
 
 </td>
 <td>

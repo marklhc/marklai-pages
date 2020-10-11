@@ -22,5 +22,17 @@ weight: 2
 
 `r blogdown::shortcode("rmd-buttons")`
 
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "5MjpANrrHi0")
+```
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "2QxEh2L9f1A")
+```
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "JzRrnwLYLYM")
+```
+
 ```{r child='week9-longitudinal-1.RMarkdown'}
 ```
