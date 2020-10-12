@@ -344,7 +344,7 @@ augment(m_pw) %>%
 
 # Time-Invariant Covariates
 
-Time-varying covariate = Another way to say a level-2 variable
+Time-invariant covariate = Another way to say a level-2 variable
 
 You can add `homecog` and its interaction to the model with age as predictor. Just that now there are two interaction terms: one with the first piece and the other with the second piece.
 

@@ -4,7 +4,7 @@ linktitle: R Codes (wk 9)
 type: docs
 date: "2020-09-29T21:27:00+01:00"
 draft: false
-lastmod: '2020-10-10'
+lastmod: '2020-10-12'
 rmd: "rcodes/week9-longitudinal-1"
 menu:
   psyc575:
@@ -169,7 +169,7 @@ trajectory of change.</p>
   geom_point() + 
   geom_line() +  # add lines to connect the data for each person
   facet_wrap( ~ id, ncol = 10)</code></pre>
-<pre><code>&gt;# Warning: Removed 34 rows containing missing values (geom_point).</code></pre>
+<pre><code>&gt;# Warning: Removed 37 rows containing missing values (geom_point).</code></pre>
 <pre><code>&gt;# Warning: Removed 2 row(s) containing missing values (geom_path).</code></pre>
 <p><img src="/courses/psyc575/rcode8_files/figure-html/facet-traj-1.png" width="672" /></p>
 </div>
@@ -585,7 +585,7 @@ augment(m_pw) %&gt;%
 </div>
 <div id="time-invariant-covariates" class="section level1">
 <h1>Time-Invariant Covariates</h1>
-<p>Time-varying covariate = Another way to say a level-2 variable</p>
+<p>Time-invariant covariate = Another way to say a level-2 variable</p>
 <p>You can add <code>homecog</code> and its interaction to the model with age as predictor. Just that now there are two interaction terms: one with the first piece and the other with the second piece.</p>
 <pre class="r"><code># Add `homecog` and its interaction with growth
 # First, center homecog to 9
