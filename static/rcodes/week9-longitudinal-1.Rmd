@@ -177,8 +177,12 @@ Of course, the two groups could still be different in important characteristics 
 ```{r m00, message=FALSE, cache=TRUE, results='hide'}
 m00 <- brm(read ~ (1 | id), data = curran_long, 
            seed = 2152)
+```
+
+```{r summary-m00}
 summary(m00)
 ```
+
 
 ```{r icc-m00}
 post_samples <- posterior_samples(m00, pars = c("sd", "sigma"))

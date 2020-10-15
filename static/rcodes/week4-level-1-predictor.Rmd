@@ -206,7 +206,7 @@ augment(ran_slp, data = hsball) %>%
   geom_smooth(aes(y = .fitted), 
               method = "lm", se = FALSE, size = 0.5) + 
   # Add group means
-  stat_summary(aes(x = meanses, y = mathach, 
+  stat_summary(aes(x = meanses, y = .fitted, 
                    fill = factor(id)), 
                color = "red",  # add border
                fun = mean, 
@@ -242,7 +242,7 @@ p1 <- pbase +
 # Lv-2 effect
 p2 <- pbase + 
   # Add group means
-  stat_summary(aes(x = meanses, y = mathach), 
+  stat_summary(aes(x = meanses, y = .fitted), 
                fun = mean, 
                geom = "point",
                shape = 17,

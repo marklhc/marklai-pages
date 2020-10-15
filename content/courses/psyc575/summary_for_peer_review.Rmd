@@ -1,0 +1,54 @@
+---
+title: Peer Review (Posting)
+date: '2020-10-13'
+slug: prospectus
+categories: []
+tags: []
+linktitle: Peer Review
+summary: ~
+lastmod: '`r Sys.Date()`'
+type: docs
+output:
+  blogdown::html_page:
+    df_print: paged
+menu:
+  psyc575:
+    parent: Week 11
+    weight: 3
+---
+
+## Learning Objective
+
+- Apply multilevel modeling in a research project
+
+## Assignment Description 
+
+As part of the peer-review process, your group will submit a revised prospectus and a knitted document of part of your data analysis for peer review. The purpose of the assignment is to make sure you are on track for completing your final paper/presentation, as the equations, plot, interpretation, etc, will likely be part of your final work. Also, you will have a chance to receive feedback from your peers, as well as to learn from your peers' week in the evaluation phase. Posting will be worth 3 points.
+
+Note: If you're working as a group, only one member needs to post to the Discussion Board. 
+
+## Steps
+
+1. Revise your prospectus to clarify any inconsistency and provide updated information on your data description and data analysis plan. The revised prospectus should include
+    - Sufficient background to understand your research
+    - Research questions clearly defined
+    - A description of the nesting structure of your data
+    - Your plan of data analysis
+2. For this assignment, you will run one multilevel model related to your research questions using R Markdown. You can combine your revised prospectus with your analysis into one R Markdown file, but this is optional. **The R Markdown should be named "preliminary_mlm.Rmd"**, and should include
+    - Model equations for one multilevel analysis
+    - Reproducible code of the analysis
+    - A coefficient table for the model
+    - A plot illustrating the association between a major predictor in the model and the outcome variable. Include random slopes if appropriate.  
+    - A short paragraph summarizing the findings from your model addressing your research questions. 
+[Note: the equations, code, table, and plot would likely be in your final paper/presentation anyway.]
+3. Knit your Rmd file to HTML/PDF/Word, and upload both the source Rmd file and the knitted file to the repository for your project. Make sure you don't include any confidential information of your data. 
+4. Make sure your have a link for your repository in your revised prospectus that the reviewer can access.
+5. Post your revised prospectus to the dedicated forum on the Discussion board on Blackboard. For each group, only one post is needed. 
+
+## Grading 
+
+This assignment involves peer grading, and your peer will use the rubric on Slack to grade your posting. 
+
+## Additional Notes
+
+You may post your questions to the Slack channel to get help from your peers and instructor. 
