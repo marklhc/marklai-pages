@@ -1,7 +1,7 @@
 ---
 title: Peer Review (Posting)
 date: '2020-10-13'
-slug: prospectus
+slug: peer-review
 categories: []
 tags: []
 linktitle: Peer Review
