@@ -1,0 +1,64 @@
+---
+title: Week 10
+linktitle: Lecture videos (wk 10)
+type: docs
+date: "2020-10-03T00:00:00+01:00"
+draft: false
+slides: "psyc575/10_longitudinal_analysis_2"
+menu:
+  psyc575:
+    parent: Week 10
+    weight: 1
+output:
+  blogdown::html_page:
+    toc: true
+    df_print: paged
+# Prev/next pager order (if `docs_section_pager` enabled in `params.toml`)
+weight: 1
+---
+
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+<link href="/rmarkdown-libs/pagedtable/css/pagedtable.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/pagedtable/js/pagedtable.js"></script>
+
+<div id="TOC">
+<ul>
+<li><a href="#longitudinal-data-analysis-ii">Longitudinal Data Analysis II</a></li>
+<li><a href="#model-1">Model 1</a></li>
+<li><a href="#model-2">Model 2</a></li>
+</ul>
+</div>
+
+{{% slide-buttons2 %}}
+<div id="longitudinal-data-analysis-ii" class="section level2">
+<h2>Longitudinal Data Analysis II</h2>
+{{% youtube "xW_84TYK85g" %}}
+{{% youtube "F-NNPPAuPWE" %}}
+<hr />
+<p>Check your learning: When analyzing a conversation between a couple, a researcher is interested in whether a person follow up the partner’s complaints with positive or negative behaviors. Is this an example of studying trends or fluctuations?</p>
+<form name="form_5726" onsubmit="return validate_form_5726()" method="post">
+<input type="radio" name="answer_5726" id="5726_1" value="Trends"><label for="1">Trends</label> <input type="radio" name="answer_5726" id="5726_2" value="Fluctuations"><label for="2">Fluctuations</label> <br><input type="submit" value="check">
+</form>
+<p id="result_5726">
+</p>
+<script> function validate_form_5726() {var x, text; var x = document.forms["form_5726"]["answer_5726"].value;if (x == "Fluctuations"){text = 'Great job :+1:';} else {text = 'Try again. You can do it!';} document.getElementById('result_5726').innerHTML = text; return false;} </script>
+<hr />
+</div>
+<div id="model-1" class="section level2">
+<h2>Model 1</h2>
+{{% youtube "mDdyowlEUic" %}}
+<hr />
+<p>Check your learning: In the model above, what is the interpretation of the contextual effect of <code>mood1</code>?</p>
+<form name="form_75882" onsubmit="return validate_form_75882()" method="post">
+<input type="radio" name="answer_75882" id="75882_1" value="The predicted difference in average symptoms between two individuals with 1 unit difference in average negative mood"><label for="1">The predicted difference in average symptoms between two individuals with 1 unit difference in average negative mood</label><br><input type="radio" name="answer_75882" id="75882_2" value="The predicted difference in symptoms for an individual across two days with 1 unit difference in mood"><label for="2">The predicted difference in symptoms for an individual across two days with 1 unit difference in mood</label><br><input type="radio" name="answer_75882" id="75882_3" value="The predicted difference in symptoms between two individuals with 1 unit difference in average negative mood on a day when both individuals have the same daily mood level"><label for="3">The predicted difference in symptoms between two individuals with 1 unit difference in average negative mood on a day when both individuals have the same daily mood level</label><br><input type="submit" value="check">
+</form>
+<p id="result_75882">
+</p>
+<script> function validate_form_75882() {var x, text; var x = document.forms["form_75882"]["answer_75882"].value;if (x == "The predicted difference in symptoms between two individuals with 1 unit difference in average negative mood on a day when both individuals have the same daily mood level"){text = 'Correct :+1:';} else {text = 'Try again. You can do it!';} document.getElementById('result_75882').innerHTML = text; return false;} </script>
+<hr />
+</div>
+<div id="model-2" class="section level2">
+<h2>Model 2</h2>
+{{% youtube "bbNaNi2hUXQ" %}}
+<p>Note: For the coefficients of <code>stressor</code> and <code>stressor_pm</code> in the above model, the coefficients are ones adjusting for the other predictors in the model (e.g., <code>mood1_pm</code>, <code>mood1_pmc</code>, <code>women</code>, and their interactions).</p>
+</div>

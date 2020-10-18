@@ -1,0 +1,317 @@
+---
+title: "Longitudinal Data Analysis in R (Part 1)"
+output:
+  html_document:
+    df_print: paged
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = ">#")
+```
+
+## Load Packages and Import Data
+
+```{r load-pkg, message=FALSE}
+# To install a package, run the following ONCE (and only once on your computer)
+# install.packages("psych")  
+library(here)  # makes reading data more consistent
+library(tidyverse)  # for data manipulation and plotting
+library(haven)  # for importing SPSS/SAS/Stata data
+library(brms)  # for Bayesian multilevel analysis
+library(lattice)  # for dotplot (working with lme4)
+library(sjPlot)  # for plotting effects
+library(broom.mixed)  # for summarizing results
+library(interactions)  # for plotting interactions
+library(modelsummary)  # for making tables
+# Add the following so that the LOO will be included in the msummary table
+msummary_mixed <- function(models, coef_map = NULL, add_rows = NULL, ...) {
+  if (is.null(coef_map)) {
+    if (!"list" %in% class(models)) {
+      models <- list(models)
+    }
+    for (model in models) {
+      coef_map <- union(coef_map, tidy(model)$term)
+    }
+  }
+  ranef_index <- grep("^(sd|cor)__", x = coef_map)
+  coef_map <- c(coef_map[-ranef_index], coef_map[ranef_index])
+  names(coef_map) <- coef_map
+  rows <- data.frame(term = c("Fixed Effects", "Random Effects"))
+  rows <- cbind(rows, rbind(rep("", length(models)), 
+                            rep("", length(models))))
+  length_fes <- length(coef_map) - length(ranef_index)
+  attr(rows, 'position') <- c(1, (length_fes + 1) * 2)
+  modelsummary::msummary(models, coef_map = coef_map, add_rows = rows, ...)
+}
+# glance_custom.brmsfit <- function(x) {
+#   broom.mixed::glance(x, looic = TRUE)
+# }
+theme_set(theme_bw())  # Theme; just my personal preference
+```
+
+```{r setup-brms}
+# (Optional) Set multiple cores in global option
+options(mc.cores = min(parallel::detectCores() - 1, 2L))
+```
+
+The data is the first wave of the Cognition, Health, and Aging Project. 
+
+```{r import_sav, message=FALSE}
+# Download the data from
+# https://www.pilesofvariance.com/Chapter8/SPSS/SPSS_Chapter8.zip, and put it 
+# into the "data_files" folder
+zip_data <- here("data_files", "SPSS_Chapter8.zip")
+# download.file("https://www.pilesofvariance.com/Chapter8/SPSS/SPSS_Chapter8.zip", 
+#               zip_data)
+stress_data <- read_sav(
+  unz(zip_data, 
+      "SPSS_Chapter8/SPSS_Chapter8.sav"))
+stress_data
+```
+
+The data is already in long format
+
+# Data Exploration
+
+```{r pmc}
+# First, separate the time-varying variables into within-person and
+# between-person levels
+stress_data <- stress_data %>% 
+  # Center mood (originally 1-5) at 1 for interpretation (so it becomes 0-4)
+  # Also women to factor
+  mutate(mood1 = mood - 1, 
+         women = factor(women, levels = c(0, 1), 
+                        labels = c("men", "women"))) %>% 
+  group_by(PersonID) %>% 
+  # The `across()` function can be used to operate the same procedure on 
+  # multiple variables
+  mutate(across(c(symptoms, mood1, stressor), 
+                # The `.` means the variable to be operated on
+                list("pm" = ~ mean(., na.rm = TRUE), 
+                     "pmc" = ~ . - mean(., na.rm = TRUE)))) %>% 
+  ungroup()
+stress_data
+```
+
+```{r skim}
+# Use `datasummary_skim` for a quick summary
+datasummary_skim(stress_data %>% 
+                   select(-PersonID, -session, -studyday, -dayofweek, 
+                          -weekend, -mood, 
+                          # PMC for binary variable is not very meaningful
+                          -stressor_pmc))
+```
+
+
+```{r pairs-data}
+stress_data %>% 
+    select(symptoms_pm, symptoms_pmc, 
+           mood1_pm, mood1_pmc, stressor_pm, stressor) %>% 
+    psych::pairs.panels(jiggle = TRUE, factor = 0.5, ellipses = FALSE, 
+                        cex.cor = 1, cex = 0.5)
+```
+
+## Spaghetti Plot
+
+```{r p1p2}
+# Plotting mood
+p1 <- ggplot(stress_data, aes(x = studyday, y = mood1)) + 
+  # add lines to connect the data for each person
+  geom_line(aes(color = factor(PersonID), group = PersonID)) +
+  # add a mean trajectory
+  stat_summary(fun = "mean", col = "red", size = 1, geom = "line") + 
+  # suppress legend
+  guides(color = FALSE)
+# Plotting symptoms
+p2 <- ggplot(stress_data, aes(x = studyday, y = symptoms)) + 
+  # add lines to connect the data for each person
+  geom_line(aes(color = factor(PersonID), group = PersonID)) +
+  # add a mean trajectory
+  stat_summary(fun = "mean", col = "red", size = 1, geom = "line") + 
+  # suppress legend
+  guides(color = FALSE)
+gridExtra::grid.arrange(p1, p2, ncol = 2)
+```
+
+We can see that there is not a clear trend across time, but instead 
+fluctuations. 
+
+We can also plot the trajectories for a random sample of individuals:
+
+```{r facet-traj}
+stress_data %>% 
+  # randomly sample 40 individuals
+  filter(PersonID %in% sample(unique(PersonID), 40)) %>% 
+  ggplot(aes(x = studyday, y = symptoms)) + 
+  geom_point(size = 0.5) + 
+  geom_line() +  # add lines to connect the data for each person
+  facet_wrap( ~ PersonID, ncol = 10)
+```
+
+# Unconditional Models
+
+The outcome is `symptoms`, and the time-varying predictors are `mood1` and
+`stressor`. Let's look at the ICC for each of them. 
+
+```{r m00, message=FALSE, cache=TRUE, results='hide'}
+m0_symp <- brm(symptoms ~ (1 | PersonID), data = stress_data, 
+               seed = 2152)
+# If changing outcome, use the `update` function to avoid recompiling
+m0_mood <- update(m0_symp, mood1 ~ ., newdata = stress_data, 
+                  seed = 2152)
+# Use family = bernoulli for a binary outcome; to be discussed in a later week
+m0_stre <- brm(stressor ~ (1 | PersonID), data = stress_data, 
+               family = bernoulli, 
+               seed = 2152)
+```
+
+```{r icc}
+# Symptoms
+post_samples <- posterior_samples(m0_symp, pars = c("sd", "sigma"))
+# Posterior of ICC: tau_0^2 / (tau_0^2 + sigma^2)
+icc_samples_symp <- post_samples$sd_PersonID__Intercept^2 / 
+  (post_samples$sd_PersonID__Intercept^2 + post_samples$sigma^2)
+# Mood
+post_samples <- posterior_samples(m0_mood, pars = c("sd", "sigma"))
+# Posterior of ICC: tau_0^2 / (tau_0^2 + sigma^2)
+icc_samples_mood <- post_samples$sd_PersonID__Intercept^2 / 
+  (post_samples$sd_PersonID__Intercept^2 + post_samples$sigma^2)
+# Stressor (sigma is fixed to pi^2 / 3)
+post_samples <- posterior_samples(m0_stre, pars = c("sd"))
+# Posterior of ICC: tau_0^2 / (tau_0^2 + sigma^2)
+icc_samples_stre <- post_samples$sd_PersonID__Intercept^2 / 
+  (post_samples$sd_PersonID__Intercept^2 + pi^2 / 3)
+# Print ICCs
+c(symptoms = mean(icc_samples_symp), 
+  mood1 = mean(icc_samples_mood), 
+  stressor = mean(icc_samples_stre))
+```
+
+# Time-Varying Covariate
+
+Aka level-1 predictors; also put in the cross-level interaction with `women`
+
+Level 1:
+$$\text{symptoms}_{ti} = \beta_{0i} + \beta_{1i} \text{mood1_pmc}_{ti} + e_{ti}$$
+Level 2:
+$$
+  \begin{aligned}
+    \beta_{0i} & = \gamma_{00} + \gamma_{01} \text{mood1_pm}_{i} + 
+                   \gamma_{02} \text{women}_i + 
+                   \gamma_{03} \text{mood1_pm}_{i} \times \text{women}_i 
+                   + u_{0i}  \\
+    \beta_{1i} & = \gamma_{10} + \gamma_{11} \text{women}_i + u_{1i}
+  \end{aligned}
+$$
+
+- $\gamma_{03}$ = between-person interaction
+- $\gamma_{11}$ = cross-level interaction
+
+
+```{r m1, message=TRUE, results='hide', cache=TRUE}
+m1 <- brm(symptoms ~ (mood1_pm + mood1_pmc) * women + (mood1_pmc | PersonID), 
+          data = stress_data, seed = 2152)
+```
+
+## Plotting
+
+```{r ce-m1}
+plot(
+  conditional_effects(m1), 
+  ask = FALSE
+)
+```
+
+### Between/Within effects
+
+```{r plot-bw}
+augment(m1) %>% 
+  mutate(mood1 = mood1_pm + mood1_pmc) %>% 
+  ggplot(aes(x = mood1, y = symptoms, color = factor(PersonID))) +
+  # Add points
+  geom_point(size = 0.5, alpha = 0.2) + 
+  # Add within-cluster lines
+  geom_smooth(aes(y = .fitted), 
+              method = "lm", se = FALSE, size = 0.5) + 
+  # Add group means
+  stat_summary(aes(x = mood1_pm, y = .fitted, 
+                   fill = factor(PersonID)), 
+               color = "red",  # add border
+               fun = mean, 
+               geom = "point",
+               shape = 24,
+               # use triangles
+               size = 2.5) + 
+  # Add between coefficient
+  geom_smooth(aes(x = mood1_pm, y = .fitted), 
+              method = "lm", se = FALSE, 
+              color = "black") + 
+  facet_grid( ~ women) + 
+  labs(y = "Daily Symptoms") + 
+  # Suppress legend
+  guides(color = FALSE, fill = FALSE)
+```
+
+
+## Add `stressor`
+
+```{r m2, message=TRUE, results='hide', cache=TRUE}
+# Convert stressor to a factor
+stress_data$stressor <- factor(stress_data$stressor, 
+                               levels = c(0, 1), 
+                               labels = c("stressor-free day", "stressor day"))
+m2 <- brm(symptoms ~ (mood1_pm + mood1_pmc) * women + stressor_pm + stressor + 
+            (mood1_pmc + stressor | PersonID), 
+          data = stress_data, seed = 2152)
+```
+
+### Plotting
+
+```{r ce-m2}
+plot(
+  conditional_effects(m2, effects = c("stressor_pm", "stressor")), 
+  points = TRUE, 
+  point_args = list(width = 0.02, height = 0.02, alpha = 0.3)
+)
+```
+
+# Generalized Estimating Equations (GEE)
+
+GEE is an alternative estimation method for clustered data, as discussed in 12.2 of Snijders and Bosker. It is a popular method especially for longitudinal data in some areas of research, as it offers some robustness against misspecification in the random effect structure (e.g., autoregressive errors, missing random slopes, etc). On the other hand, it only estimates fixed effects (or sometimes called marginal effects), so we cannot known whether some slopes are different across persons, but only the average slopes. Also, it tends to require a relatively large sample size, and is usually less efficient than MLM for the same model (i.e., GEE gives larger standard errors, wider confidence intervals, and thus has less statistical power), which can be seen in the example below. 
+
+Below is a quick demonstration of GEE using the `geepack` package in R. 
+
+```{r stress_data_lw}
+stress_data_lw <- stress_data %>% 
+  drop_na(mood1_pm, mood1_pmc, women, stressor_pm, stressor) %>% 
+  # Also need to convert to a data frame (instead of tibble)
+  as.data.frame()
+```
+
+
+```{r m2-gee}
+library(geepack)
+m2_gee <- geeglm(symptoms ~ (mood1_pm + mood1_pmc) * women + 
+                   stressor_pm + stressor, 
+                 data = stress_data_lw,  
+                 id = PersonID, 
+                 corstr = "exchangeable", 
+                 std.err = "san.se")
+summary(m2_gee)
+# Small sample correction (Mancl & DeRouen, 2001) for the robust standard errors
+library(geesmv)
+m2_vcov_md <- GEE.var.md(symptoms ~ (mood1_pm + mood1_pmc) * women + 
+                           stressor_pm + stressor, 
+                         data = stress_data_lw,  
+                         id = "PersonID",  # need to be string
+                         corstr = "exchangeable")
+library(lmtest)  # For testing using corrected standard error
+coeftest(m2_gee, diag(m2_vcov_md$cov.beta))
+```
+
+```{r msummary-bayes-gee}
+# Compare the fixed effects
+msummary(list("Bayesian MLM" = m2, GEE = m2_gee), 
+         effects = "fixed")
+```
