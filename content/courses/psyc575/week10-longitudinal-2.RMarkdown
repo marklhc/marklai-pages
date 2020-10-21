@@ -214,6 +214,11 @@ m1 <- brm(symptoms ~ (mood1_pm + mood1_pmc) * women + (mood1_pmc | PersonID),
           data = stress_data, seed = 2152)
 ```
 
+```{r summary-m1}
+summary(m1)
+```
+
+
 ## Plotting
 
 ```{r ce-m1}

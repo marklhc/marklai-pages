@@ -4,7 +4,7 @@ linktitle: R Codes (wk 10)
 type: docs
 date: "2020-09-29T21:27:00+01:00"
 draft: false
-lastmod: '2020-10-18'
+lastmod: '2020-10-21'
 rmd: "rcodes/week10-longitudinal-2"
 menu:
   psyc575:
@@ -558,6 +558,48 @@ Level 2:
 <pre><code>&gt;# Compiling Stan program...</code></pre>
 <pre><code>&gt;# Trying to compile a simple C file</code></pre>
 <pre><code>&gt;# Start sampling</code></pre>
+<pre class="r"><code>summary(m1)</code></pre>
+<pre><code>&gt;#  Family: gaussian 
+&gt;#   Links: mu = identity; sigma = identity 
+&gt;# Formula: symptoms ~ (mood1_pm + mood1_pmc) * women + (mood1_pmc | PersonID) 
+&gt;#    Data: stress_data (Number of observations: 514) 
+&gt;# Samples: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+&gt;#          total post-warmup samples = 4000
+&gt;# 
+&gt;# Group-Level Effects: 
+&gt;# ~PersonID (Number of levels: 105) 
+&gt;#                          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS
+&gt;# sd(Intercept)                0.94      0.08     0.79     1.09 1.01      797
+&gt;# sd(mood1_pmc)                0.30      0.17     0.02     0.68 1.00      959
+&gt;# cor(Intercept,mood1_pmc)     0.43      0.39    -0.50     0.97 1.00     2094
+&gt;#                          Tail_ESS
+&gt;# sd(Intercept)                1880
+&gt;# sd(mood1_pmc)                 889
+&gt;# cor(Intercept,mood1_pmc)     1553
+&gt;# 
+&gt;# Population-Level Effects: 
+&gt;#                      Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS
+&gt;# Intercept                0.85      0.25     0.35     1.34 1.00      566
+&gt;# mood1_pm                 3.89      0.83     2.22     5.52 1.00      639
+&gt;# mood1_pmc                0.02      0.29    -0.56     0.58 1.00     1713
+&gt;# womenwomen              -0.03      0.29    -0.58     0.54 1.00      566
+&gt;# mood1_pm:womenwomen     -2.15      0.91    -3.87    -0.31 1.00      655
+&gt;# mood1_pmc:womenwomen     0.15      0.33    -0.52     0.80 1.00     1681
+&gt;#                      Tail_ESS
+&gt;# Intercept                1119
+&gt;# mood1_pm                 1101
+&gt;# mood1_pmc                2261
+&gt;# womenwomen               1183
+&gt;# mood1_pm:womenwomen      1189
+&gt;# mood1_pmc:womenwomen     2128
+&gt;# 
+&gt;# Family Specific Parameters: 
+&gt;#       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+&gt;# sigma     0.78      0.03     0.73     0.84 1.00     3028     3140
+&gt;# 
+&gt;# Samples were drawn using sampling(NUTS). For each parameter, Bulk_ESS
+&gt;# and Tail_ESS are effective sample size measures, and Rhat is the potential
+&gt;# scale reduction factor on split chains (at convergence, Rhat = 1).</code></pre>
 <div id="plotting" class="section level2">
 <h2>Plotting</h2>
 <pre class="r"><code>plot(
