@@ -5,7 +5,7 @@ type: docs
 date: "2020-09-29T21:27:00+01:00"
 draft: false
 lastmod: '`r Sys.Date()`'
-rmd: "rcodes/week10-longitudinal-2"
+rmd: "rcodes/week10-longitudinal-bonus"
 menu:
   psyc575:
     parent: Week 10
