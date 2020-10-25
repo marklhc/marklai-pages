@@ -319,6 +319,10 @@ m2 <- brm(symptoms ~ (mood_pm + mood_pmc) * (stressor_pm + stressor) *
           data = stress_std, seed = 2152)
 ```
 
+```{r plot-m2}
+mcmc_plot(m2, pars = "b")
+```
+
 ### Regularizing priors
 
 #### Weakly normal priors
@@ -334,6 +338,10 @@ m2_ridge <- brm(symptoms ~ (mood_pm + mood_pmc) * (stressor_pm + stressor) *
                 prior = prior(normal(0, 1), class = b))
 ```
 
+```{r plot-m2_ridge}
+mcmc_plot(m2_ridge, pars = "b")
+```
+
 ### Regularized Horseshoe
 
 This is a special type of prior that adaptively reguarlizes coefficients that are weakly supported by the data. To learn more, see the paper by [Piironen & Vehtari (2017)](https://projecteuclid.org/euclid.ejs/1513306866). The following requires a relatively long running time as it requires the MCMC algorithm to run more slowly (with `adapt_delta = .995`). 
@@ -345,6 +353,11 @@ m2_hs <- brm(symptoms ~ (mood_pm + mood_pmc) * (stressor_pm + stressor) *
              data = stress_std, seed = 2152, 
              prior = prior(horseshoe(), class = b))
 ```
+
+```{r plot-m2_hs}
+mcmc_plot(m2_hs, pars = "b")
+```
+
 
 You can see the regularizing priors lead to better LOO:
 

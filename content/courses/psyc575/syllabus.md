@@ -489,7 +489,7 @@ Student feedback is essential to the instructor and the Department to keep impro
 </td>
 <td>
 
-- [Yarkoni & Westfall (2017)](https://doi.org/10.1177/1745691617693393)
+- [Yarkoni & Westfall (2017)](http://jakewestfall.org/publications/Yarkoni_Westfall_choosing_prediction.pdf)
 
 </td>
 <td>
