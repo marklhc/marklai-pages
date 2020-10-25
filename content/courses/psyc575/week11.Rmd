@@ -1,0 +1,33 @@
+---
+title: Week 11
+linktitle: Week 11
+type: docs
+date: "2020-10-15T16:09:00+01:00"
+draft: false
+lastmod: '`r Sys.Date()`'
+menu:
+  psyc575:
+    name: Week 11
+    weight: 11
+
+# Prev/next pager order (if `docs_section_pager` enabled in `params.toml`)
+weight: 1
+---
+
+## Week Learning Objectives
+
+By the end of this module, you will be able to 
+
+- Describe the role of **prediction** in data analysis
+- Describe the problem of **overfitting** when fitting complex models
+- Use **information criteria** to compare models
+- Use **regularizing priors** to increase the predictive accuracy of complex models
+
+## Instructions
+
+1. Review the resources (lecture videos and slides)
+2. Complete the assigned readings
+    * [Yarkoni & Westfall (2017)](https://doi.org/10.1177/1745691617693393)
+3. Attend the synchronous Zoom session to do an exercise on identifying data structure
+    * If unable to attend, complete an alternative assignment
+4. Post to the Discussion Board on Blackboard for [peer review](../peer-review)

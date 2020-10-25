@@ -1,0 +1,165 @@
+---
+title: Week 11
+linktitle: Lecture videos (wk 11)
+type: docs
+date: "2020-10-03T00:00:00+01:00"
+draft: false
+slides: "psyc575/11_prediction"
+menu:
+  psyc575:
+    parent: Week 11
+    weight: 1
+output:
+  blogdown::html_page:
+    toc: true
+    df_print: paged
+# Prev/next pager order (if `docs_section_pager` enabled in `params.toml`)
+weight: 1
+---
+
+`r blogdown::shortcode("slide-buttons2")`
+
+```{r, include=FALSE}
+library(checkdown)
+right_ans <- c("Correct :+1:", 
+               "Great job :+1:")
+wrong_ans <- "Try again. You can do it!"
+```
+
+## Predictive Models in MLM
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "yq6fGgU7UiI")
+```
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "6YyRwbEhzqE")
+```
+
+***
+
+Think more: Think about a prominent theory in your area of research. What predictions does it make? Does it give precise predictions? 
+
+***
+
+## Example
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "jCP1OHs504M")
+```
+
+***
+
+Check your learning: In a multilevel model with students nested within schools and with student math achievement as the outcome variable, what is a cluster-specific prediction?
+
+```{r echo=FALSE, results="asis"}
+check_question("The predicted achievement for a student from one of the schools included in the sample.", 
+               options = c("The predicted achievement for a student from one of the schools included in the sample.", 
+                           "The predicted mean achievement of a new school.", 
+                           "The predicted achievement for a student from a new school that are not part of the sample."), 
+               type = "radio", 
+               right = sample(right_ans, 1, prob = c(.7, .3)), 
+               wrong = wrong_ans)
+```
+
+***
+
+### Prediction Error
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "CCRqTspEXlc")
+```
+
+## Overfitting
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "QXjW5vZV--E")
+```
+
+***
+
+Check your learning: Which of the following growth curve model would show the largest degree of overfitting, given a sample of 15 participants across 5 time points?
+
+```{r echo=FALSE, results="asis"}
+check_question("A piecewise growth model with four phases.", 
+               options = c("A linear growth model.", 
+                           "A piecewise growth model with two phases.", 
+                           "A piecewise growth model with four phases."), 
+               type = "radio", 
+               right = sample(right_ans, 1, prob = c(.7, .3)), 
+               wrong = wrong_ans)
+```
+
+***
+
+## Out-Of-Sample Prediction Errors
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "vVQpY1vh208")
+```
+
+***
+
+Check your learning: Why shouldn't we just choose a model with the lowest in-sample prediction error?
+
+```{r echo=FALSE, results="asis"}
+check_question("A model that fits one data set too well usually does not fit well with other data sets.", 
+               options = c("Prediction error should not be a criterion for choosing among models.", 
+                           "One should use a likelihood ratio test instead.", 
+                           "A model that fits one data set too well usually does not fit well with other data sets."), 
+               type = "radio", 
+               right = sample(right_ans, 1, prob = c(.7, .3)), 
+               wrong = wrong_ans)
+```
+
+***
+
+### Cross Validation
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "8NoYZUzGfGQ")
+```
+
+***
+
+Check your learning: Why does cross-validation give a better estimate of the out-of-sample prediction error?
+
+```{r echo=FALSE, results="asis"}
+check_question("It uses different subsets of data for estimation and for prediction.", 
+               options = c("It uses different subsets of data for estimation and for prediction.", 
+                           "It is developed in the machine learning literature.", 
+                           "It uses less data for estimation, so the results are more stable."), 
+               type = "radio", 
+               right = sample(right_ans, 1, prob = c(.7, .3)), 
+               wrong = wrong_ans)
+```
+
+***
+
+### Information Criterion
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "rxRGk1m1Pvo")
+```
+
+## Regularization
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "WQM6uNbCVCk")
+```
+
+***
+
+Check your learning: Under which of the following situations is the model most prone to overfitting (and thus would benefit most from regularization)?
+
+```{r echo=FALSE, results="asis"}
+check_question("N = 100, p_loo = 100", 
+               options = c("N = 100, p_loo = 100", 
+                           "N = 1000, p_loo = 10", 
+                           "N = 10000, p_loo = 100"), 
+               type = "radio", 
+               right = sample(right_ans, 1, prob = c(.7, .3)), 
+               wrong = wrong_ans)
+```
+
+***

@@ -1,0 +1,667 @@
+---
+title: Using R for Week 11
+linktitle: R Codes (wk 11)
+type: docs
+date: "2020-10-17T14:24:00+01:00"
+draft: false
+lastmod: '2020-10-25'
+rmd: "rcodes/week11-prediction_and_regularization"
+menu:
+  psyc575:
+    parent: Week 11
+    weight: 2
+output:
+  blogdown::html_page:
+    toc: true
+    df_print: paged
+header-includes:
+  - \newcommand{\bv}[1]{\boldsymbol{\mathbf{#1}}}
+# Prev/next pager order (if `docs_section_pager` enabled in `params.toml`)
+weight: 2
+---
+
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+<link href="/rmarkdown-libs/pagedtable/css/pagedtable.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/pagedtable/js/pagedtable.js"></script>
+<link href="/rmarkdown-libs/anchor-sections/anchor-sections.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/anchor-sections/anchor-sections.js"></script>
+
+<div id="TOC">
+<ul>
+<li><a href="#load-packages-and-import-data">Load Packages and Import Data</a></li>
+<li><a href="#data-exploration">Data Exploration</a>
+<ul>
+<li><a href="#predictions">Predictions</a>
+<ul>
+<li><a href="#prediction-error">Prediction Error</a></li>
+</ul></li>
+<li><a href="#average-in-sample-prediction-error">Average In-Sample Prediction Error</a></li>
+<li><a href="#out-of-sample-prediction-error">Out-Of-Sample Prediction Error</a>
+<ul>
+<li><a href="#cross-validation">Cross-Validation</a></li>
+<li><a href="#leave-one-out-loo-cross-validation">Leave-one-out (LOO) cross validation</a></li>
+<li><a href="#information-criteria">Information Criteria</a></li>
+</ul></li>
+<li><a href="#regularization">Regularization</a>
+<ul>
+<li><a href="#regularizing-priors">Regularizing priors</a></li>
+<li><a href="#regularized-horseshoe">Regularized Horseshoe</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</div>
+
+{{% rmd-buttons %}}
+<div id="load-packages-and-import-data" class="section level2">
+<h2>Load Packages and Import Data</h2>
+<pre class="r"><code># To install a package, run the following ONCE (and only once on your computer)
+# install.packages(&quot;psych&quot;)  
+library(here)  # makes reading data more consistent
+library(tidyverse)  # for data manipulation and plotting
+library(haven)  # for importing SPSS/SAS/Stata data
+library(brms)  # for Bayesian multilevel analysis
+library(broom.mixed)  # for summarizing results
+theme_set(theme_bw())  # Theme; just my personal preference</code></pre>
+<pre class="r"><code># (Optional) Set multiple cores in global option
+options(mc.cores = min(parallel::detectCores() - 1, 2L))</code></pre>
+<p>The data is the first wave of the Cognition, Health, and Aging Project.</p>
+<pre class="r"><code># Download the data from
+# https://www.pilesofvariance.com/Chapter8/SPSS/SPSS_Chapter8.zip, and put it 
+# into the &quot;data_files&quot; folder
+zip_data &lt;- here(&quot;data_files&quot;, &quot;SPSS_Chapter8.zip&quot;)
+# download.file(&quot;https://www.pilesofvariance.com/Chapter8/SPSS/SPSS_Chapter8.zip&quot;, 
+#               zip_data)
+stress_data &lt;- read_sav(
+  unz(zip_data, 
+      &quot;SPSS_Chapter8/SPSS_Chapter8.sav&quot;))
+stress_data &lt;- stress_data %&gt;% 
+  # Center mood (originally 1-5) at 1 for interpretation (so it becomes 0-4)
+  # Also women to factor
+  mutate(mood1 = mood - 1, 
+         women = factor(women, levels = c(0, 1), 
+                        labels = c(&quot;men&quot;, &quot;women&quot;)))</code></pre>
+<p>The data is already in long format. Let’s first do a subsample of 10 participants:</p>
+<pre class="r"><code>set.seed(1719)
+random_persons &lt;- sample(unique(stress_data$PersonID), 30)
+stress_sub &lt;- stress_data %&gt;% 
+  filter(PersonID %in% random_persons)</code></pre>
+</div>
+<div id="data-exploration" class="section level1">
+<h1>Data Exploration</h1>
+<pre class="r"><code># First, separate the time-varying variables into within-person and
+# between-person levels
+stress_sub &lt;- stress_sub %&gt;% 
+  group_by(PersonID) %&gt;% 
+  # The `across()` function can be used to operate the same procedure on 
+  # multiple variables
+  mutate(across(c(symptoms, mood1, stressor), 
+                # The `.` means the variable to be operated on
+                list(&quot;pm&quot; = ~ mean(., na.rm = TRUE), 
+                     &quot;pmc&quot; = ~ . - mean(., na.rm = TRUE)))) %&gt;% 
+  ungroup()</code></pre>
+<p>Let’s use the model from last week</p>
+<p>Level 1:
+<span class="math display">\[\text{symptoms}_{ti} = \beta_{0i} + \beta_{1i} \text{mood1_pmc}_{ti} + e_{ti}\]</span>
+Level 2:
+<span class="math display">\[
+  \begin{aligned}
+    \beta_{0i} &amp; = \gamma_{00} + \gamma_{01} \text{mood1_pm}_{i} + 
+                   \gamma_{02} \text{women}_i + 
+                   \gamma_{03} \text{mood1_pm}_{i} \times \text{women}_i 
+                   + u_{0i}  \\
+    \beta_{1i} &amp; = \gamma_{10} + \gamma_{11} \text{women}_i + u_{1i}
+  \end{aligned}
+\]</span></p>
+<ul>
+<li><span class="math inline">\(\gamma_{03}\)</span> = between-person interaction</li>
+<li><span class="math inline">\(\gamma_{11}\)</span> = cross-level interaction</li>
+</ul>
+<pre class="r"><code>m1 &lt;- brm(symptoms ~ (mood1_pm + mood1_pmc) * women + (mood1_pmc | PersonID), 
+          data = stress_sub, seed = 2152)</code></pre>
+<pre><code>&gt;# Warning: Rows containing NAs were excluded from the model.</code></pre>
+<pre><code>&gt;# Compiling Stan program...</code></pre>
+<pre><code>&gt;# Trying to compile a simple C file</code></pre>
+<pre><code>&gt;# Start sampling</code></pre>
+<div id="predictions" class="section level2">
+<h2>Predictions</h2>
+<pre class="r"><code># brms does probabilistic prediction, so need to set the seed for reproducible
+# results
+set.seed(1234)
+# Cluster-specific
+(obs1 &lt;- stress_sub[1, c(&quot;PersonID&quot;, &quot;mood1_pm&quot;, &quot;mood1_pmc&quot;, &quot;women&quot;, 
+                          &quot;symptoms&quot;)])</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["PersonID"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["mood1_pm"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["mood1_pmc"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["women"],"name":[4],"type":["fct"],"align":["left"]},{"label":["symptoms"],"name":[5],"type":["dbl"],"align":["right"]}],"data":[{"1":"103","2":"0","3":"0","4":"women","5":"0"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre class="r"><code>(pred1 &lt;- predict(m1, newdata = obs1))</code></pre>
+<pre><code>&gt;#       Estimate Est.Error      Q2.5    Q97.5
+&gt;# [1,] 0.3251539 0.8229498 -1.249965 1.966336</code></pre>
+<pre class="r"><code># Unconditional/marginal
+predict(m1, newdata = obs1, re_formula = NA)</code></pre>
+<pre><code>&gt;#       Estimate Est.Error       Q2.5    Q97.5
+&gt;# [1,] 0.9287691 0.7844173 -0.5993058 2.448817</code></pre>
+<div id="prediction-error" class="section level3">
+<h3>Prediction Error</h3>
+<pre class="r"><code>set.seed(1234)
+pred1_all &lt;- posterior_predict(m1, newdata = obs1, re_formula = NA)
+ggplot(tibble(ytilde = pred1_all), aes(x = ytilde)) + 
+  geom_histogram(alpha = 0.5) + 
+  geom_vline(xintercept = 0, col = &quot;red&quot;, linetype = &quot;dashed&quot;) + 
+  geom_vline(xintercept = mean(pred1_all), col = &quot;blue&quot;)</code></pre>
+<pre><code>&gt;# `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<p><img src="/courses/psyc575/rcode10_files/figure-html/pe1-m1-1.png" width="672" /></p>
+</div>
+</div>
+<div id="average-in-sample-prediction-error" class="section level2">
+<h2>Average In-Sample Prediction Error</h2>
+<p>Let’s say we ignore the uncertainty in the prediction (which is commonly done in machine learning), and only use the posterior mean as the predicted value, for everyone in the data</p>
+<pre class="r"><code>set.seed(1652)
+(pred_all &lt;- predict(m1, re_formula = NA))</code></pre>
+<pre><code>&gt;#         Estimate Est.Error        Q2.5    Q97.5
+&gt;#   [1,] 0.9341657 0.8141364 -0.68476786 2.490417
+&gt;#   [2,] 0.9457410 0.8109594 -0.62923593 2.569099
+&gt;#   [3,] 0.9029146 0.7967278 -0.64324119 2.480657
+&gt;#   [4,] 0.9096007 0.8092286 -0.70284291 2.485363
+&gt;#   [5,] 0.9151821 0.8185153 -0.66513443 2.489960
+&gt;#   [6,] 0.9836099 0.8064968 -0.59222757 2.585329
+&gt;#   [7,] 1.1967083 0.9419384 -0.63523135 2.990654
+&gt;#   [8,] 0.9511432 0.8236852 -0.61342823 2.595282
+&gt;#   [9,] 0.9875060 0.8270444 -0.61411576 2.635865
+&gt;#  [10,] 0.9763955 0.8227285 -0.61729030 2.590755
+&gt;#  [11,] 0.9351931 0.7957612 -0.62917760 2.412220
+&gt;#  [12,] 0.9286191 0.7972048 -0.67648924 2.487671
+&gt;#  [13,] 0.9385223 0.8065806 -0.62026373 2.571715
+&gt;#  [14,] 0.9310567 0.7965566 -0.62418862 2.518680
+&gt;#  [15,] 0.9300200 0.8051270 -0.66626773 2.465100
+&gt;#  [16,] 0.9099838 0.7956005 -0.66551836 2.474989
+&gt;#  [17,] 0.9744510 0.7889447 -0.57175134 2.498486
+&gt;#  [18,] 0.9521259 0.7945718 -0.66675062 2.468288
+&gt;#  [19,] 0.9401189 0.7771964 -0.53658654 2.529827
+&gt;#  [20,] 0.9435318 0.7962989 -0.65882282 2.502904
+&gt;#  [21,] 1.0188224 0.8494726 -0.65384279 2.671007
+&gt;#  [22,] 1.0269893 0.8326879 -0.57915155 2.650609
+&gt;#  [23,] 1.0374589 0.8350716 -0.60360082 2.699171
+&gt;#  [24,] 1.1298795 0.8948860 -0.61020751 2.926107
+&gt;#  [25,] 1.0473911 0.8481904 -0.62297889 2.713383
+&gt;#  [26,] 0.9582406 0.7768993 -0.53506123 2.448998
+&gt;#  [27,] 0.9906558 0.7812157 -0.54346701 2.562535
+&gt;#  [28,] 0.9760404 0.7734490 -0.52300846 2.536165
+&gt;#  [29,] 0.9552500 0.7692650 -0.53255540 2.480121
+&gt;#  [30,] 1.0033190 0.7824679 -0.52604878 2.582080
+&gt;#  [31,] 0.9935459 0.7902691 -0.55947075 2.545878
+&gt;#  [32,] 0.9362252 0.7842538 -0.62411452 2.467007
+&gt;#  [33,] 0.9230092 0.7909484 -0.64075440 2.436846
+&gt;#  [34,] 0.9646353 0.7920892 -0.59810400 2.510387
+&gt;#  [35,] 0.9320156 0.7912572 -0.64763654 2.512732
+&gt;#  [36,] 0.9168072 0.8067307 -0.65792885 2.508052
+&gt;#  [37,] 0.9260799 0.7869009 -0.55955024 2.490045
+&gt;#  [38,] 0.9253680 0.7883515 -0.60196169 2.498586
+&gt;#  [39,] 0.9369207 0.8173682 -0.68785188 2.561195
+&gt;#  [40,] 0.9187635 0.8046482 -0.67244087 2.441617
+&gt;#  [41,] 0.9541313 0.7846646 -0.60831817 2.478985
+&gt;#  [42,] 0.9760127 0.7799306 -0.53774634 2.504823
+&gt;#  [43,] 0.9427138 0.7815244 -0.59480270 2.447040
+&gt;#  [44,] 0.9590125 0.7838339 -0.54386238 2.455193
+&gt;#  [45,] 0.9925461 0.7958129 -0.57625565 2.580955
+&gt;#  [46,] 1.0009877 0.7900181 -0.51901832 2.546620
+&gt;#  [47,] 0.9732499 0.8026505 -0.59184450 2.550512
+&gt;#  [48,] 0.9292456 0.7738151 -0.57295046 2.424311
+&gt;#  [49,] 0.9951257 0.7621758 -0.49643375 2.498467
+&gt;#  [50,] 0.9573001 0.7785640 -0.59945352 2.498477
+&gt;#  [51,] 0.9310199 0.7997981 -0.56809492 2.497937
+&gt;#  [52,] 0.9162568 0.8247502 -0.70084480 2.481164
+&gt;#  [53,] 0.9127970 0.8121232 -0.67253090 2.525168
+&gt;#  [54,] 0.9005527 0.8165618 -0.71215506 2.546347
+&gt;#  [55,] 0.9295637 0.7898081 -0.59929573 2.505516
+&gt;#  [56,] 0.7665166 0.9833382 -1.19384703 2.706395
+&gt;#  [57,] 0.7713250 1.0037507 -1.23754059 2.738192
+&gt;#  [58,] 0.7766032 0.9865773 -1.15657725 2.751817
+&gt;#  [59,] 0.7655274 0.9651952 -1.14521839 2.639582
+&gt;#  [60,] 0.7656416 0.9778457 -1.13687951 2.724569
+&gt;#  [61,] 1.0347187 0.8076282 -0.51058694 2.642342
+&gt;#  [62,] 0.9797147 0.8038083 -0.56913371 2.563312
+&gt;#  [63,] 0.9490211 0.7805890 -0.58241222 2.499079
+&gt;#  [64,] 1.0082497 0.7814169 -0.51450005 2.489960
+&gt;#  [65,] 0.9719910 0.8009824 -0.60788123 2.511937
+&gt;#  [66,] 0.9451920 0.7744935 -0.57240905 2.462343
+&gt;#  [67,] 0.9528258 0.7837773 -0.56779393 2.475874
+&gt;#  [68,] 0.9469217 0.7817789 -0.62334725 2.475896
+&gt;#  [69,] 0.9424531 0.7824660 -0.58592294 2.483879
+&gt;#  [70,] 1.0118065 0.8009345 -0.55968518 2.590065
+&gt;#  [71,] 1.1109794 0.8670204 -0.59394566 2.821262
+&gt;#  [72,] 1.3997046 0.8803838 -0.33653041 3.193118
+&gt;#  [73,] 1.3760612 0.8804126 -0.36086171 3.142154
+&gt;#  [74,] 1.1602320 0.8839319 -0.57843345 2.868478
+&gt;#  [75,] 1.0262932 0.7953869 -0.54280216 2.562427
+&gt;#  [76,] 0.9979432 0.7698384 -0.49880049 2.528035
+&gt;#  [77,] 0.9935027 0.7877806 -0.52175811 2.509664
+&gt;#  [78,] 0.9549720 0.7802276 -0.59602530 2.487730
+&gt;#  [79,] 0.9443490 0.7779893 -0.55598791 2.454511
+&gt;#  [80,] 2.0771110 0.9012868  0.34160519 3.894899
+&gt;#  [81,] 1.6124787 0.8559146 -0.07150428 3.277811
+&gt;#  [82,] 1.3710598 0.8423396 -0.25729074 3.070652
+&gt;#  [83,] 1.3595302 0.8626952 -0.30989811 3.024579
+&gt;#  [84,] 1.3656099 0.8569763 -0.30812520 3.085925
+&gt;#  [85,] 0.9672442 0.7636191 -0.52190256 2.442921
+&gt;#  [86,] 0.9340416 0.7843361 -0.56547962 2.479022
+&gt;#  [87,] 0.9360495 0.7851437 -0.60817251 2.486483
+&gt;#  [88,] 0.9989260 0.8029627 -0.55641048 2.607989
+&gt;#  [89,] 0.9788433 0.7804108 -0.52605735 2.518567
+&gt;#  [90,] 0.9268918 0.8162679 -0.68054884 2.547343
+&gt;#  [91,] 0.9136531 0.8007038 -0.67190015 2.485755
+&gt;#  [92,] 0.9111791 0.7974810 -0.65411177 2.486595
+&gt;#  [93,] 0.9172198 0.8048153 -0.67056920 2.540247
+&gt;#  [94,] 0.9176222 0.8038057 -0.66203989 2.515011
+&gt;#  [95,] 2.5159880 0.9636248  0.60117430 4.376496
+&gt;#  [96,] 2.9719808 0.9971264  1.00525243 4.926116
+&gt;#  [97,] 3.2077747 1.0273460  1.17278173 5.252041
+&gt;#  [98,] 2.4777361 0.9663353  0.55698520 4.343031
+&gt;#  [99,] 2.4919340 0.9800381  0.52828545 4.493657
+&gt;# [100,] 1.1224279 0.8233249 -0.45313582 2.707216
+&gt;# [101,] 1.0582619 0.8049577 -0.51699541 2.631605
+&gt;# [102,] 0.9564696 0.8131200 -0.61338549 2.580624
+&gt;# [103,] 0.9484848 0.8194948 -0.66492121 2.585264
+&gt;# [104,] 0.9703489 0.7999975 -0.60273970 2.544579
+&gt;# [105,] 0.8895929 0.7921338 -0.64625917 2.507210
+&gt;# [106,] 0.9469248 0.7986923 -0.61081614 2.550072
+&gt;# [107,] 0.9261202 0.8094778 -0.67532807 2.533373
+&gt;# [108,] 0.9053019 0.8025916 -0.67369527 2.446351
+&gt;# [109,] 0.9288877 0.8265822 -0.67903118 2.611222
+&gt;# [110,] 1.0011410 0.7927629 -0.52500779 2.537040
+&gt;# [111,] 0.9784002 0.7962478 -0.58984452 2.572139
+&gt;# [112,] 0.9382691 0.7833462 -0.59159710 2.496889
+&gt;# [113,] 0.9468746 0.7848465 -0.56192613 2.486832
+&gt;# [114,] 0.9347206 0.7811330 -0.59762288 2.467824
+&gt;# [115,] 1.6045349 0.8480350 -0.08106524 3.285389
+&gt;# [116,] 1.3327554 0.8624975 -0.39683122 2.984281
+&gt;# [117,] 1.6107224 0.8561880 -0.03347147 3.322352
+&gt;# [118,] 1.8700735 0.8859412  0.14489035 3.635728
+&gt;# [119,] 1.3789035 0.8563451 -0.31175029 3.037615
+&gt;# [120,] 0.9779237 0.7951734 -0.60191155 2.524960
+&gt;# [121,] 1.1175305 0.8598684 -0.56222599 2.745006
+&gt;# [122,] 0.9660874 0.8056372 -0.63599854 2.542187
+&gt;# [123,] 0.9850564 0.8132088 -0.58774091 2.605831
+&gt;# [124,] 1.0341396 0.7846296 -0.50440454 2.545736
+&gt;# [125,] 1.0584331 0.8657526 -0.68189289 2.768406
+&gt;# [126,] 1.0759866 0.8596331 -0.59300913 2.737882
+&gt;# [127,] 1.0604951 0.8770143 -0.64565083 2.769420
+&gt;# [128,] 1.0869535 0.8714580 -0.61372779 2.808986
+&gt;# [129,] 1.0578796 0.8765487 -0.62771679 2.780986
+&gt;# [130,] 1.0758695 0.8395279 -0.56294523 2.733459
+&gt;# [131,] 1.1404425 0.8675457 -0.53225191 2.843815
+&gt;# [132,] 0.9846062 0.8361318 -0.64299883 2.642420
+&gt;# [133,] 1.0059664 0.8207227 -0.61343292 2.607220
+&gt;# [134,] 0.9861087 0.8380170 -0.62658385 2.660987
+&gt;# [135,] 0.9296868 0.7872915 -0.63637613 2.454840
+&gt;# [136,] 0.9194444 0.8096357 -0.66139014 2.512929
+&gt;# [137,] 0.9313158 0.7990936 -0.63057798 2.519193
+&gt;# [138,] 0.9220539 0.8024878 -0.67798724 2.459825
+&gt;# [139,] 0.9107140 0.8009416 -0.65644437 2.483736
+&gt;# [140,] 0.9229333 0.8038780 -0.64394123 2.465046
+&gt;# [141,] 0.9455395 0.7945640 -0.60762442 2.484284
+&gt;# [142,] 0.8754364 0.7913223 -0.67728098 2.404849
+&gt;# [143,] 0.9232036 0.7840010 -0.62518522 2.435880
+&gt;# [144,] 0.9164002 0.8056012 -0.65396567 2.496089
+&gt;# [145,] 2.2612881 1.0039217  0.26060001 4.219690
+&gt;# [146,] 2.7160721 0.9798902  0.78790709 4.598928
+&gt;# [147,] 2.9904655 0.9974274  1.03667982 4.918669
+&gt;# [148,] 3.2290634 1.0274935  1.17817374 5.249390
+&gt;# [149,] 2.4967971 0.9777387  0.53042722 4.408592</code></pre>
+<pre class="r"><code># Now, compute the prediction error
+prederr_all &lt;- pred_all[ , &quot;Estimate&quot;] - m1$data$symptoms
+# Statisticians love to square the prediction error. The mean of the squared
+# prediction error is called the mean squared error (MSE)
+(mse_m1 &lt;- mean(prederr_all^2))</code></pre>
+<pre><code>&gt;# [1] 1.035945</code></pre>
+<pre class="r"><code># The square root of MSE, the root mean squared error (RMSE), can be considered
+# the average prediction error (marginal)
+(rmse_m1 &lt;- sqrt(mse_m1))</code></pre>
+<pre><code>&gt;# [1] 1.017814</code></pre>
+<p>Let’s now consider a model with more predictors:</p>
+<pre class="r"><code># 35 main/interaction effects
+m2 &lt;- brm(symptoms ~ (mood1_pm + mood1_pmc) * (stressor_pm + stressor) * 
+            (women + baseage + weekend) + (mood1_pmc * stressor | PersonID), 
+          control = list(max_treedepth = 12), 
+          data = stress_sub, seed = 2152)</code></pre>
+<pre><code>&gt;# Warning: Rows containing NAs were excluded from the model.</code></pre>
+<pre><code>&gt;# Compiling Stan program...</code></pre>
+<pre><code>&gt;# Trying to compile a simple C file</code></pre>
+<pre><code>&gt;# Start sampling</code></pre>
+<p>And check the prediction error:</p>
+<pre class="r"><code>set.seed(1652)
+pred_all &lt;- predict(m2, re_formula = NA)</code></pre>
+<pre class="r"><code>prederr_all &lt;- pred_all[ , &quot;Estimate&quot;] - m2$data$symptoms
+mse_m2 &lt;- mean(prederr_all^2)
+tibble(Model = c(&quot;M1&quot;, &quot;M2&quot;), 
+       `In-sample MSE` = c(mse_m1, mse_m2))</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["Model"],"name":[1],"type":["chr"],"align":["left"]},{"label":["In-sample MSE"],"name":[2],"type":["dbl"],"align":["right"]}],"data":[{"1":"M1","2":"1.0359452"},{"1":"M2","2":"0.6882462"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>You can see that the MSE drops with the more complex model. Does it mean that this more complex model should be preferred?</p>
+</div>
+<div id="out-of-sample-prediction-error" class="section level2">
+<h2>Out-Of-Sample Prediction Error</h2>
+<p>The problem of using in-sample prediction error to determine which model should be preferred is that the complex model will capture a lot of the noise in the data, making it not generalizable to other sample. In-sample prediction is not very meaningful, because if we already have the data, our interest is usually not to predict them. Instead, in research, we want models that will generalize to other samples. Therefore, learning all the noise in the sample is not a good idea, and will lead to <em>overfitting</em>—having estimates that are not generalizable to other samples.</p>
+<p>To see this, let’s try to use the models we built on the 30 participants to predict <code>symptoms</code> for the remaining 75 participants:</p>
+<pre class="r"><code># Get the remaining data
+stress_test &lt;- stress_data %&gt;% 
+  filter(!PersonID %in% random_persons) %&gt;% 
+  # Person-mean centering
+  group_by(PersonID) %&gt;% 
+  # The `across()` function can be used to operate the same procedure on 
+  # multiple variables
+  mutate(across(c(symptoms, mood1, stressor), 
+                # The `.` means the variable to be operated on
+                list(&quot;pm&quot; = ~ mean(., na.rm = TRUE), 
+                     &quot;pmc&quot; = ~ . - mean(., na.rm = TRUE)))) %&gt;% 
+  ungroup()
+# Prediction error from m1
+pred_all &lt;- predict(m1, newdata = stress_test, re_formula = NA)[ , &quot;Estimate&quot;]
+prederr_all &lt;- pred_all - stress_test$symptoms
+mse_m1 &lt;- mean(prederr_all^2, na.rm = TRUE)
+# Prediction error from m2
+pred_all &lt;- predict(m2, newdata = stress_test, re_formula = NA)[ , &quot;Estimate&quot;]
+prederr_all &lt;- pred_all - stress_test$symptoms
+mse_m2 &lt;- mean(prederr_all^2, na.rm = TRUE)
+# Print out-of-sample prediction error
+tibble(Model = c(&quot;M1&quot;, &quot;M2&quot;), 
+       `Out-of-sample MSE` = c(mse_m1, mse_m2))</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["Model"],"name":[1],"type":["chr"],"align":["left"]},{"label":["Out-of-sample MSE"],"name":[2],"type":["dbl"],"align":["right"]}],"data":[{"1":"M1","2":"1.833587"},{"1":"M2","2":"5.199218"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>As you can see from above, the prediction on data not used for building the model is worse. And <code>m2</code> makes much worse out-of-sample prediction than <code>m1</code>, because when the sample size is small relative to the size of the model, a complex model is especially prone to overfitting, as it has many parameters that can be used to capitalize on the noise of the data.</p>
+<p>As suggested before, we should care about out-of-sample prediction error than in-sample prediction error, so in this case <code>m1</code> should be preferred. In practice, however, we don’t usually have the luxury of having another sample for us to get out-of-sample prediction error. So what should we do?</p>
+<div id="cross-validation" class="section level3">
+<h3>Cross-Validation</h3>
+<p>A simple solution is cross-validation, which is extremely popular in machine learning. The idea is to split the data into two parts, just like what we did above. Then fit the model in one part, and get the prediction error on the other part. The process is repeated multiple times until the prediction error is obtained on every observation.</p>
+<p>In model fitted using <code>brms</code>, you can use the <code>kfold()</code> option to do <span class="math inline">\(K\)</span>-fold cross-validation (by doing <span class="math inline">\(K\)</span> splits). <span class="math inline">\(K\)</span>-fold cross-validation, however, gives a biased estimate of prediction error especially when <span class="math inline">\(K\)</span> is small, but it is extremely intensive when <span class="math inline">\(K\)</span> is large, as it requires refitting the model <span class="math inline">\(K\)</span> times, and more efficient procedures are available in <code>brms</code>. Below is a demo for doing a 5-fold cross-validation using <code>lme4::lmer()</code> (because of the speed), which is mainly for you to understand its logic.</p>
+<pre class="r"><code>library(lme4)</code></pre>
+<pre><code>&gt;# Loading required package: Matrix</code></pre>
+<pre><code>&gt;# 
+&gt;# Attaching package: &#39;Matrix&#39;</code></pre>
+<pre><code>&gt;# The following objects are masked from &#39;package:tidyr&#39;:
+&gt;# 
+&gt;#     expand, pack, unpack</code></pre>
+<pre><code>&gt;# 
+&gt;# Attaching package: &#39;lme4&#39;</code></pre>
+<pre><code>&gt;# The following object is masked from &#39;package:brms&#39;:
+&gt;# 
+&gt;#     ngrps</code></pre>
+<pre class="r"><code># Split the index of 30 participants into 5 parts
+num_folds &lt;- 5
+random_sets &lt;- split(random_persons, 
+                     rep_len(1:num_folds, length(random_persons)))
+# Initialize the sum of squared prediction errors for each model
+sum_prederr_m1 &lt;- sum_prederr_m2 &lt;- 0
+# Loop over each set
+for (setk in random_sets) {
+  # Fit model 1 on the subset
+  fit_m1 &lt;- lmer(symptoms ~ (mood1_pm + mood1_pmc) * women + 
+                   (mood1_pmc | PersonID), 
+                 data = stress_sub, 
+                 # Select specific observations
+                 subset = !PersonID %in% setk)
+  # Remaining data
+  stress_sub_test &lt;- stress_sub %&gt;% filter(PersonID %in% setk)
+  # Obtain prediction error
+  prederr_m1 &lt;- predict(fit_m1, newdata = stress_sub_test, re.form = NA) -
+    stress_sub_test$symptoms
+  sum_prederr_m1 &lt;- sum_prederr_m1 + sum(prederr_m1^2, na.rm = TRUE)
+  # Fit model 2 on the subset
+  fit_m2 &lt;- lmer(symptoms ~ (mood1_pm + mood1_pmc) * (stressor_pm + stressor) * 
+                   (women + baseage + weekend) + 
+                   (mood1_pmc * stressor | PersonID), 
+                 data = stress_sub, 
+                 # Select specific observations
+                 subset = !PersonID %in% setk)
+  # Remaining data
+  stress_sub_test &lt;- stress_sub %&gt;% filter(PersonID %in% setk)
+  # Obtain prediction error
+  prederr_m2 &lt;- predict(fit_m2, newdata = stress_sub_test, re.form = NA) -
+    stress_sub_test$symptoms
+  sum_prederr_m2 &lt;- sum_prederr_m2 + sum(prederr_m2^2, na.rm = TRUE)
+}</code></pre>
+<pre><code>&gt;# boundary (singular) fit: see ?isSingular</code></pre>
+<pre><code>&gt;# boundary (singular) fit: see ?isSingular
+&gt;# boundary (singular) fit: see ?isSingular
+&gt;# boundary (singular) fit: see ?isSingular
+&gt;# boundary (singular) fit: see ?isSingular
+&gt;# boundary (singular) fit: see ?isSingular
+&gt;# boundary (singular) fit: see ?isSingular
+&gt;# boundary (singular) fit: see ?isSingular
+&gt;# boundary (singular) fit: see ?isSingular</code></pre>
+<pre class="r"><code># MSE (dividing the sum by 149 observations)
+tibble(Model = c(&quot;M1&quot;, &quot;M2&quot;), 
+       `5-fold CV MSE` = c(sum_prederr_m1 / 149, sum_prederr_m2 / 149))</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["Model"],"name":[1],"type":["chr"],"align":["left"]},{"label":["5-fold CV MSE"],"name":[2],"type":["dbl"],"align":["right"]}],"data":[{"1":"M1","2":"1.184230"},{"1":"M2","2":"2.792855"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre class="r"><code># The estimated out-of-sample MSE is much larger for m2 than for m1</code></pre>
+</div>
+<div id="leave-one-out-loo-cross-validation" class="section level3">
+<h3>Leave-one-out (LOO) cross validation</h3>
+<p>A special case of cross-validation is to use <span class="math inline">\(N - 1\)</span> observations to build the model to predict the remaining one observation, and repeat the process <span class="math inline">\(N\)</span> times. This is the LOO, which is essentially an <span class="math inline">\(N\)</span>-fold cross validation. While this may first seem very unrealistic given that the model needs to be fitted <span class="math inline">\(N\)</span> times, there are computational shortcuts or approximations that can make this much more efficient, and one of them that uses the Pareto smoothed importance sampling (PSIS) is available for models fitted with <code>brms</code>. So we can do</p>
+<pre class="r"><code>loo(m1, m2)</code></pre>
+<pre><code>&gt;# Warning: Found 3 observations with a pareto_k &gt; 0.7 in model &#39;m1&#39;. It is
+&gt;# recommended to set &#39;moment_match = TRUE&#39; in order to perform moment matching for
+&gt;# problematic observations.</code></pre>
+<pre><code>&gt;# Warning: Found 21 observations with a pareto_k &gt; 0.7 in model &#39;m2&#39;. It is
+&gt;# recommended to set &#39;moment_match = TRUE&#39; in order to perform moment matching for
+&gt;# problematic observations.</code></pre>
+<pre><code>&gt;# Output of model &#39;m1&#39;:
+&gt;# 
+&gt;# Computed from 4000 by 149 log-likelihood matrix
+&gt;# 
+&gt;#          Estimate   SE
+&gt;# elpd_loo   -188.9 16.0
+&gt;# p_loo        31.5  6.5
+&gt;# looic       377.7 32.1
+&gt;# ------
+&gt;# Monte Carlo SE of elpd_loo is NA.
+&gt;# 
+&gt;# Pareto k diagnostic values:
+&gt;#                          Count Pct.    Min. n_eff
+&gt;# (-Inf, 0.5]   (good)     138   92.6%   1509      
+&gt;#  (0.5, 0.7]   (ok)         8    5.4%   259       
+&gt;#    (0.7, 1]   (bad)        3    2.0%   19        
+&gt;#    (1, Inf)   (very bad)   0    0.0%   &lt;NA&gt;      
+&gt;# See help(&#39;pareto-k-diagnostic&#39;) for details.
+&gt;# 
+&gt;# Output of model &#39;m2&#39;:
+&gt;# 
+&gt;# Computed from 4000 by 149 log-likelihood matrix
+&gt;# 
+&gt;#          Estimate   SE
+&gt;# elpd_loo   -204.4 14.5
+&gt;# p_loo        53.2  7.8
+&gt;# looic       408.7 29.0
+&gt;# ------
+&gt;# Monte Carlo SE of elpd_loo is NA.
+&gt;# 
+&gt;# Pareto k diagnostic values:
+&gt;#                          Count Pct.    Min. n_eff
+&gt;# (-Inf, 0.5]   (good)     92    61.7%   749       
+&gt;#  (0.5, 0.7]   (ok)       36    24.2%   102       
+&gt;#    (0.7, 1]   (bad)      19    12.8%   16        
+&gt;#    (1, Inf)   (very bad)  2     1.3%   23        
+&gt;# See help(&#39;pareto-k-diagnostic&#39;) for details.
+&gt;# 
+&gt;# Model comparisons:
+&gt;#    elpd_diff se_diff
+&gt;# m1   0.0       0.0  
+&gt;# m2 -15.5       6.7</code></pre>
+<p>which suggested <code>m1</code> is expected to have less out-of-sample prediction error. The <code>p_loo</code> is an estimate of the number of effective parameters in a model, which suggested that <code>m2</code> is a more complex model than <code>m1</code>.</p>
+</div>
+<div id="information-criteria" class="section level3">
+<h3>Information Criteria</h3>
+<p>A closely-related way to estimate the out-of-sample prediction is to use information criteria, which is based on information theory. Simply speaking, these are measures of the expected out-of-sample prediction error under certain assumptions (e.g., normality). The most famous one is the Akaike information criterion (AIC), named after statistician Hirotugu Akaike, who derived that under certain assumptions, the expected prediction error is the deviance plus two times the number of parameters in the model. We can obtain AICs for models fitted under <code>lme4::lmer()</code></p>
+<pre class="r"><code>fit_m1 &lt;- lmer(symptoms ~ (mood1_pm + mood1_pmc) * women + 
+                   (mood1_pmc | PersonID), 
+                 data = stress_sub)</code></pre>
+<pre><code>&gt;# boundary (singular) fit: see ?isSingular</code></pre>
+<pre class="r"><code>fit_m2 &lt;- lmer(symptoms ~ (mood1_pm + mood1_pmc) * (stressor_pm + stressor) * 
+                   (women + baseage + weekend) + 
+                   (mood1_pmc * stressor | PersonID), 
+                 data = stress_sub)</code></pre>
+<pre><code>&gt;# boundary (singular) fit: see ?isSingular</code></pre>
+<pre class="r"><code>AIC(fit_m1, fit_m2)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["df"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["AIC"],"name":[2],"type":["dbl"],"align":["right"]}],"data":[{"1":"10","2":"399.4346","_rn_":"fit_m1"},{"1":"47","2":"407.7329","_rn_":"fit_m2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>Because AIC approximates the out-of-sample prediction error (for continuous, normal outcomes), a model with a lower AIC should be preferred. And you can also see that the AIC values are pretty close to the LOO values under <code>brms</code>; indeed both essentially estimate the same thing (i.e., out-of-sample prediction error). Because of that, the LOO is also referred to as the LOO information criterion (LOOIC).</p>
+<blockquote>
+<p>To avoid overfitting, we should compare models based on the out-of-sample prediction errors, which can be approxiamted by preferring models with lower AICs/LOOICs.</p>
+</blockquote>
+<div id="how-about-the-bic" class="section level4">
+<h4>How about the BIC?</h4>
+<p>As a side note, AIC is commonly presented alongside BIC, the Bayesian information criterion (BIC). However, BIC was developed with very different motivations, and technically it is not an information criterion (and it is debatable whether it is Bayesian). However, it can be used in a similar way, where models showing lower BICs represent better fit. It tends to prefer models that are more parsimonious than the AIC.</p>
+</div>
+</div>
+</div>
+<div id="regularization" class="section level2">
+<h2>Regularization</h2>
+<p>Standardize the data set</p>
+<pre class="r"><code>stress_data &lt;- read_sav(
+  unz(zip_data, 
+      &quot;SPSS_Chapter8/SPSS_Chapter8.sav&quot;))
+stress_std &lt;- stress_data %&gt;% 
+  mutate(across(c(women, baseage, weekend, symptoms, mood, stressor), 
+                ~ (. - mean(., na.rm = TRUE)) / sd(., na.rm = TRUE)))
+# Subsample
+stress_std &lt;- stress_std %&gt;% 
+  # filter(PersonID %in% random_persons) %&gt;% 
+  group_by(PersonID) %&gt;% 
+  # The `across()` function can be used to operate the same procedure on 
+  # multiple variables
+  mutate(across(c(symptoms, mood, stressor), 
+                # The `.` means the variable to be operated on
+                list(&quot;pm&quot; = ~ mean(., na.rm = TRUE), 
+                     &quot;pmc&quot; = ~ . - mean(., na.rm = TRUE)))) %&gt;% 
+  ungroup()</code></pre>
+<pre class="r"><code>m2 &lt;- brm(symptoms ~ (mood_pm + mood_pmc) * (stressor_pm + stressor) * 
+            (women + baseage + weekend) + 
+            (mood_pmc * stressor | PersonID), 
+          control = list(max_treedepth = 12), 
+          data = stress_std, seed = 2152)</code></pre>
+<pre><code>&gt;# Warning: Rows containing NAs were excluded from the model.</code></pre>
+<pre><code>&gt;# Compiling Stan program...</code></pre>
+<pre><code>&gt;# Trying to compile a simple C file</code></pre>
+<pre><code>&gt;# Start sampling</code></pre>
+<div id="regularizing-priors" class="section level3">
+<h3>Regularizing priors</h3>
+<div id="weakly-normal-priors" class="section level4">
+<h4>Weakly normal priors</h4>
+<p>Using a weakly normal prior is essentially the same as what is called the <em>ridge regression</em>. It gives similar results as uninformative priors when the sample size is large, but it has better small-sample properties.</p>
+<pre class="r"><code>m2_ridge &lt;- brm(symptoms ~ (mood_pm + mood_pmc) * (stressor_pm + stressor) * 
+                  (women + baseage + weekend) + 
+                  (mood_pmc * stressor | PersonID), 
+                control = list(max_treedepth = 12), 
+                data = stress_std, seed = 2152, 
+                prior = prior(normal(0, 1), class = b))</code></pre>
+<pre><code>&gt;# Warning: Rows containing NAs were excluded from the model.</code></pre>
+<pre><code>&gt;# Compiling Stan program...</code></pre>
+<pre><code>&gt;# Trying to compile a simple C file</code></pre>
+<pre><code>&gt;# Start sampling</code></pre>
+</div>
+</div>
+<div id="regularized-horseshoe" class="section level3">
+<h3>Regularized Horseshoe</h3>
+<p>This is a special type of prior that adaptively reguarlizes coefficients that are weakly supported by the data. To learn more, see the paper by <a href="https://projecteuclid.org/euclid.ejs/1513306866">Piironen &amp; Vehtari (2017)</a>. The following requires a relatively long running time as it requires the MCMC algorithm to run more slowly (with <code>adapt_delta = .995</code>).</p>
+<pre class="r"><code>m2_hs &lt;- brm(symptoms ~ (mood_pm + mood_pmc) * (stressor_pm + stressor) * 
+               (women + baseage + weekend) + (mood_pmc * stressor | PersonID), 
+             control = list(adapt_delta = .995, max_treedepth = 12), 
+             data = stress_std, seed = 2152, 
+             prior = prior(horseshoe(), class = b))</code></pre>
+<pre><code>&gt;# Warning: Rows containing NAs were excluded from the model.</code></pre>
+<pre><code>&gt;# Compiling Stan program...</code></pre>
+<pre><code>&gt;# Trying to compile a simple C file</code></pre>
+<pre><code>&gt;# Start sampling</code></pre>
+<pre><code>&gt;# Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
+&gt;# Running the chains for more iterations may help. See
+&gt;# http://mc-stan.org/misc/warnings.html#bulk-ess</code></pre>
+<p>You can see the regularizing priors lead to better LOO:</p>
+<pre class="r"><code>loo(m2, m2_ridge, m2_hs)</code></pre>
+<pre><code>&gt;# Warning: Found 22 observations with a pareto_k &gt; 0.7 in model &#39;m2&#39;. It is
+&gt;# recommended to set &#39;moment_match = TRUE&#39; in order to perform moment matching for
+&gt;# problematic observations.</code></pre>
+<pre><code>&gt;# Warning: Found 28 observations with a pareto_k &gt; 0.7 in model &#39;m2_ridge&#39;. It is
+&gt;# recommended to set &#39;moment_match = TRUE&#39; in order to perform moment matching for
+&gt;# problematic observations.</code></pre>
+<pre><code>&gt;# Warning: Found 8 observations with a pareto_k &gt; 0.7 in model &#39;m2_hs&#39;. It is
+&gt;# recommended to set &#39;moment_match = TRUE&#39; in order to perform moment matching for
+&gt;# problematic observations.</code></pre>
+<pre><code>&gt;# Output of model &#39;m2&#39;:
+&gt;# 
+&gt;# Computed from 4000 by 513 log-likelihood matrix
+&gt;# 
+&gt;#          Estimate   SE
+&gt;# elpd_loo   -526.4 23.6
+&gt;# p_loo       134.0 10.2
+&gt;# looic      1052.9 47.2
+&gt;# ------
+&gt;# Monte Carlo SE of elpd_loo is NA.
+&gt;# 
+&gt;# Pareto k diagnostic values:
+&gt;#                          Count Pct.    Min. n_eff
+&gt;# (-Inf, 0.5]   (good)     421   82.1%   137       
+&gt;#  (0.5, 0.7]   (ok)        70   13.6%   105       
+&gt;#    (0.7, 1]   (bad)       17    3.3%   33        
+&gt;#    (1, Inf)   (very bad)   5    1.0%   13        
+&gt;# See help(&#39;pareto-k-diagnostic&#39;) for details.
+&gt;# 
+&gt;# Output of model &#39;m2_ridge&#39;:
+&gt;# 
+&gt;# Computed from 4000 by 513 log-likelihood matrix
+&gt;# 
+&gt;#          Estimate   SE
+&gt;# elpd_loo   -525.5 23.7
+&gt;# p_loo       133.1 10.3
+&gt;# looic      1051.1 47.4
+&gt;# ------
+&gt;# Monte Carlo SE of elpd_loo is NA.
+&gt;# 
+&gt;# Pareto k diagnostic values:
+&gt;#                          Count Pct.    Min. n_eff
+&gt;# (-Inf, 0.5]   (good)     437   85.2%   198       
+&gt;#  (0.5, 0.7]   (ok)        48    9.4%   138       
+&gt;#    (0.7, 1]   (bad)       26    5.1%   27        
+&gt;#    (1, Inf)   (very bad)   2    0.4%   26        
+&gt;# See help(&#39;pareto-k-diagnostic&#39;) for details.
+&gt;# 
+&gt;# Output of model &#39;m2_hs&#39;:
+&gt;# 
+&gt;# Computed from 4000 by 513 log-likelihood matrix
+&gt;# 
+&gt;#          Estimate   SE
+&gt;# elpd_loo   -512.2 23.8
+&gt;# p_loo       115.4  9.3
+&gt;# looic      1024.5 47.6
+&gt;# ------
+&gt;# Monte Carlo SE of elpd_loo is NA.
+&gt;# 
+&gt;# Pareto k diagnostic values:
+&gt;#                          Count Pct.    Min. n_eff
+&gt;# (-Inf, 0.5]   (good)     448   87.3%   611       
+&gt;#  (0.5, 0.7]   (ok)        57   11.1%   116       
+&gt;#    (0.7, 1]   (bad)        8    1.6%   67        
+&gt;#    (1, Inf)   (very bad)   0    0.0%   &lt;NA&gt;      
+&gt;# See help(&#39;pareto-k-diagnostic&#39;) for details.
+&gt;# 
+&gt;# Model comparisons:
+&gt;#          elpd_diff se_diff
+&gt;# m2_hs      0.0       0.0  
+&gt;# m2_ridge -13.3       4.8  
+&gt;# m2       -14.2       4.7</code></pre>
+</div>
+</div>
+</div>

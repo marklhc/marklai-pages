@@ -1,0 +1,131 @@
+---
+title: Week 11
+linktitle: Lecture videos (wk 11)
+type: docs
+date: "2020-10-03T00:00:00+01:00"
+draft: false
+slides: "psyc575/10_longitudinal_analysis_2"
+menu:
+  psyc575:
+    parent: Week 11
+    weight: 1
+output:
+  blogdown::html_page:
+    toc: true
+    df_print: paged
+# Prev/next pager order (if `docs_section_pager` enabled in `params.toml`)
+weight: 1
+---
+
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+<link href="/rmarkdown-libs/pagedtable/css/pagedtable.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/pagedtable/js/pagedtable.js"></script>
+
+<div id="TOC">
+<ul>
+<li><a href="#predictive-models-in-mlm">Predictive Models in MLM</a></li>
+<li><a href="#example">Example</a>
+<ul>
+<li><a href="#prediction-error">Prediction Error</a></li>
+</ul></li>
+<li><a href="#overfitting">Overfitting</a></li>
+<li><a href="#out-of-sample-prediction-errors">Out-Of-Sample Prediction Errors</a>
+<ul>
+<li><a href="#cross-validation">Cross Validation</a></li>
+<li><a href="#information-criterion">Information Criterion</a></li>
+</ul></li>
+<li><a href="#regularization">Regularization</a></li>
+</ul>
+</div>
+
+{{% slide-buttons2 %}}
+<div id="predictive-models-in-mlm" class="section level2">
+<h2>Predictive Models in MLM</h2>
+{{% youtube "yq6fGgU7UiI" %}}
+{{% youtube "6YyRwbEhzqE" %}}
+<hr />
+<p>Think more: Think about a prominent theory in your area of research. What predictions does it make? Does it give precise predictions?</p>
+<hr />
+</div>
+<div id="example" class="section level2">
+<h2>Example</h2>
+{{% youtube "jCP1OHs504M" %}}
+<hr />
+<p>Check your learning: In a multilevel model with students nested within schools and with student math achievement as the outcome variable, what is a cluster-specific prediction?</p>
+<form name="form_14925" onsubmit="return validate_form_14925()" method="post">
+<input type="radio" name="answer_14925" id="14925_1" value="The predicted achievement for a student from one of the schools included in the sample."><label for="1">The predicted achievement for a student from one of the schools included in the sample.</label><br><input type="radio" name="answer_14925" id="14925_2" value="The predicted mean achievement of a new school."><label for="2">The predicted mean achievement of a new school.</label><br><input type="radio" name="answer_14925" id="14925_3" value="The predicted achievement for a student from a new school that are not part of the sample."><label for="3">The predicted achievement for a student from a new school that are not part of the sample.</label><br><input type="submit" value="check">
+</form>
+<p id="result_14925">
+</p>
+<script> function validate_form_14925() {var x, text; var x = document.forms["form_14925"]["answer_14925"].value;if (x == "The predicted achievement for a student from one of the schools included in the sample."){text = 'Correct :+1:';} else {text = 'Try again. You can do it!';} document.getElementById('result_14925').innerHTML = text; return false;} </script>
+<hr />
+<div id="prediction-error" class="section level3">
+<h3>Prediction Error</h3>
+{{% youtube "CCRqTspEXlc" %}}
+<hr />
+<p>Check your learning: In a multilevel model with students nested within schools and with student math achievement as the outcome variable, what is a cluster-specific prediction?</p>
+<form name="form_7530" onsubmit="return validate_form_7530()" method="post">
+<input type="radio" name="answer_7530" id="7530_1" value="The predicted achievement for a student from one of the schools included in the sample."><label for="1">The predicted achievement for a student from one of the schools included in the sample.</label><br><input type="radio" name="answer_7530" id="7530_2" value="The predicted mean achievement of a new school."><label for="2">The predicted mean achievement of a new school.</label><br><input type="radio" name="answer_7530" id="7530_3" value="The predicted achievement for a student from a new school that are not part of the sample."><label for="3">The predicted achievement for a student from a new school that are not part of the sample.</label><br><input type="submit" value="check">
+</form>
+<p id="result_7530">
+</p>
+<script> function validate_form_7530() {var x, text; var x = document.forms["form_7530"]["answer_7530"].value;if (x == "The predicted achievement for a student from one of the schools included in the sample."){text = 'Great job :+1:';} else {text = 'Try again. You can do it!';} document.getElementById('result_7530').innerHTML = text; return false;} </script>
+<hr />
+</div>
+</div>
+<div id="overfitting" class="section level2">
+<h2>Overfitting</h2>
+{{% youtube "QXjW5vZV--E" %}}
+<hr />
+<p>Check your learning: Which of the following growth curve model would show the largest degree of overfitting, given a sample of 15 participants across 5 time points?</p>
+<form name="form_25342" onsubmit="return validate_form_25342()" method="post">
+<input type="radio" name="answer_25342" id="25342_1" value="A linear growth model."><label for="1">A linear growth model.</label><br><input type="radio" name="answer_25342" id="25342_2" value="A piecewise growth model with two phases."><label for="2">A piecewise growth model with two phases.</label><br><input type="radio" name="answer_25342" id="25342_3" value="A piecewise growth model with four phases."><label for="3">A piecewise growth model with four phases.</label><br><input type="submit" value="check">
+</form>
+<p id="result_25342">
+</p>
+<script> function validate_form_25342() {var x, text; var x = document.forms["form_25342"]["answer_25342"].value;if (x == "A piecewise growth model with four phases."){text = 'Correct :+1:';} else {text = 'Try again. You can do it!';} document.getElementById('result_25342').innerHTML = text; return false;} </script>
+<hr />
+</div>
+<div id="out-of-sample-prediction-errors" class="section level2">
+<h2>Out-Of-Sample Prediction Errors</h2>
+{{% youtube "vVQpY1vh208" %}}
+<hr />
+<p>Check your learning: Why shouldn’t we just choose a model with the lowest in-sample prediction error?</p>
+<form name="form_44462" onsubmit="return validate_form_44462()" method="post">
+<input type="radio" name="answer_44462" id="44462_1" value="Prediction error should not be a criterion for choosing among models."><label for="1">Prediction error should not be a criterion for choosing among models.</label><br><input type="radio" name="answer_44462" id="44462_2" value="One should use a likelihood ratio test instead."><label for="2">One should use a likelihood ratio test instead.</label><br><input type="radio" name="answer_44462" id="44462_3" value="A model that fits one data set too well usually does not fit well with other data sets."><label for="3">A model that fits one data set too well usually does not fit well with other data sets.</label><br><input type="submit" value="check">
+</form>
+<p id="result_44462">
+</p>
+<script> function validate_form_44462() {var x, text; var x = document.forms["form_44462"]["answer_44462"].value;if (x == "A model that fits one data set too well usually does not fit well with other data sets."){text = 'Correct :+1:';} else {text = 'Try again. You can do it!';} document.getElementById('result_44462').innerHTML = text; return false;} </script>
+<hr />
+<div id="cross-validation" class="section level3">
+<h3>Cross Validation</h3>
+{{% youtube "8NoYZUzGfGQ" %}}
+<hr />
+<p>Check your learning: Why does cross-validation give a better estimate of the out-of-sample prediction error?</p>
+<form name="form_87074" onsubmit="return validate_form_87074()" method="post">
+<input type="radio" name="answer_87074" id="87074_1" value="It uses different subsets of data for estimation and for prediction."><label for="1">It uses different subsets of data for estimation and for prediction.</label><br><input type="radio" name="answer_87074" id="87074_2" value="It is developed in the machine learning literature."><label for="2">It is developed in the machine learning literature.</label><br><input type="radio" name="answer_87074" id="87074_3" value="It uses less data for estimation, so the results are more stable."><label for="3">It uses less data for estimation, so the results are more stable.</label><br><input type="submit" value="check">
+</form>
+<p id="result_87074">
+</p>
+<script> function validate_form_87074() {var x, text; var x = document.forms["form_87074"]["answer_87074"].value;if (x == "It uses different subsets of data for estimation and for prediction."){text = 'Correct :+1:';} else {text = 'Try again. You can do it!';} document.getElementById('result_87074').innerHTML = text; return false;} </script>
+<hr />
+</div>
+<div id="information-criterion" class="section level3">
+<h3>Information Criterion</h3>
+{{% youtube "rxRGk1m1Pvo" %}}
+</div>
+</div>
+<div id="regularization" class="section level2">
+<h2>Regularization</h2>
+{{% youtube "WQM6uNbCVCk" %}}
+<hr />
+<p>Check your learning: Under which of the following situations is the model most prone to overfitting (and thus would benefit most from regularization)?</p>
+<form name="form_10583" onsubmit="return validate_form_10583()" method="post">
+<input type="radio" name="answer_10583" id="10583_1" value="N = 100, p_loo = 100"><label for="1">N = 100, p_loo = 100</label><br><input type="radio" name="answer_10583" id="10583_2" value="N = 1000, p_loo = 10"><label for="2">N = 1000, p_loo = 10</label><br><input type="radio" name="answer_10583" id="10583_3" value="N = 10000, p_loo = 100"><label for="3">N = 10000, p_loo = 100</label><br><input type="submit" value="check">
+</form>
+<p id="result_10583">
+</p>
+<script> function validate_form_10583() {var x, text; var x = document.forms["form_10583"]["answer_10583"].value;if (x == "N = 100, p_loo = 100"){text = 'Correct :+1:';} else {text = 'Try again. You can do it!';} document.getElementById('result_10583').innerHTML = text; return false;} </script>
+<hr />
+</div>

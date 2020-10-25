@@ -30,4 +30,4 @@ By the end of this module, you will be able to
 3. Attend the synchronous Zoom session to do an exercise on identifying data structure
     * If unable to attend, complete an alternative assignment
 4. Complete [Homework 8](../homework-8)
-5. (Optional) Read the [bonus material](#) on lagged predictors
+5. (Optional) Read the [bonus material](../rcode9_bonus) on lagged predictors

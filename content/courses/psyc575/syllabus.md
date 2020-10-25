@@ -453,7 +453,7 @@ Student feedback is essential to the instructor and the Department to keep impro
 </td>
 <td>
 
-- Exercise: Autoregressive covariance structure
+- Exercise: Change score model
 - [HW 7](../homework-7)
 
 </td>
@@ -473,8 +473,8 @@ Student feedback is essential to the instructor and the Department to keep impro
 </td>
 <td>
 
-- Exercise: Time-varying covariates
-- [HW 8](#)
+- Exercise: Autoregressive and lagged effects
+- [HW 8](../homework-8)
 
 </td>
 </tr>
@@ -489,13 +489,13 @@ Student feedback is essential to the instructor and the Department to keep impro
 </td>
 <td>
 
-- Supplemental reading
+- [Yarkoni & Westfall (2017)](https://doi.org/10.1177/1745691617693393)
 
 </td>
 <td>
 
 - Exercise: Model averaging
-- Post draft for peer review
+- [Post draft for peer review](../peer-review)
 
 </td>
 </tr>

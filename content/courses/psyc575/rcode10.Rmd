@@ -1,0 +1,26 @@
+---
+title: Using R for Week 11
+linktitle: R Codes (wk 11)
+type: docs
+date: "2020-10-17T14:24:00+01:00"
+draft: false
+lastmod: '`r Sys.Date()`'
+rmd: "rcodes/week11-prediction_and_regularization"
+menu:
+  psyc575:
+    parent: Week 11
+    weight: 2
+output:
+  blogdown::html_page:
+    toc: true
+    df_print: paged
+header-includes:
+  - \newcommand{\bv}[1]{\boldsymbol{\mathbf{#1}}}
+# Prev/next pager order (if `docs_section_pager` enabled in `params.toml`)
+weight: 2
+---
+
+`r blogdown::shortcode("rmd-buttons")`
+
+```{r child='week11-prediction_and_regularization.RMarkdown'}
+```
