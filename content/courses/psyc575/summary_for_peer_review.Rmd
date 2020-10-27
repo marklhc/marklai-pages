@@ -4,7 +4,7 @@ date: '2020-10-13'
 slug: peer-review
 categories: []
 tags: []
-linktitle: Peer Review
+linktitle: Peer Review (Posting)
 summary: ~
 lastmod: '`r Sys.Date()`'
 type: docs

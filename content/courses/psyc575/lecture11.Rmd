@@ -4,7 +4,7 @@ linktitle: Lecture videos (wk 11)
 type: docs
 date: "2020-10-03T00:00:00+01:00"
 draft: false
-slides: "psyc575/11_prediction"
+slides: "psyc575/11-prediction"
 menu:
   psyc575:
     parent: Week 11
