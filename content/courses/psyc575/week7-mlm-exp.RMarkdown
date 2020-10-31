@@ -50,7 +50,7 @@ driving_dat <- driving_dat %>%
   mutate(sex = as_factor(sex), 
          oldage = factor(oldage, levels = c(0, 1), 
                          labels = c("Below Age 40", "Over Age 40")), 
-         id = factor(id), 
+         # id = factor(id), 
          Item = factor(Item))
 driving_dat
 ```
@@ -206,7 +206,7 @@ set.seed(2124)
 random_ids <- sample(unique(driving_dat$id), size = 10)
 driving_dat %>%
     filter(id %in% random_ids) %>%  # select only 10 persons
-    ggplot(aes(x = id, y = lg_rt)) +
+    ggplot(aes(x = factor(id), y = lg_rt)) +
     geom_jitter(height = 0, width = 0.1, alpha = 0.3) +
     # Add person means
     stat_summary(
@@ -250,13 +250,13 @@ This, however, does not apply to unbalanced data, in which case cluster-means wi
 Repeated-Measure level (Lv 1):
 $$\text{lg_rt}_{i(j, k)} = \beta_{0(j, k)} + e_{ijk}$$
 Between-cell (Person $\times$ Item) level (Lv 2):
-$$\beta_{0(j, k)} = \gamma_{00} + \beta_{1j} \text{meaning}_{ik} + \beta_{2j} \text{salience}_{ik} + \beta_{3j} \text{meaning}_{ik} \times \text{salience}_{ik} + \beta_{4k} \text{oldage}_{ij} + u_{0j} + v_{0k}$$
+$$\beta_{0(j, k)} = \gamma_{00} + \beta_{1j} \text{meaning}_{k} + \beta_{2j} \text{salience}_{k} + \beta_{3j} \text{meaning}_{k} \times \text{salience}_{k} + \beta_{4k} \text{oldage}_{j} + u_{0j} + v_{0k}$$
 Person level (Lv 2a) random slopes
 $$
 \begin{aligned}
-  \beta_{1j} = \gamma_{10} + \gamma_{11} \text{oldage}_{ij} + u_{1j} \\
-  \beta_{2j} = \gamma_{20} + \gamma_{21} \text{oldage}_{ij} + u_{2j} \\
-  \beta_{3j} = \gamma_{30} + \gamma_{31} \text{oldage}_{ij} + u_{3j} \\
+  \beta_{1j} = \gamma_{10} + \gamma_{11} \text{oldage}_{j} + u_{1j} \\
+  \beta_{2j} = \gamma_{20} + \gamma_{21} \text{oldage}_{j} + u_{2j} \\
+  \beta_{3j} = \gamma_{30} + \gamma_{31} \text{oldage}_{j} + u_{3j} \\
 \end{aligned}
 $$
 Item level (Lv2b) random slopes
@@ -265,10 +265,10 @@ Combined equations
 $$
 \begin{aligned}
   \text{lg_rt}_{i(j,k)} & = \gamma_{00} \\ 
-                        & + \gamma_{10} \text{meaning}_{ik} + \gamma_{20} \text{salience}_{ik} + \gamma_{30} \text{meaning}_{ik} \times \text{salience}_{ik} + \gamma_{40} \text{oldage}_{ij} \\
-                        & + \gamma_{11} \text{meaning}_{ik} \times \text{oldage}_{ij} + \gamma_{21} \text{salience}_{ik} \times \text{oldage}_{ij} + \gamma_{31} \text{meaning}_{ik} \times \times \text{oldage}_{ij} \times \text{oldage}_{ij} + \\
-                        & + u_{0j} + u_{1j} \text{meaning}_{ik} + u_{2j} \text{salience}_{ik} + u_{3j} \text{meaning}_{ik} \times \text{salience}_{ik} \\
-                        & + v_{0k} + v_{4k} \text{oldage}_{ij} \\
+                        & + \gamma_{10} \text{meaning}_{k} + \gamma_{20} \text{salience}_{k} + \gamma_{30} \text{meaning}_{k} \times \text{salience}_{k} + \gamma_{40} \text{oldage}_{j} \\
+                        & + \gamma_{11} \text{meaning}_{k} \times \text{oldage}_{j} + \gamma_{21} \text{salience}_{k} \times \text{oldage}_{j} + \gamma_{31} \text{meaning}_{k} \times \text{oldage}_{j} \times \text{oldage}_{j} + \\
+                        & + u_{0j} + u_{1j} \text{meaning}_{k} + u_{2j} \text{salience}_{k} + u_{3j} \text{meaning}_{k} \times \text{salience}_{k} \\
+                        & + v_{0k} + v_{4k} \text{oldage}_{j} \\
                         & + e_{ijk}
 \end{aligned}
 $$
