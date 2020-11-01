@@ -1,0 +1,51 @@
+---
+title: Peer Review (Commenting)
+date: '2020-10-25'
+slug: peer-review-comment
+categories: []
+tags: []
+linktitle: Peer Review
+summary: ~
+lastmod: '`r Sys.Date()`'
+type: docs
+output:
+  blogdown::html_page:
+    df_print: paged
+menu:
+  psyc575:
+    parent: Week 12
+    weight: 5
+---
+
+## Learning Objective
+
+- Identify the types of multilevel data structure in different research scenarios
+- Evaluate research that uses multilevel modeling
+
+## Assignment Description 
+
+As the second part of the peer-review process, each individual student will comment on postings of **two** other groups. You will receive your assigned posts on Slack. You comments will consist of (a) completeness of the posting and (b) at least one suggestion to help the group improve their project. Make sure your critique is constructive; the instructor reserves the right to delete comments that do not conform to professional standards. Your comments will be due 9 am PST on Monday 11/9. The comments will be worth 2 points (1 point for each).
+
+## Steps
+
+1. Each of you will receive your assigned groups to comment on. 
+2. Go to the Discussion Board forum on Blackboard and provide your comment for each assigned groups. Each of your comments should consist of two components:
+    a. Whether the post contains all necessary components based on the "Posting for Peer Review Rubric." Here you don't need to evaluate the quality of the post; just the completeness of the components. The components include
+        i. name of each group member
+        ii. a link for the data repository
+        iii. Rmd source code and knitted document in the repository
+        iv. research question(s)
+        v. model equations
+        vi. a coefficient table
+        vii. a plot
+        viii. a summary paragraph for the analysis
+    b. A summary (1-2 sentences are fine) of what you like about the post, or what you think the group did well. 
+    c. A minimum of one suggestion that you think would improve the analysis. For example, you can suggest inclusion of additional variables in the model, ways to make the graph easier to read, better ways to present the findings, etc. You are welcome to provide more suggestions. 
+
+## Grading 
+
+The instructor will grade your comments based on completeness. 
+
+## Additional Notes
+
+You may post your questions to the Slack channel to get help from your peers and instructor. 

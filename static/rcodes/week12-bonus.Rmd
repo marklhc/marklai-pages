@@ -1,0 +1,284 @@
+---
+title: "Other Types of GLMM"
+output:
+  html_document:
+    df_print: paged
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = ">#")
+```
+
+## Load Packages
+
+```{r load-pkg, message=FALSE}
+# To install a package, run the following ONCE (and only once on your computer)
+# install.packages("psych")  
+library(here)  # makes reading data more consistent
+library(tidyverse)  # for data manipulation and plotting
+library(haven)  # for importing SPSS/SAS/Stata data
+library(brms)  # for Bayesian multilevel analysis
+# (Optional) Set multiple cores in global option
+options(mc.cores = min(parallel::detectCores() - 1, 2L))
+library(broom.mixed)  # for summarizing results
+library(modelsummary)  # for making tables
+theme_set(theme_bw())  # Theme; just my personal preference
+```
+
+# Binomial Logistic Model
+
+## Data Description
+
+In our first example, we'll use data from a cluster-randomized trial by [Devine et al. (2017)](https://www.sciencedirect.com/science/article/abs/pii/S0022103117300860). The authors have kindly made their data open access at https://osf.io/yd72p/. The study evaluated a habit-breaking intervention at the University of Wisconsin–Madison that aimed to promote gender equity in hiring practices. You can find more description of the intervention from [this graph](https://ars-els-cdn-com.libproxy2.usc.edu/content/image/1-s2.0-S0022103117300860-gr1_lrg.jpg). 
+
+In the study, 98 departments formed 92 clusters (with some smaller departments combined into clusters). Those 92 clusters formed 46 pairs, and one unit in each pair was randomly assigned to the intervention condition while the other unit in the same pair was assigned to the control condition. The main outcome was the proportion of female new hires post-manipulation. 
+
+Because the clusters were matched in pairs in terms of size, disciplines, etc, units within the same pair were by design more similar to each other than units from different pairs. Therefore, matching induces dependency in the data, which should be handled by treating the matched pairs as a level of clustering. 
+
+> Matching induces dependency in the data, which should be handled by treating the matched pairs as a level of clustering. 
+
+### Data Import
+
+The data can be downloaded and imported using the `read_csv()` function. 
+
+```{r hiring_dat, cache=TRUE}
+# Data from OSF
+hiring_dat <- read_csv("https://osf.io/yd72p/download")
+```
+
+And then some pre-processing, including computing the number of new female hires (by adding up the subcategories). 
+
+```{r recode}
+hiring_dat <- hiring_dat %>% 
+  mutate(
+    # Compute number of female hires
+    num_female_hires = NH_NumFacURMF + NH_NumFacAsianF + NH_NumFacWHF, 
+    # Also recode EXPDEPT and POST to factors
+    EXPDEPT = factor(EXPDEPT, levels = c(0, 1), 
+                     labels = c("control", "intervention")), 
+    POST = factor(POST, levels = c(0, 1), 
+                  labels = c("pre", "post")))
+```
+
+Note that the data contain both pre-manipulation and post-manipulation information, so the department is another level of clustering (as the lowest level is repeated measure). For simplicity, we first focus only on the post-manipulation data. 
+
+```{r hiring_post}
+hiring_post <- hiring_dat %>% 
+  filter(POST == "post")
+hiring_post
+```
+
+### Plotting
+
+```{r plot-num-female-hires}
+ggplot(hiring_post, aes(x = EXPDEPT, 
+                        # Proportion of female new hires
+                        y = num_female_hires / NH_NumFac)) + 
+  geom_point() + 
+  stat_summary(aes(group = PAIR_RAND), geom = "line") + 
+  labs(y = "Proportion of Female New Hires")
+```
+
+As can be seen, the proportion of female hires seemed to be larger for the intervention condition. 
+
+## Model 1
+
+The outcome is a count with a known number of trials, so a good distribution is the binomial distribution. Because the outcome is whether each trial resulted in a female hire, we again use the logit link to model the log odds. The manipulated variable was `EXPDEPT`. The model equations are
+
+Lv-1:
+
+$$
+  \begin{aligned}
+    \text{num_female_hires}_{ij} & \sim \text{Binomial}(n_{ij}, \mu_{ij}) \\
+    \eta_{ij} & = \text{logit}(\mu_{ij}) \\
+    \eta_{ij} & = \beta_{0j} + \beta_{1j} \text{EXPDEPT}_{ij}
+  \end{aligned}
+$$
+
+Lv-2:
+
+$$
+\begin{aligned}
+  \beta_{0j} & = \gamma_{00} + u_{0j}  \\
+  \beta_{1j} & = \gamma_{10} + u_{1j}  \\
+  \begin{bmatrix}
+    u_{0j} \\
+    u_{1j}
+  \end{bmatrix} & \sim 
+  N\left(
+    \begin{bmatrix}
+      0 \\
+      0
+    \end{bmatrix}, 
+    \begin{bmatrix}
+      \tau^2_0 &  \\
+      \tau_{01} & \tau^2_{1}
+    \end{bmatrix}
+  \right)
+\end{aligned}
+$$
+
+```{r m1_binomial, message=TRUE, results='hide', cache=TRUE}
+m1_binomial <- 
+  brm(num_female_hires | trials(NH_NumFac) ~ EXPDEPT + 
+        (EXPDEPT | PAIR_RAND), 
+      data = hiring_post %>% filter(NH_NumFac > 0), 
+      family = binomial("logit"), 
+      control = list(adapt_delta = .90), 
+      seed = 4090)
+```
+
+Two things should be noted. First, in the outcome portion of the formula, the syntax is in the form `number_of_success_variable | trials(number_of_trial_variable)`. It allows the number of trials to be different across observations, which accommodates our data here as different departments have different number of hires. 
+
+### Plotting the Output
+
+```{r plot-binomial}
+random_pairs <- sample(unique(hiring_post$PAIR_RAND), size = 12)
+plot(
+  conditional_effects(
+    m1_binomial, 
+    type = "pred", 
+    re_formula = NULL, 
+    conditions = tibble(PAIR_RAND = random_pairs)
+  ), 
+  ncol = 4  # six columns in the plot
+)
+```
+
+### Interpretation
+
+#### Intercept
+
+For the control condition, the average predicted log odds of having a female hire was `r fixef(m1_binomial)["Intercept", "Estimate"]`, 95% CI [`r fixef(m1_binomial)["Intercept", "Q2.5"]`, `r fixef(m1_binomial)["Intercept", "Q97.5"]`]. 
+
+#### Slopes
+
+The intervention led to an increase in log odds of a female hire of `r fixef(m1_binomial)["EXPDEPTintervention", "Estimate"]`, 95% CI [`r fixef(m1_binomial)["EXPDEPTintervention", "Q2.5"]`, `r fixef(m1_binomial)["EXPDEPTintervention", "Q97.5"]`]. 
+
+#### Odds ratio
+
+The intervention has an odds ratio of a female hire of `r exp(fixef(m1_binomial)["EXPDEPTintervention", "Estimate"])`, 95% CI [`r exp(fixef(m1_binomial)["EXPDEPTintervention", "Q2.5"])`, `r exp(fixef(m1_binomial)["EXPDEPTintervention", "Q97.5"])`]. 
+
+# Poisson
+
+Here we'll use the `epilepsy` data set. You can get the information of the data from https://vincentarelbundock.github.io/Rdatasets/doc/HSAUR/epilepsy.html). This is a longitudinal data set with 59 patients suffering from epilepsy, with the number of seizures recorded at four time points. 
+
+Let's look at the distribution of the outcome variable, and its relationship with the base rate. 
+
+```{r epilepsy}
+# Get the data from brms
+data("epilepsy", package = "brms")
+# Distribution
+ggplot(epilepsy, aes(x = count)) + 
+  geom_histogram()
+# seizure.rate against base
+ggplot(epilepsy, aes(x = Base, y = count)) + 
+  geom_point() + 
+  geom_smooth()
+```
+
+As you can see, `count` is not normally distributed, and the association between `count` and `Base` were not linear. This is not uncommon. For categorical outcomes, because of the bounded range (0 to 1, 0 to $\infty$), they tend to relate to other variables in a non-linear way. 
+
+> For categorical outcomes, because of the bounded range (0 to 1, 0 to $\infty$), they tend to relate to other variables in a non-linear way. 
+
+The Poisson distribution is commonly used for counts. The mean of a Poisson distribution is the same as its variance. You can see examples of Poisson distributions [here](https://en.wikipedia.org/wiki/Poisson_distribution). 
+
+In a Poisson model, the goal is to model the predicted rate (i.e., count) that the event of interest occurs. In this case, it's the predicted rate of seizure over the data collection period. 
+
+With a Poisson model, a natural link function to use is the log link.
+
+## Sample Growth Model
+
+### Model equations
+
+Here's a growth model with `visit` (i.e., time) predicting `count`.
+
+Lv-1:
+
+$$
+  \begin{aligned}
+    \text{count}_{ti} & \sim \text{Poisson}(\mu_{ti}) \\
+    \eta_{ti} & = \text{log}(\mu_{ti}) \\
+    \eta_{ti} & = \beta_{0i} + \beta_{1i} \text{visit}_{ti} + e_{ti}
+  \end{aligned}
+$$
+
+Lv-2:
+
+$$
+\begin{aligned}
+  \beta_{0i} & = \gamma_{00} + u_{0i} \\
+  \beta_{1i} & = \gamma_{10} + u_{1i}  \\
+  \begin{bmatrix}
+    u_{0i} \\
+    u_{1i}
+  \end{bmatrix} & \sim 
+  N\left(
+    \begin{bmatrix}
+      0 \\
+      0
+    \end{bmatrix}, 
+    \begin{bmatrix}
+      \tau^2_0 &  \\
+      \tau_{01} & \tau^2_{1}
+    \end{bmatrix}
+  \right)
+\end{aligned}
+$$
+
+### Fitting in `brms`
+
+```{r center-time}
+# Recode period to start at 0
+epilepsy$visit <- as.numeric(as.character(epilepsy$visit)) - 1
+```
+
+```{r m2_poisson, message=TRUE, results='hide', cache=TRUE}
+m2_poisson <- 
+  brm(count ~ visit + (1 | patient), 
+      data = epilepsy, 
+      family = poisson("log"), 
+      control = list(adapt_delta = .90), 
+      seed = 4090)
+```
+
+### Plotting the Output
+
+```{r plot-poisson}
+random_patients <- sample(unique(epilepsy$patient), size = 12)
+plot(
+  conditional_effects(
+    m2_poisson, 
+    type = "pred", 
+    re_formula = NULL, 
+    conditions = tibble(patient = random_patients), 
+  ), 
+  ncol = 4  # six columns in the plot
+)
+```
+
+### Interpretation
+
+#### Intercept
+
+At the first period, the average predicted log seizure rate was `r fixef(m2_poisson)["Intercept", "Estimate"]`, 95% CI [`r fixef(m2_poisson)["Intercept", "Q2.5"]`, `r fixef(m2_poisson)["Intercept", "Q97.5"]`]. 
+
+#### Slopes
+
+The log seizure rate decreased by `r fixef(m2_poisson)["visit", "Estimate"]` every two weeks, 95% CI [`r fixef(m2_poisson)["visit", "Q2.5"]`, `r fixef(m2_poisson)["visit", "Q97.5"]`]. 
+
+#### Multiplicative weights
+
+You can exponentiate the coefficients to turn them into multiplicative weights; i.e., $\exp(\gamma)$. For example, if $\exp(\gamma) = 0.9$, it means that every unit increase in the predictor is associated with a decrease in the outcome by 10%. 
+
+The log seizure rate decreased by `r 100 * (1 - exp(fixef(m2_poisson)["visit", "Estimate"]))`% every two weeks, 95% CI [`r 100 * (1 - exp(fixef(m2_poisson)["visit", "Q2.5"]))`%, `r 100 * (1 - exp(fixef(m2_poisson)["visit", "Q97.5"]))`%]. 
+
+### Predictive Check
+
+You can check whether the model simulates data that look like the sample data. 
+
+```{r ppcheck-m2}
+pp_check(m2_poisson)
+```
+

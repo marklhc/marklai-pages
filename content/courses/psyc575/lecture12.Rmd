@@ -1,0 +1,165 @@
+---
+title: Week 12
+linktitle: Lecture videos (wk 12)
+type: docs
+date: "2020-10-25T13:54:00+01:00"
+draft: false
+slides: "psyc575/12_multilevel_logistic"
+menu:
+  psyc575:
+    parent: Week 12
+    weight: 1
+output:
+  blogdown::html_page:
+    toc: true
+    df_print: paged
+# Prev/next pager order (if `docs_section_pager` enabled in `params.toml`)
+weight: 1
+---
+
+`r blogdown::shortcode("slide-buttons2")`
+
+```{r, include=FALSE}
+library(checkdown)
+right_ans <- c("Correct :+1:", 
+               "Great job :+1:")
+wrong_ans <- "Try again. You can do it!"
+```
+
+## Logistic MLM
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "amg_pAGFS-A")
+```
+
+***
+
+Check your learning: Which of the following is a binary variable?
+
+```{r echo=FALSE, results="asis"}
+check_question("Whether a participant gets hospitalized or not.", 
+               options = c("The number of symptoms a person show per day.", 
+                           "The time from the start of a study to when a participant gets hospitalized.", 
+                           "Whether a participant gets hospitalized or not."), 
+               type = "radio", 
+               right = sample(right_ans, 1, prob = c(.7, .3)), 
+               wrong = wrong_ans)
+```
+
+***
+
+### Example Data
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "LSDPVPUQpUc")
+```
+
+***
+
+Check your learning: Which of the following is **not** a reason to use a logistic model?
+
+```{r echo=FALSE, results="asis"}
+check_question("Dichotomizing an outcome can make interpretation easier.", 
+               options = c("Dichotomizing an outcome can make interpretation easier.", 
+                           "It uses a distribution suitable for a binary outcome.", 
+                           "It accomodates heterogenous variance."), 
+               type = "radio", 
+               right = sample(right_ans, 1, prob = c(.7, .3)), 
+               wrong = wrong_ans)
+```
+
+***
+
+## Elements of Logistic MLM
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "ZWDSTPnahVs")
+```
+
+***
+
+Check your learning: A logistic model assumes that the outcome follows
+
+```{r echo=FALSE, results="asis"}
+check_question("a Bernoulli distribution", 
+               options = c("a normal distribution", 
+                           "a Student's t distribution", 
+                           "a Bernoulli distribution"), 
+               type = "radio", 
+               right = sample(right_ans, 1, prob = c(.7, .3)), 
+               wrong = wrong_ans)
+```
+
+***
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "fIZZSmVdiIs")
+```
+
+***
+
+Check your learning: A log odds of 0.5 corresponds to a probability of
+
+```{r echo=FALSE, results="asis"}
+check_question("0.62", 
+               options = c("0.12", 
+                           "0.5", 
+                           "0.62"), 
+               type = "radio", 
+               right = sample(right_ans, 1, prob = c(.7, .3)), 
+               wrong = wrong_ans)
+```
+
+***
+
+## Unconditional Model
+
+### Model equations
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "oi79Zl-IQf8")
+```
+
+***
+
+Check your learning: In a logistic model predicting whether a person reported a daily stressor, the coefficient of age was -0.5. The interpretation is that
+
+```{r echo=FALSE, results="asis"}
+check_question("every unit increase in age is associated with a 0.5 decrease in the log odds of reporting a daily stressor", 
+               options = c("every unit increase in age is associated with a 0.5 unit decrease of daily stressor", 
+                           "every unit increase in age is associated with a 0.5 percentage point decrease of reporting a daily stressor", 
+                           "every unit increase in age is associated with a 0.5 decrease in the log odds of reporting a daily stressor"), 
+               type = "radio", 
+               right = sample(right_ans, 1, prob = c(.7, .3)), 
+               wrong = wrong_ans)
+```
+
+***
+
+## Adding Predictors
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "P95ruzXQAiU")
+```
+
+## Generalized Linear Mixed Model (GLMM)
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "Tq1XaZO_8Bc")
+```
+
+***
+
+Check your learning: A researcher wants to compare the proportion of minority hires in the past year across departments and schools. The total number of hires for each department is known. Which model is the most appropriate?
+
+```{r echo=FALSE, results="asis"}
+check_question("Binomial logistic", 
+               options = c("Binomial logistic", 
+                           "Poisson", 
+                           "Exponential"), 
+               type = "radio", 
+               right = sample(right_ans, 1, prob = c(.7, .3)), 
+               wrong = wrong_ans)
+```
+
+***

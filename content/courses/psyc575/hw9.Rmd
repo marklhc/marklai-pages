@@ -1,0 +1,101 @@
+---
+title: Homework 
+date: '2020-10-25'
+slug: homework-9
+categories: []
+tags: []
+linktitle: Homework 9
+summary: ~
+lastmod: '`r Sys.Date()`'
+type: docs
+menu:
+  psyc575:
+    parent: Week 12
+    weight: 4
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+options(width = 100)
+comma <- function(x) format(x, digits = 2, big.mark = ",")
+```
+
+## Learning Objective
+
+- Independently analyze real data using statistical software for multilevel modeling
+
+## Assignment Description 
+
+In this assignment, you will use the "happy_combined.sav" data set that you used in previous homework. This time, the outcome, `happy`, will be dichotomized into a binary variable, with 0 = Not happy = (`happy` = 1 or 2), 1 = happy = (`happy` = 3 or 4). You will fit a multilevel logistic model with `income` predicting `happy`. 
+
+The given data set is a subset of the World Value Survey--1990-93 data (World Values Study Group, 1994). There are five variables in the data set:
+
+1. `CountryID`: Country ID
+2. `country`: Country's name
+3. `gm_GNP`: Grand-mean centered Gross National Product (rescaled by 1/10,000)
+4. `income`: Income level (0-_least income_ to 9-_most income_)
+5. `happy`: Feel happy (1-_not happy_ to 4-_very happy_)
+
+Follow the instructions and complete the assignment by **November 6**. This assignment is worth 6 points. 
+
+## Steps
+
+```{r load-pkg, message=FALSE, include=FALSE}
+# To install a package, run the following ONCE (and only once on your computer)
+# install.packages("psych")  
+library(here)  # makes reading data more consistent
+library(tidyverse)  # for data manipulation and plotting
+library(haven)  # for importing SPSS/SAS/Stata data
+library(brms)  # for Bayesian multilevel analysis
+# (Optional) Set multiple cores in global option
+options(mc.cores = min(parallel::detectCores() - 1, 2L))
+library(broom.mixed)  # for summarizing results
+library(modelsummary)  # for making tables# Add the following so that the LOO will be included in the msummary table
+msummary_mixed <- function(models, coef_map = NULL, add_rows = NULL, ...) {
+  if (is.null(coef_map)) {
+    if (!"list" %in% class(models)) {
+      models <- list(models)
+    }
+    for (model in models) {
+      coef_map <- union(coef_map, tidy(model)$term)
+    }
+  }
+  ranef_index <- grep("^(sd|cor)__", x = coef_map)
+  coef_map <- c(coef_map[-ranef_index], coef_map[ranef_index])
+  names(coef_map) <- coef_map
+  rows <- data.frame(term = c("Fixed Effects", "Random Effects"))
+  rows <- cbind(rows, rbind(rep("", length(models)), 
+                            rep("", length(models))))
+  length_fes <- length(coef_map) - length(ranef_index)
+  attr(rows, 'position') <- c(1, (length_fes + 1) * 2)
+  modelsummary::msummary(models, coef_map = coef_map, add_rows = rows, ...)
+}
+theme_set(theme_bw())  # Theme; just my personal preference
+```
+
+```{r import_sav, message=FALSE}
+# Read in the data (pay attention to the directory)
+happy_dat <- read_sav(here("data_files", "happy_combined.sav"))
+```
+
+1. First, dichotomize the outcome to create a binary variable `happy01` using the code below
+```{r happy01, indent='    ', echo=TRUE}
+happy_dat <- happy_dat %>% 
+  mutate(happy01 = factor(happy >= 3, labels = c("not happy", "happy")))
+# Verify the recoding
+happy_dat %>% 
+  distinct(happy, happy01)
+```
+2. Compute the ICC for the `happy01` variable due to country-level clustering. Show you steps of calculation.
+3. Using cluster-mean centering of income, fit a model that decomposes the association between `income` and `happy01` into the person-level and the country-level effects.
+    i. Write out the model equation(s)
+    ii. Write a paragraph to interpret the model results. For this assignment, you should focus on the fixed-effect coefficients. You can reference the slides for how to interpret these coefficients. Use plots to help your interpretation. 
+4. Knit your Rmd file to HTML/PDF/Word, and submit the knitted file to Blackboard. 
+
+## Grading 
+
+Your instructor will use the rubric on Slack to grade this assignment. 
+
+## Additional Notes
+
+You may post your questions to the Slack channel to get help from your peers and instructor. 

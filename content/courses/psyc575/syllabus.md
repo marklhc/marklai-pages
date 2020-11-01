@@ -516,8 +516,8 @@ Student feedback is essential to the instructor and the Department to keep impro
 <td>
 
 - Exercise: Probability vs. odds ratio
-- [HW 9](#)
-- Peer review (due 11/9)
+- [HW 9](../homework-9)
+- [Peer review](../peer-review-comment) (due 11/9)
 
 </td>
 </tr>

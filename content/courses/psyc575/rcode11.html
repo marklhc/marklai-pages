@@ -1,0 +1,578 @@
+---
+title: Using R for Week 12
+linktitle: R Codes (wk 12)
+type: docs
+date: "2020-10-25T11:39:00+01:00"
+draft: false
+lastmod: '2020-10-31'
+rmd: "rcodes/week12-logistic"
+menu:
+  psyc575:
+    parent: Week 12
+    weight: 2
+output:
+  blogdown::html_page:
+    toc: true
+    df_print: paged
+header-includes:
+  - \newcommand{\bv}[1]{\boldsymbol{\mathbf{#1}}}
+# Prev/next pager order (if `docs_section_pager` enabled in `params.toml`)
+weight: 2
+---
+
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+<link href="/rmarkdown-libs/pagedtable/css/pagedtable.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/pagedtable/js/pagedtable.js"></script>
+<link href="/rmarkdown-libs/anchor-sections/anchor-sections.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/anchor-sections/anchor-sections.js"></script>
+<script src="/rmarkdown-libs/kePrint/kePrint.js"></script>
+<link href="/rmarkdown-libs/lightable/lightable.css" rel="stylesheet" />
+
+<div id="TOC">
+<ul>
+<li><a href="#load-packages-and-import-data">Load Packages and Import Data</a>
+<ul>
+<li><a href="#problem-of-a-linear-model">Problem of a Linear Model</a></li>
+</ul></li>
+<li><a href="#multilevel-logistic-regression">Multilevel Logistic Regression</a>
+<ul>
+<li><a href="#bernoulli-distribution">Bernoulli Distribution</a></li>
+<li><a href="#transformation">Transformation</a></li>
+<li><a href="#model-equation">Model Equation</a></li>
+<li><a href="#using-brms">Using <code>brms</code></a>
+<ul>
+<li><a href="#unconditional-model">Unconditional Model</a></li>
+<li><a href="#with-lv-2-and-lv-1-predictors">With Lv-2 and Lv-1 Predictors</a></li>
+<li><a href="#plotting">Plotting</a></li>
+<li><a href="#interpretations">Interpretations</a></li>
+<li><a href="#predicted-probabilities-with-representative-values">Predicted probabilities with representative values</a></li>
+</ul></li>
+<li><a href="#table-of-coefficients">Table of Coefficients</a></li>
+</ul></li>
+</ul>
+</div>
+
+{{% rmd-buttons %}}
+<div id="load-packages-and-import-data" class="section level2">
+<h2>Load Packages and Import Data</h2>
+<pre class="r"><code># To install a package, run the following ONCE (and only once on your computer)
+# install.packages(&quot;psych&quot;)  
+library(here)  # makes reading data more consistent
+library(tidyverse)  # for data manipulation and plotting
+library(haven)  # for importing SPSS/SAS/Stata data
+library(brms)  # for Bayesian multilevel analysis
+# (Optional) Set multiple cores in global option
+options(mc.cores = min(parallel::detectCores() - 1, 2L))
+library(broom.mixed)  # for summarizing results
+library(modelsummary)  # for making tables# Add the following so that the LOO will be included in the msummary table
+msummary_mixed &lt;- function(models, coef_map = NULL, add_rows = NULL, ...) {
+  if (is.null(coef_map)) {
+    if (!&quot;list&quot; %in% class(models)) {
+      models &lt;- list(models)
+    }
+    for (model in models) {
+      coef_map &lt;- union(coef_map, tidy(model)$term)
+    }
+  }
+  ranef_index &lt;- grep(&quot;^(sd|cor)__&quot;, x = coef_map)
+  coef_map &lt;- c(coef_map[-ranef_index], coef_map[ranef_index])
+  names(coef_map) &lt;- coef_map
+  rows &lt;- data.frame(term = c(&quot;Fixed Effects&quot;, &quot;Random Effects&quot;))
+  rows &lt;- cbind(rows, rbind(rep(&quot;&quot;, length(models)), 
+                            rep(&quot;&quot;, length(models))))
+  length_fes &lt;- length(coef_map) - length(ranef_index)
+  attr(rows, &#39;position&#39;) &lt;- c(1, (length_fes + 1) * 2)
+  modelsummary::msummary(models, coef_map = coef_map, add_rows = rows, ...)
+}
+theme_set(theme_bw())  # Theme; just my personal preference</code></pre>
+<p>In this week, we’ll talk about logistic regression for binary data. We’ll use the same HSB data that you have seen before, but with a dichotomous variable created. In practice it is generally a bad idea to arbitrarily dichotomize a binary variable, as it may represent a substantial loss of information; it’s done here just for pedagogical purpose.</p>
+<p>Here we consider those who score 20 or above for a “commended” status.</p>
+<pre class="r"><code># Read in the data (pay attention to the directory)
+hsball &lt;- read_sav(here(&quot;data_files&quot;, &quot;hsball.sav&quot;))
+# Dichotomize mathach
+hsball &lt;- hsball %&gt;% 
+  mutate(mathcom = as.integer(mathach &gt;= 20))</code></pre>
+<p>Let’s plot the commended distribution for a few schools</p>
+<pre class="r"><code>set.seed(7351)
+# Randomly select some schools
+random_schools &lt;- sample(hsball$id, size = 9)
+hsball %&gt;% 
+  filter(id %in% random_schools) %&gt;% 
+  mutate(mathcom = factor(mathcom, 
+                          labels = c(&quot;not commended&quot;, &quot;commended&quot;))) %&gt;% 
+  ggplot(aes(x = mathcom)) + 
+  geom_bar() + 
+  facet_wrap( ~ id, ncol = 3) + 
+  coord_flip()</code></pre>
+<p><img src="/courses/psyc575/rcode11_files/figure-html/plot-commend-1.png" width="672" /></p>
+<div id="problem-of-a-linear-model" class="section level3">
+<h3>Problem of a Linear Model</h3>
+<p>Let’s use our linear model, and then talk about the problems. Let’s use <code>meanses</code> as predictor.</p>
+<pre class="r"><code>m_lme &lt;- brm(mathcom ~ meanses + (1 | id), data = hsball, 
+             seed = 1541)</code></pre>
+<p>So it runs, and it indicates a positive association between <code>meanses</code> and <code>mathcom</code>. Let’s plot the effect:</p>
+<pre class="r"><code>plot(
+  conditional_effects(m_lme, effects = &quot;meanses&quot;), 
+  points = TRUE, 
+  point_args = c(height = 0.01, size = 0.2, alpha = 0.5)
+)</code></pre>
+<p><img src="/courses/psyc575/rcode11_files/figure-html/plot-m_lme-1.png" width="672" />
+Well, this looks a bit strange. The outcome can only take two values, but the predictions are in decimals. We can assume may be we are predicting the probability of being commended for each student, but still there are some negative predictions that are not possible. For example, if we consider a school with <code>meanses</code> = -2, our prediction would be</p>
+<pre class="r"><code>predict(m_lme, newdata = tibble(meanses = -2), re_formula = NA)</code></pre>
+<pre><code>&gt;#        Estimate Est.Error     Q2.5    Q97.5
+&gt;# [1,] -0.1781071 0.3719797 -0.88476 0.554085</code></pre>
+<p>Another problem is that the data is not normally distributed. We can look at the distribution of the data (in darker line) and of simulated data based on the model (in lighter lines) below:</p>
+<pre class="r"><code>pp_check(m_lme)</code></pre>
+<pre><code>&gt;# Using 10 posterior samples for ppc type &#39;dens_overlay&#39; by default.</code></pre>
+<p><img src="/courses/psyc575/rcode11_files/figure-html/pp-check-m_lme-1.png" width="672" /></p>
+<p>Another related and subtle problem is that the residual variance is not constant across levels of the predictor. For example, the residual variance for <code>meanses</code> <span class="math inline">\(\leq\)</span> -0.5 is</p>
+<pre class="r"><code>augmented_data &lt;- 
+  augment(m_lme)
+augmented_data %&gt;% 
+  filter(meanses &lt;= -.5) %&gt;% 
+  # extract the .resid column
+  pull(.resid) %&gt;% 
+  # residual variance
+  var()</code></pre>
+<pre><code>&gt;# [1] 0.05823324</code></pre>
+<p>But when `meanses &gt; 0.5 it was</p>
+<pre class="r"><code>augmented_data %&gt;% 
+  filter(meanses &gt; .5) %&gt;% 
+  # extract the .resid column
+  pull(.resid) %&gt;% 
+  # residual variance
+  var()</code></pre>
+<pre><code>&gt;# [1] 0.193315</code></pre>
+<p>These are pretty large differences, and it happens every time one uses a normal linear model for a binary outcome. The textbook has more discussion on this.</p>
+<p>So because of these limitations, we generally prefer models designed for binary outcomes, the most popular one is commonly referred to as a logistic model.</p>
+</div>
+</div>
+<div id="multilevel-logistic-regression" class="section level1">
+<h1>Multilevel Logistic Regression</h1>
+<p>The logistic model modifies the linear multilevel model in two ways.</p>
+<div id="bernoulli-distribution" class="section level2">
+<h2>Bernoulli Distribution</h2>
+<p>First, it replaces the assumption that the conditional distribution of the outcome is normal with one that says the outcome follows a <em>Bernoulli</em> distribution, which is a distribution for binary variables (e.g., outcome of a coin flip). Below is a comparison of a Bernoulli distribution (left) with mean = 0.8 (i.e., 80% success and 20% failure), which by definition has a standard deviation of 0.4, and a normal distribution (right) with a mean = 0.8 and a standard deviation of 0.4:</p>
+<pre class="r"><code>p1 &lt;- ggplot(tibble(y = c(0, 1), p = c(0.2, 0.8)), aes(x = y, y = p)) + 
+  geom_col(width = 0.05) + 
+  xlim(-0.4, 2) + 
+  labs(y = &quot;Probability Mass&quot;)
+p2 &lt;- ggplot(tibble(y = c(0, 1)), aes(x = y)) + 
+  stat_function(fun = dnorm, args = list(mean = 0.8, sd = 0.4)) + 
+  xlim(-0.4, 2) + 
+  labs(y = &quot;Probability Density&quot;)
+gridExtra::grid.arrange(p1, p2, ncol = 2)</code></pre>
+<p><img src="/courses/psyc575/rcode11_files/figure-html/norm-vs-bern-1.png" width="672" />
+With the Bernoulli distribution, the possible values are only 0 and 1, so it matches the outcome.</p>
+</div>
+<div id="transformation" class="section level2">
+<h2>Transformation</h2>
+<p>Second, instead of directly modeling the mean of a binary outcome (i.e., probability), which is bounded between 0 and 1, a logistic model transforms the mean of the outcome into something that is unbounded (i.e., with range between <span class="math inline">\(-\infty\)</span> and <span class="math inline">\(\infty\)</span>). We can this <span class="math inline">\(\eta\)</span>. One common transformation that would do this is the logit transformation, which converts a probability into odds, and then to log odds:
+<span class="math display">\[\text{Log Odds} = \log \left(\frac{\text{Probability}}{1 - \text{Probability}}\right)\]</span></p>
+<p>As shown below,</p>
+<pre class="r"><code>ggplot(tibble(mu = c(0, 1)), aes(x = mu)) +
+  stat_function(fun = qlogis, n = 501) + 
+  labs(x = &quot;Probability&quot;, y = &quot;Log Odds (logit)&quot;)</code></pre>
+<p><img src="/courses/psyc575/rcode11_files/figure-html/log-odds-1.png" width="672" />
+For example, when the probability is 0.5, the log odds = 0; when the probability = 0.9, the log odds = 0.7109495; when the probability = -0.9, the log odds = 0.2890505.</p>
+</div>
+<div id="model-equation" class="section level2">
+<h2>Model Equation</h2>
+<p>To understand the equation for a logistic model, it helps to write the normal linear model in its full form by specifying the distributions. Let’s look at the simplest unconditional model without predictors. First, we can write
+<span class="math display">\[\text{mathcom}_{ij} = \mu_{ij} + e_{ij}, \quad e_{ij} \sim N(0, \sigma), \]</span>
+where <span class="math inline">\(\mu_{ij}\)</span> is the predicted value of <code>mathcom</code> for the <span class="math inline">\(i\)</span>th individual in the <span class="math inline">\(j\)</span>th school. This is equivalent to saying
+<span class="math display">\[\text{mathcom}_{ij} \sim N(\mu_{ij}, \sigma),\]</span>
+because if a variable is normal with a mean 0, adding a value to it changes its mean, but it will still be normal. This says <code>mathcom</code> is normally distributed around the predicted value with an error variance of <span class="math inline">\(\sigma\)</span>. The predicted value is separated into level 1
+<span class="math display">\[
+  \begin{aligned}
+    \text{mathcom}_{ij} &amp; \sim N(\mu_{ij}, \sigma) \\
+    \mu_{ij} &amp; = \beta_{0j}
+  \end{aligned}
+\]</span>
+and level 2
+<span class="math display">\[\beta_{0j} = \gamma_{00} + u_{0j}\]</span>
+You can convince yourself that this is the same model you’ve seen in Week 3.</p>
+<p>Now, we’ll change the distribution of <code>mathcom</code>, and transform <span class="math inline">\(\mu_{ij}\)</span> from probability to log odds:</p>
+<p>Level 1
+<span class="math display">\[
+  \begin{aligned}
+    \text{mathcom}_{ij} &amp; \sim \text{Bernoulli}(\mu_{ij}) \\
+    \eta_{ij} &amp; = \text{logit}(\mu_{ij}) \\
+    \eta_{ij} &amp; = \beta_{0j}
+  \end{aligned}
+\]</span>
+Level 2
+<span class="math display">\[\beta_{0j} = \gamma_{00} + u_{0j}\]</span>
+The level-2 equation has not changed, but the meaning of <span class="math inline">\(\beta_{0j}\)</span> is different now: it is the cluster mean of cluster <span class="math inline">\(j\)</span> in the log odds unit.</p>
+</div>
+<div id="using-brms" class="section level2">
+<h2>Using <code>brms</code></h2>
+<p>With logistic regression, frequentist methods rely on approximations that are sometimes problematic and give biased results. I recommend instead using Bayesian estimation, such as with <code>brms</code>. The only thing you need to change is to specify <code>family = Bernoulli("logit")</code></p>
+<div id="unconditional-model" class="section level3">
+<h3>Unconditional Model</h3>
+<pre class="r"><code>m0_logit &lt;- brm(mathcom ~ (1 | id), 
+               data = hsball, 
+               family = bernoulli(&quot;logit&quot;), 
+               seed = 1541)</code></pre>
+<p>By definition, <span class="math inline">\(\sigma\)</span> is fixed to be <span class="math inline">\(\pi^2 / 3\)</span> in the log-odds unit in a logistic model. Therefore, the ICC is</p>
+<pre class="r"><code>post_tau &lt;- posterior_samples(m0_logit, pars = c(&quot;sd&quot;))
+# Posterior of ICC: tau_0^2 / (tau_0^2 + sigma^2)
+icc_samples &lt;- post_tau$sd_id__Intercept^2 / 
+  (post_tau$sd_id__Intercept^2 + pi^2 / 3)
+# Posterior summary of ICC
+posterior_summary(icc_samples)</code></pre>
+<pre><code>&gt;#       Estimate  Est.Error      Q2.5     Q97.5
+&gt;# [1,] 0.1498612 0.02141061 0.1108284 0.1955525</code></pre>
+</div>
+<div id="with-lv-2-and-lv-1-predictors" class="section level3">
+<h3>With Lv-2 and Lv-1 Predictors</h3>
+<pre class="r"><code>hsball &lt;- hsball %&gt;% 
+  group_by(id) %&gt;%   # operate within schools
+  mutate(ses_cm = mean(ses),   # create cluster means (the same as `meanses`)
+         ses_cmc = ses - ses_cm) %&gt;%   # cluster-mean centered
+  ungroup()  # exit the &quot;editing within groups&quot; mode</code></pre>
+<p>Lv-1:</p>
+<p><span class="math display">\[
+  \begin{aligned}
+    \text{mathcom}_{ij} &amp; \sim \text{Bernoulli}(\mu_{ij}) \\
+    \eta_{ij} &amp; = \text{logit}(\mu_{ij}) \\
+    \eta_{ij} &amp; = \beta_{0j} + \beta_{1j} \text{ses_cmc}_{ij}
+  \end{aligned}
+\]</span></p>
+<p>Lv-2:</p>
+<p><span class="math display">\[
+\begin{aligned}
+  \beta_{0j} &amp; = \gamma_{00} + \gamma_{01} \text{meanses}_j + u_{0j}  \\
+  \beta_{1j} &amp; = \gamma_{10} + u_{1j}  \\
+  \begin{bmatrix}
+    u_{0j} \\
+    u_{1j}
+  \end{bmatrix} &amp; \sim 
+  N\left(
+    \begin{bmatrix}
+      0 \\
+      0
+    \end{bmatrix}, 
+    \begin{bmatrix}
+      \tau^2_0 &amp;  \\
+      \tau_{01} &amp; \tau^2_{1}
+    \end{bmatrix}
+  \right)
+\end{aligned}
+\]</span></p>
+<pre class="r"><code>m1_logit &lt;- brm(mathcom ~ meanses + ses_cmc + (ses_cmc | id), 
+                data = hsball, 
+                family = bernoulli(&quot;logit&quot;), 
+                seed = 1541)</code></pre>
+<pre class="r"><code>summary(m1_logit)</code></pre>
+<pre><code>&gt;#  Family: bernoulli 
+&gt;#   Links: mu = logit 
+&gt;# Formula: mathcom ~ meanses + ses_cmc + (ses_cmc | id) 
+&gt;#    Data: hsball (Number of observations: 7185) 
+&gt;# Samples: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+&gt;#          total post-warmup samples = 4000
+&gt;# 
+&gt;# Group-Level Effects: 
+&gt;# ~id (Number of levels: 160) 
+&gt;#                        Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS
+&gt;# sd(Intercept)              0.52      0.05     0.42     0.64 1.00     1220
+&gt;# sd(ses_cmc)                0.11      0.07     0.01     0.26 1.01     1164
+&gt;# cor(Intercept,ses_cmc)    -0.48      0.44    -0.98     0.72 1.00     2234
+&gt;#                        Tail_ESS
+&gt;# sd(Intercept)              2226
+&gt;# sd(ses_cmc)                1319
+&gt;# cor(Intercept,ses_cmc)     2064
+&gt;# 
+&gt;# Population-Level Effects: 
+&gt;#           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+&gt;# Intercept    -1.76      0.06    -1.87    -1.65 1.00     1840     2199
+&gt;# meanses       1.45      0.14     1.19     1.73 1.00     1801     2381
+&gt;# ses_cmc       0.59      0.06     0.48     0.71 1.00     3791     2775
+&gt;# 
+&gt;# Samples were drawn using sampling(NUTS). For each parameter, Bulk_ESS
+&gt;# and Tail_ESS are effective sample size measures, and Rhat is the potential
+&gt;# scale reduction factor on split chains (at convergence, Rhat = 1).</code></pre>
+</div>
+<div id="plotting" class="section level3">
+<h3>Plotting</h3>
+<p>Plotting is especially important with transformation, as it shows the association in probability unit</p>
+<pre class="r"><code>m1_plots &lt;- plot(
+  conditional_effects(
+    m1_logit
+  ), 
+  points = TRUE, 
+  point_args = c(height = 0.02, alpha = 0.3, size = 0.2), 
+  plot = FALSE
+)
+gridExtra::grid.arrange(grobs = m1_plots, ncol = 2)</code></pre>
+<p><img src="/courses/psyc575/rcode11_files/figure-html/plot-m1-1.png" width="672" /></p>
+</div>
+<div id="interpretations" class="section level3">
+<h3>Interpretations</h3>
+<div id="intercept" class="section level4">
+<h4>Intercept</h4>
+<p>For a student with <code>ses</code> = 0 in a school with <code>meanses</code> = 0, the predicted log odds of being commended was -1.7571998, 95% CI [-1.8715416, -1.6489205].</p>
+</div>
+<div id="slopes" class="section level4">
+<h4>Slopes</h4>
+<p>A unit increase in <code>meanses</code> is associated with an increase in log odds of 1.4546341 of being commended, 95% CI [1.1888783, 1.7303116].</p>
+<p>Within a given school, a unit increase in student-level <code>ses</code> is associated with an increase in log odds of 0.5938737 of being commended, 95% CI [0.4843487, 0.7066524].</p>
+</div>
+<div id="odds-ratio" class="section level4">
+<h4>Odds ratio</h4>
+<p>A unit increase in <code>meanses</code> is associated with the odds of being commended multiplied by 4.282916, 95% CI [3.2833963, 5.6424117].</p>
+<p>Within a given school, a unit increase in <code>ses</code> is associated with the odds of being commended multiplied by 1.81099, 95% CI [1.6231175, 2.0271937].</p>
+</div>
+</div>
+<div id="predicted-probabilities-with-representative-values" class="section level3">
+<h3>Predicted probabilities with representative values</h3>
+<pre class="r"><code># meanses = 0; ses_cmc = -0.5 vs 0.5
+pred_df1 &lt;- expand_grid(meanses = 0, 
+                        ses_cmc = c(-0.5, 0.5))
+cbind(pred_df1, 
+      predict(m1_logit, newdata = pred_df1, re_formula = NA))</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["meanses"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["ses_cmc"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["Estimate"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Est.Error"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["Q2.5"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Q97.5"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"0","2":"-0.5","3":"0.11025","4":"0.3132403","5":"0","6":"1"},{"1":"0","2":"0.5","3":"0.18850","4":"0.3911598","5":"0","6":"1"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre class="r"><code># meanses = -0.5 vs 0.5; ses_cmc = 0
+pred_df2 &lt;- expand_grid(meanses = c(-0.5, 0.5), 
+                        ses_cmc = 0)
+cbind(pred_df2, 
+      predict(m1_logit, newdata = pred_df2, re_formula = NA))</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["meanses"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["ses_cmc"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["Estimate"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Est.Error"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["Q2.5"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Q97.5"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"-0.5","2":"0","3":"0.07725","4":"0.2670211","5":"0","6":"1"},{"1":"0.5","2":"0","3":"0.26950","4":"0.4437555","5":"0","6":"1"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="table-of-coefficients" class="section level2">
+<h2>Table of Coefficients</h2>
+<pre class="r"><code>msummary_mixed(list(m0_logit, m1_logit), 
+               looic = TRUE)</code></pre>
+<pre><code>&gt;# Warning in tidy.brmsfit(model): some parameter names contain underscores: term
+&gt;# naming may be unreliable!</code></pre>
+<pre><code>&gt;# Warning in tidy.brmsfit(model, ...): some parameter names contain underscores:
+&gt;# term naming may be unreliable!</code></pre>
+<table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:center;">
+Model 1
+</th>
+<th style="text-align:center;">
+Model 2
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Fixed Effects
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:center;">
+-1.693
+</td>
+<td style="text-align:center;">
+-1.757
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:center;">
+(0.073)
+</td>
+<td style="text-align:center;">
+(0.056)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+meanses
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+1.455
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+(0.139)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ses_cmc
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+0.594
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+(0.057)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Random Effects
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sd__(Intercept)
+</td>
+<td style="text-align:center;">
+0.760
+</td>
+<td style="text-align:center;">
+0.523
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:center;">
+(0.064)
+</td>
+<td style="text-align:center;">
+(0.054)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sd__ses_cmc
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+0.110
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+(0.070)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+cor__(Intercept).ses_cmc
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+-0.482
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+(0.438)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Num.Obs.
+</td>
+<td style="text-align:center;">
+7185
+</td>
+<td style="text-align:center;">
+7185
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+algorithm
+</td>
+<td style="text-align:center;">
+sampling
+</td>
+<td style="text-align:center;">
+sampling
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+elpd_loo
+</td>
+<td style="text-align:center;">
+-3186.573
+</td>
+<td style="text-align:center;">
+-3107.678
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+looic
+</td>
+<td style="text-align:center;">
+6373.146
+</td>
+<td style="text-align:center;">
+6215.357
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+p_loo
+</td>
+<td style="text-align:center;">
+115.880
+</td>
+<td style="text-align:center;">
+96.771
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+pss
+</td>
+<td style="text-align:center;">
+4000.000
+</td>
+<td style="text-align:center;">
+4000.000
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
