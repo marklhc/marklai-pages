@@ -4,7 +4,7 @@ linktitle: Bonus R Codes (wk 12)
 type: docs
 date: "2020-10-25T11:39:00+01:00"
 draft: false
-lastmod: '2020-10-31'
+lastmod: '2020-11-04'
 rmd: "rcodes/week12-bonus"
 menu:
   psyc575:
@@ -169,6 +169,33 @@ hiring_post</code></pre>
       seed = 4090)</code></pre>
 <pre><code>&gt;# Compiling Stan program...</code></pre>
 <pre><code>&gt;# Start sampling</code></pre>
+<pre class="r"><code>summary(m1_binomial)</code></pre>
+<pre><code>&gt;#  Family: binomial 
+&gt;#   Links: mu = logit 
+&gt;# Formula: num_female_hires | trials(NH_NumFac) ~ EXPDEPT + (EXPDEPT | PAIR_RAND) 
+&gt;#    Data: hiring_post %&gt;% filter(NH_NumFac &gt; 0) (Number of observations: 77) 
+&gt;# Samples: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+&gt;#          total post-warmup samples = 4000
+&gt;# 
+&gt;# Group-Level Effects: 
+&gt;# ~PAIR_RAND (Number of levels: 42) 
+&gt;#                                    Estimate Est.Error l-95% CI u-95% CI Rhat
+&gt;# sd(Intercept)                          0.56      0.34     0.03     1.32 1.00
+&gt;# sd(EXPDEPTintervention)                1.23      0.68     0.09     2.68 1.00
+&gt;# cor(Intercept,EXPDEPTintervention)    -0.08      0.53    -0.90     0.92 1.00
+&gt;#                                    Bulk_ESS Tail_ESS
+&gt;# sd(Intercept)                          1246     1585
+&gt;# sd(EXPDEPTintervention)                 688     1337
+&gt;# cor(Intercept,EXPDEPTintervention)      974     1998
+&gt;# 
+&gt;# Population-Level Effects: 
+&gt;#                     Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+&gt;# Intercept              -0.87      0.26    -1.44    -0.40 1.00     3219     2039
+&gt;# EXPDEPTintervention     0.85      0.43     0.05     1.77 1.00     3051     1740
+&gt;# 
+&gt;# Samples were drawn using sampling(NUTS). For each parameter, Bulk_ESS
+&gt;# and Tail_ESS are effective sample size measures, and Rhat is the potential
+&gt;# scale reduction factor on split chains (at convergence, Rhat = 1).</code></pre>
 <p>Two things should be noted. First, in the outcome portion of the formula, the syntax is in the form <code>number_of_success_variable | trials(number_of_trial_variable)</code>. It allows the number of trials to be different across observations, which accommodates our data here as different departments have different number of hires.</p>
 <div id="plotting-the-output" class="section level3">
 <h3>Plotting the Output</h3>
@@ -277,6 +304,27 @@ epilepsy$visit &lt;- as.numeric(as.character(epilepsy$visit)) - 1</code></pre>
 <pre><code>&gt;# Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
 &gt;# Running the chains for more iterations may help. See
 &gt;# http://mc-stan.org/misc/warnings.html#bulk-ess</code></pre>
+<pre class="r"><code>summary(m2_poisson)</code></pre>
+<pre><code>&gt;#  Family: poisson 
+&gt;#   Links: mu = log 
+&gt;# Formula: count ~ visit + (1 | patient) 
+&gt;#    Data: epilepsy (Number of observations: 236) 
+&gt;# Samples: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+&gt;#          total post-warmup samples = 4000
+&gt;# 
+&gt;# Group-Level Effects: 
+&gt;# ~patient (Number of levels: 59) 
+&gt;#               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+&gt;# sd(Intercept)     0.98      0.10     0.80     1.19 1.00      497     1060
+&gt;# 
+&gt;# Population-Level Effects: 
+&gt;#           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+&gt;# Intercept     1.71      0.13     1.44     1.96 1.01      277      434
+&gt;# visit        -0.06      0.02    -0.10    -0.02 1.00     4587     2982
+&gt;# 
+&gt;# Samples were drawn using sampling(NUTS). For each parameter, Bulk_ESS
+&gt;# and Tail_ESS are effective sample size measures, and Rhat is the potential
+&gt;# scale reduction factor on split chains (at convergence, Rhat = 1).</code></pre>
 </div>
 <div id="plotting-the-output-1" class="section level3">
 <h3>Plotting the Output</h3>
