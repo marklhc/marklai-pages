@@ -1,0 +1,98 @@
+---
+title: Week 13
+linktitle: Lecture videos (wk 13)
+type: docs
+date: "2020-10-31T13:54:00+01:00"
+draft: false
+slides: "psyc575/13_samplesize_planning"
+menu:
+  psyc575:
+    parent: Week 13
+    weight: 1
+output:
+  blogdown::html_page:
+    toc: true
+    df_print: paged
+# Prev/next pager order (if `docs_section_pager` enabled in `params.toml`)
+weight: 1
+---
+
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+<link href="/rmarkdown-libs/pagedtable/css/pagedtable.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/pagedtable/js/pagedtable.js"></script>
+<link href="/rmarkdown-libs/anchor-sections/anchor-sections.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/anchor-sections/anchor-sections.js"></script>
+
+<div id="TOC">
+<ul>
+<li><a href="#sample-size-planning">Sample Size Planning</a></li>
+<li><a href="#precision-analysis">Precision Analysis</a>
+<ul>
+<li><a href="#sample-size-and-standard-error">Sample size and standard error</a></li>
+<li><a href="#example">Example</a></li>
+</ul></li>
+<li><a href="#power-analysis">Power Analysis</a>
+<ul>
+<li><a href="#tools">Tools</a></li>
+<li><a href="#notes-on-power-analysis">Notes on power analysis</a></li>
+</ul></li>
+</ul>
+</div>
+
+{{% slide-buttons %}}
+<div id="sample-size-planning" class="section level2">
+<h2>Sample Size Planning</h2>
+{{% youtube "1NLFAQ8M4Ak" %}}
+</div>
+<div id="precision-analysis" class="section level2">
+<h2>Precision Analysis</h2>
+<div id="sample-size-and-standard-error" class="section level3">
+<h3>Sample size and standard error</h3>
+{{% youtube "Bors1lcfInA" %}}
+</div>
+<div id="example" class="section level3">
+<h3>Example</h3>
+{{% youtube "wqrlAXWLC2I" %}}
+<hr />
+<p>Practice yourself: Find the required <span class="math inline">\(J\)</span> for <em>SE</em>(<span class="math inline">\(\gamma_{10}\)</span>) to be <span class="math inline">\(\leq .1\)</span>, when the treatment variable is at level-1 (i.e., <span class="math inline">\(X\)</span>), with 10 individuals per cluster, ICC = <span class="math inline">\(\tau^2_0\)</span> = 0.3, <span class="math inline">\(\sigma^2\)</span> = 0.7, and <span class="math inline">\(\tau^2_1 = 0.1\)</span>.</p>
+<hr />
+</div>
+</div>
+<div id="power-analysis" class="section level2">
+<h2>Power Analysis</h2>
+{{% youtube "7nYrIV5nbDs" %}}
+<hr />
+<p>Check your learning: In the examples in the video, what would change if the researcher assumes a larger effect under the alternative hypothesis?</p>
+<form name="form_84079" onsubmit="return validate_form_84079()" method="post">
+<input type="radio" name="answer_84079" id="84079_1" value="power"><label for="1">power</label><br><input type="radio" name="answer_84079" id="84079_2" value="critical region"><label for="2">critical region</label><br><input type="radio" name="answer_84079" id="84079_3" value="Type I error rate"><label for="3">Type I error rate</label><br><input type="submit" value="check">
+</form>
+<p id="result_84079">
+</p>
+<script> function validate_form_84079() {var x, text; var x = document.forms["form_84079"]["answer_84079"].value;if (x == "power"){text = 'Great job :+1:';} else {text = 'Try again. You can do it!';} document.getElementById('result_84079').innerHTML = text; return false;} </script>
+<hr />
+<div id="tools" class="section level3">
+<h3>Tools</h3>
+{{% youtube "clV_vBac6cM" %}}
+<div id="powerupr-demo" class="section level4">
+<h4>PowerUpR Demo</h4>
+{{% youtube "d9dB9m6wptM" %}}
+<hr />
+<p>Practice yourself: Using PwerUpR, verify that power = .678 when the treatment variable is at level 1 (i.e., Two-level MS-IRT, random treatment), with an average effect of 0.3 (standardized), no covariate, ICC = 0.3, <span class="math inline">\(\tau^2_1 = 0.15\)</span> (i.e., <code>omega2</code> = 0.5 in the program), with 30 clusters and 10 observations per cluster.</p>
+<p>Now, include 1 covariate that has an <span class="math inline">\(R^2\)</span> of .40. What is the power?</p>
+<hr />
+</div>
+</div>
+<div id="notes-on-power-analysis" class="section level3">
+<h3>Notes on power analysis</h3>
+{{% youtube "n73ZFKKlUQw" %}}
+<hr />
+<p>Check your learning: A researcher originally plan to collect data from 30 classrooms with 5 students per classroom, but then found out the study was underpowered. He can collect data from 150 more students. Would it be more beneficial to make it 300 students from 30 classrooms or 300 students from 60 classrooms? Why?</p>
+<form name="form_59062" onsubmit="return validate_form_59062()" method="post">
+<input type="radio" name="answer_59062" id="59062_1" value="300 students from 30 classrooms, because it makes the cluster size larger"><label for="1">300 students from 30 classrooms, because it makes the cluster size larger</label><br><input type="radio" name="answer_59062" id="59062_2" value="300 students from 30 classrooms, because more classrooms increase the noise in the data"><label for="2">300 students from 30 classrooms, because more classrooms increase the noise in the data</label><br><input type="radio" name="answer_59062" id="59062_3" value="300 students from 60 classrooms, because the larger sample size for the classroom level makes tau^2_0 smaller"><label for="3">300 students from 60 classrooms, because the larger sample size for the classroom level makes tau^2_0 smaller</label><br><input type="radio" name="answer_59062" id="59062_4" value="300 students from 60 classrooms, because the larger sample size for the classroom level gives more power for level-2 coefficients"><label for="4">300 students from 60 classrooms, because the larger sample size for the classroom level gives more power for level-2 coefficients</label><br><input type="submit" value="check">
+</form>
+<p id="result_59062">
+</p>
+<script> function validate_form_59062() {var x, text; var x = document.forms["form_59062"]["answer_59062"].value;if (x == "300 students from 60 classrooms, because the larger sample size for the classroom level gives more power for level-2 coefficients"){text = 'Great job :+1:';} else {text = 'Try again. You can do it!';} document.getElementById('result_59062').innerHTML = text; return false;} </script>
+<hr />
+</div>
+</div>

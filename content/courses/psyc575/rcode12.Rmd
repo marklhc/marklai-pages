@@ -1,0 +1,34 @@
+---
+title: Using R for Week 13
+linktitle: R Codes (wk 13)
+type: docs
+date: "2020-10-28T11:39:00+01:00"
+draft: false
+lastmod: '`r Sys.Date()`'
+rmd: "rcodes/week13-samplesize-planning"
+menu:
+  psyc575:
+    parent: Week 13
+    weight: 2
+output:
+  blogdown::html_page:
+    toc: true
+    df_print: paged
+header-includes:
+  - \newcommand{\bv}[1]{\boldsymbol{\mathbf{#1}}}
+# Prev/next pager order (if `docs_section_pager` enabled in `params.toml`)
+weight: 2
+---
+
+`r blogdown::shortcode("rmd-buttons")`
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "mexjG8JYH0o")
+```
+
+```{r, echo=FALSE}
+blogdown::shortcode("youtube", "8-CfslHFD2c")
+```
+
+```{r child='week13-samplesize-planning.RMarkdown'}
+```

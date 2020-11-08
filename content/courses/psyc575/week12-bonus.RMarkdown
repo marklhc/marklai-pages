@@ -129,6 +129,10 @@ m1_binomial <-
       seed = 4090)
 ```
 
+```{r summary-m1-binomial}
+summary(m1_binomial)
+```
+
 Two things should be noted. First, in the outcome portion of the formula, the syntax is in the form `number_of_success_variable | trials(number_of_trial_variable)`. It allows the number of trials to be different across observations, which accommodates our data here as different departments have different number of hires. 
 
 ### Plotting the Output
@@ -242,6 +246,11 @@ m2_poisson <-
       control = list(adapt_delta = .90), 
       seed = 4090)
 ```
+
+```{r summary-m2-poisson}
+summary(m2_poisson)
+```
+
 
 ### Plotting the Output
 
