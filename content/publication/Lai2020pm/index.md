@@ -37,7 +37,7 @@ url_code: 'https://github.com/marklhc/mcfa_reliability_supp'
 url_dataset: ''
 url_poster: ''
 url_project: ''
-url_slides: ''
+url_slides: 'slides/asu_brownbag_2020_Lai_mcfa_reliability.html'
 url_source: ''
 url_video: ''
 
