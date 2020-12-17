@@ -1,0 +1,57 @@
+---
+title: Piping with `magrittr`
+author: Mark Lai
+date: '2020-12-16'
+slug: piping-with-magrittr
+categories:
+  - Programming
+tags:
+  - R
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2020-12-16T14:38:37-08:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+I have just spent a semester teaching [multilevel modeling](courses/psyc575), and in the R codes I provided, I usually use the [pipe operator (`%>%`)](https://cran.r-project.org/web/packages/magrittr/vignettes/magrittr.html). For example, to compute the cluster means, we can do
+
+```{r Hsb82, message=FALSE}
+library(tidyverse)
+data("Hsb82", package = "mlmRev")
+Hsb82 <- Hsb82 %>% 
+  group_by(school) %>% 
+  mutate(ses_cm = mean(ses)) %>% 
+  ungroup()
+```
+
+However, it's kind of embarassing that I only recently found out the assignment pipe (`%<>%`) operator, as discussed [here](https://cran.r-project.org/web/packages/magrittr/vignettes/magrittr.html#additional-pipe-operators). For example, 
+
+```{r x-pipe, message=FALSE}
+library(magrittr)
+set.seed(123)
+x <- rnorm(10)
+mean(x)
+# Add 1 to x
+x %<>% magrittr::add(1)
+mean(x)
+# The above is equivalent to 
+# x <- x + 1
+```
+
+For the cluster mean example, we can do
+
+```{r magrittr-assignment}
+Hsb82 %<>% 
+  group_by(school) %>% 
+  mutate(ses_cm2 = mean(ses)) %>% 
+  ungroup()
+select(Hsb82, ses_cm, ses_cm2)
+```
+
+which saves the additional typing of `Hsb82 <- Hsb82 %>%`. That said, the `%<>%` is not commonly seen when reading other people's code, so perhaps the R community still prefer just using the `%>%` operator. But it's at least good to know there is a potentially more convenient way. There is also the `%$%` and `%T>%` operator, as discussed in [this vignette](https://cran.r-project.org/web/packages/magrittr/vignettes/magrittr.html). 
