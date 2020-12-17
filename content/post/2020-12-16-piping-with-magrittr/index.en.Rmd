@@ -1,6 +1,6 @@
 ---
 title: Piping with `magrittr`
-author: Mark Lai
+author: marklai
 date: '2020-12-16'
 slug: piping-with-magrittr
 categories:
@@ -19,7 +19,7 @@ image:
 projects: []
 ---
 
-I have just spent a semester teaching [multilevel modeling](courses/psyc575), and in the R codes I provided, I usually use the [pipe operator (`%>%`)](https://cran.r-project.org/web/packages/magrittr/vignettes/magrittr.html). For example, to compute the cluster means, we can do
+I have just spent a semester teaching [multilevel modeling](/courses/psyc575), and in the R codes I provided, I usually use the [pipe operator (`%>%`)](https://cran.r-project.org/web/packages/magrittr/vignettes/magrittr.html). For example, to compute the cluster means, we can do
 
 ```{r Hsb82, message=FALSE}
 library(tidyverse)
