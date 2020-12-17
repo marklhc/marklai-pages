@@ -21,7 +21,7 @@ Courses I teach at USC:
 - PSYC 621: Seminar in Quantitative Psychology (Bayesian Data Analysis)
     + [Course notes](https://psyc-bayes-notes.netlify.com)
 - PSYC 575: Multilevel Modeling
-    + [Course site](courses/psyc575/) (content being added in 2020 Fall)
+    + [Course site for 2020 Fall](courses/psyc575/)
 
 Courses I have taught at UC:
 
