@@ -20,7 +20,7 @@ image:
 projects: []
 ---
 
-<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+<script src="index_files/header-attrs/header-attrs.js"></script>
 
 
 <p>One thing that I always felt uncomfortable in multilevel modeling (MLM) is the concept of a unit-specific (US)/subject-specific model vs. a population-average (PA) model. I’ve come across it several times, but for some reason I haven’t really made an effort to fully understand it. I happened to come across <a href="https://www.researchgate.net/profile/Jeffrey_Harring/publication/309964693_A_Note_on_Recurring_Misconceptions_When_Fitting_Nonlinear_Mixed_Models/links/5b8548a7299bf1d5a72d11e9/A-Note-on-Recurring-Misconceptions-When-Fitting-Nonlinear-Mixed-Models.pdf">this paper</a> by Harring and Blozis, which I read before, and think that why not try to really understand the relationship between the coefficient estimates in a US model and in a PA model in the context of generalized linear mixed-effect model (GLMM). So I have this learning note.</p>
@@ -96,7 +96,7 @@ ggplot(df, aes(x = x, y = y)) +
                 col = &quot;blue&quot;, size = 1.4)</code></pre>
 <pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
 <pre><code>## `geom_smooth()` using method = &#39;gam&#39; and formula &#39;y ~ s(x, bs = &quot;cs&quot;)&#39;</code></pre>
-<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-1-1.png" width="672" />
+<p><img src="index_files/figure-html/unnamed-chunk-1-1.png" width="672" />
 The blue line represents the regression line when <span class="math inline">\(u_j = 0\)</span>, and the red line is the regression line for the population-average model. They are the same.</p>
 </div>
 <div id="compare-nlme-with-gee" class="section level3">
@@ -159,7 +159,7 @@ ggplot(df, aes(x = x, y = y)) +
                 col = &quot;blue&quot;, size = 1.4)</code></pre>
 <pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
 <pre><code>## `geom_smooth()` using method = &#39;gam&#39; and formula &#39;y ~ s(x, bs = &quot;cs&quot;)&#39;</code></pre>
-<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p><img src="index_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
 <p>The intercept for the red line has an offset of <span class="math inline">\(\tau^2_0 / 2 = 0.125\)</span>.</p>
 </div>
 <div id="compare-nlme-with-gee-1" class="section level3">
@@ -229,7 +229,7 @@ ggplot(df, aes(x = x, y = y)) +
                 col = &quot;blue&quot;, size = 1.4)</code></pre>
 <pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
 <pre><code>## `geom_smooth()` using method = &#39;gam&#39; and formula &#39;y ~ s(x, bs = &quot;cs&quot;)&#39;</code></pre>
-<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p><img src="index_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
 <p>The shrinkage factor is <span class="math inline">\((1 + \tau^2_0)^{-1/2} = 0.877058\)</span>.</p>
 </div>
 <div id="compare-nlme-with-gee-2" class="section level4">
@@ -278,7 +278,7 @@ ggplot(df2, aes(x = x, y = y)) +
                 col = &quot;blue&quot;, size = 1.4)</code></pre>
 <pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
 <pre><code>## `geom_smooth()` using method = &#39;gam&#39; and formula &#39;y ~ s(x, bs = &quot;cs&quot;)&#39;</code></pre>
-<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p><img src="index_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
 <p>The shrinking factor is <span class="math inline">\([1 + (\tau^2_0 + 2 \tau_{01} \bar x + \tau^2_1 var(x))]^{-1/2}\)</span> =
 <span class="math inline">\([1 + (0.3 + 0.15 \times 4 / 3)]^{-1/2}\)</span> = 0.8164966.</p>
 </div>
@@ -343,7 +343,7 @@ ggplot(df, aes(x = x, y = y)) +
                 col = &quot;blue&quot;, size = 1.4)</code></pre>
 <pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
 <pre><code>## `geom_smooth()` using method = &#39;gam&#39; and formula &#39;y ~ s(x, bs = &quot;cs&quot;)&#39;</code></pre>
-<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p><img src="index_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
 <p>The shrinkage factor is <span class="math inline">\((1 + \tau^2_0 / 1.7^2)^{-1/2} = 0.8619342\)</span>.</p>
 </div>
 <div id="compare-nlme-with-gee-4" class="section level4">
@@ -390,7 +390,7 @@ ggplot(df2, aes(x = x, y = y)) +
                 col = &quot;blue&quot;, size = 1.4)</code></pre>
 <pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
 <pre><code>## `geom_smooth()` using method = &#39;gam&#39; and formula &#39;y ~ s(x, bs = &quot;cs&quot;)&#39;</code></pre>
-<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<p><img src="index_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
 <p>The shrinking factor is approximately <span class="math inline">\([1 + (\tau^2_0 + \tau^2_1 var(x)) / 1.7^2]^{-1/2}\)</span> =
 <span class="math inline">\([1 + (1 + 0.5 \times 4 / 3) / 1.7^2]^{-1/2}\)</span> = 0.7963891.</p>
 <div id="compare-nlme-with-gee-5" class="section level4">
