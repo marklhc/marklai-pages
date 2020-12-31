@@ -1,0 +1,422 @@
+---
+title: Unit-Specific vs. Population-Average Models
+author: marklhc
+date: '2020-12-28'
+slug: unit-specific-vs-population-average-models
+categories:
+  - Statistics
+tags:
+  - Multilevel
+  - statistics
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2020-12-28T13:37:59-08:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+
+<p>One thing that I always felt uncomfortable in multilevel modeling (MLM) is the concept of a unit-specific (US)/subject-specific model vs. a population-average (PA) model. I’ve come across it several times, but for some reason I haven’t really made an effort to fully understand it. I happened to come across <a href="https://www.researchgate.net/profile/Jeffrey_Harring/publication/309964693_A_Note_on_Recurring_Misconceptions_When_Fitting_Nonlinear_Mixed_Models/links/5b8548a7299bf1d5a72d11e9/A-Note-on-Recurring-Misconceptions-When-Fitting-Nonlinear-Mixed-Models.pdf">this paper</a> by Harring and Blozis, which I read before, and think that why not try to really understand the relationship between the coefficient estimates in a US model and in a PA model in the context of generalized linear mixed-effect model (GLMM). So I have this learning note.</p>
+<pre class="r"><code>library(tidyverse)
+library(modelsummary)
+library(glmmTMB)
+library(geepack)</code></pre>
+<p>While MLM/GLMM is a US model, which models the associations between predictors and the outcome for each cluster, PA models are popular in some areas of research, with the popular method of the generalized estimating equation (GEE). Whereas the fixed effect coefficients in US are the same as the coefficients in PA in linear models, when it comes to generalized linear models with nonlinear link functions, the coefficients are not the same. This is because some of the generalized linear models typically assume constant variance on the latent continuous response variable. For example, in a single-level logistic model and a GEE model, the latent response <span class="math inline">\(Y^*\)</span> has a variance of <span class="math inline">\(\pi^2 / 3\)</span>, but in a two-level model, the variance is <span class="math inline">\(\pi^2 / 3 + \tau^2_0\)</span>.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> Because the coefficients are in the unit of the latent response, it means that the coefficients are on different units for US vs. PA. But how are they different? I will explore four link functions: identity, log, probit, and logit. But first, some notations.</p>
+<div id="model-notations" class="section level2">
+<h2>Model Notations</h2>
+<p>While in actual modeling, the distributional assumptions of the response variables are important (e.g., normal, Poisson), the comparison of US vs. PA mainly concerns the mean of the outcome and the link function. For all models, the random effects are normally distributed.</p>
+<div id="conditional-us-model" class="section level3">
+<h3>Conditional (US) Model</h3>
+<p><span class="math display">\[
+  \begin{aligned}
+    \mathop{\mathrm{E}}(y_{ij} | u_j) &amp; = \mu_{ij} \\
+    h(\mu_{ij}) &amp; = \boldsymbol{\mathbf{x}}^\top_{ij} \boldsymbol{\mathbf{\gamma }}+ \boldsymbol{\mathbf{z}}^\top_{ij} \boldsymbol{\mathbf{u}}_j
+  \end{aligned}
+\]</span>
+where <span class="math inline">\(h(\cdot)\)</span> is the link function, <span class="math inline">\(\boldsymbol{\mathbf{x}}_{ij}\)</span> and <span class="math inline">\(\boldsymbol{\mathbf{z}}_{ij}\)</span> are the fixed and random covariates for the <span class="math inline">\(i\)</span>th person in the <span class="math inline">\(j\)</span>th cluster. The distributional assumption is <span class="math inline">\(\boldsymbol{\mathbf{u}}_j \sim N_q(\boldsymbol{\mathbf{0}}, \boldsymbol{\mathbf{G}})\)</span></p>
+</div>
+<div id="marginal-pa-model" class="section level3">
+<h3>Marginal (PA) Model</h3>
+<p>Now one is modeling the marginal mean:</p>
+<p><span class="math display">\[
+  \begin{aligned}
+    \mathop{\mathrm{E}}(y_{ij}) &amp; = \mathop{\mathrm{E}}[\mathop{\mathrm{E}}(y_{ij} | \mu_{ij})] = \mu^\text{PA}_{ij} \\
+    h(\mu^\text{PA}_{ij}) &amp; = \boldsymbol{\mathbf{x}}^\top_{ij} \boldsymbol{\mathbf{\gamma^\text{PA}}}
+  \end{aligned}
+\]</span>
+The above two formulas can be used to find the transformation from the unit-specific coefficients, <span class="math inline">\(\boldsymbol{\mathbf{\gamma}}\)</span>, to the population-average coefficients, <span class="math inline">\(\boldsymbol{\mathbf{\gamma^\text{PA}}}\)</span>.</p>
+</div>
+</div>
+<div id="identity-link" class="section level2">
+<h2>Identity Link</h2>
+<p><span class="math display">\[h(\mu^\text{PA}_{ij}) = \mu_{ij}\]</span>
+From the US model
+<span class="math display">\[
+  \begin{aligned}
+    \mathop{\mathrm{E}}(y_{ij}) &amp; = \mathop{\mathrm{E}}[\mathop{\mathrm{E}}(y_{ij} | u_j)] = \mathop{\mathrm{E}}[\boldsymbol{\mathbf{x}}^\top_{ij} \boldsymbol{\mathbf{\gamma }}+ \boldsymbol{\mathbf{z}}^\top_{ij} \boldsymbol{\mathbf{u}}_j] \\
+    &amp; = \boldsymbol{\mathbf{x}}^\top_{ij} \boldsymbol{\mathbf{\gamma}}
+  \end{aligned}
+\]</span>
+Compare to the PA model
+<span class="math display">\[\mathop{\mathrm{E}}(y_{ij}) = \boldsymbol{\mathbf{x}}^\top_{ij} \boldsymbol{\mathbf{\gamma^\text{PA}}},\]</span>
+we have <span class="math inline">\(\boldsymbol{\mathbf{\gamma }}= \boldsymbol{\mathbf{\gamma^\text{PA}}}\)</span></p>
+<div id="plot" class="section level3">
+<h3>Plot</h3>
+<pre class="r"><code># Simulate predictor X ~ U(-2, 2), with ICC = 0
+num_obs &lt;- 2e4
+num_subjects &lt;- 200
+x &lt;- runif(num_obs, min = -1, max = 3)
+# Subject IDs
+subject_id &lt;- rep(seq_len(num_subjects), each = num_obs / num_subjects)</code></pre>
+<pre class="r"><code># Fixed effects
+gamma0 &lt;- -1
+gamma1 &lt;- 1
+# Random intercepts and 
+tau2_u &lt;- 0.25
+# u &lt;- rnorm(num_subjects, mean = 0, sd = sqrt(tau2_u))
+u &lt;- qnorm(seq(0.01, 0.99, length.out = num_subjects), sd = sqrt(tau2_u))
+# Simulate mu_{ij}
+mu &lt;- gamma0 + gamma1 * x + u[subject_id]
+# Plot
+df &lt;- tibble(y = mu, x = x, id = subject_id)
+ggplot(df, aes(x = x, y = y)) + 
+  geom_smooth(aes(group = id), 
+              se = FALSE, 
+              method = &quot;lm&quot;,  
+              size = 0.2) + 
+  geom_smooth(se = FALSE, col = &quot;red&quot;) + 
+  stat_function(fun = function(x) gamma0 + gamma1 * x, 
+                col = &quot;blue&quot;, size = 1.4)</code></pre>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<pre><code>## `geom_smooth()` using method = &#39;gam&#39; and formula &#39;y ~ s(x, bs = &quot;cs&quot;)&#39;</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-1-1.png" width="672" />
+The blue line represents the regression line when <span class="math inline">\(u_j = 0\)</span>, and the red line is the regression line for the population-average model. They are the same.</p>
+</div>
+<div id="compare-nlme-with-gee" class="section level3">
+<h3>Compare NLME with GEE</h3>
+<pre class="r"><code># Unit-Specific
+m_us &lt;- glmmTMB(mu ~ x + (x | id), data = df, 
+                family = gaussian(link = &quot;identity&quot;), 
+                dispformula = ~ 0)
+# Population-Average
+m_pa &lt;- geeglm(mu ~ x, 
+               family = gaussian(link = &quot;identity&quot;),
+               data = df, 
+               id = id, 
+               corstr = &quot;exchangeable&quot;)
+# The coefficients are the same
+cbind(US = fixef(m_us)$cond, PA = coef(m_pa))</code></pre>
+<pre><code>##             US PA
+## (Intercept) -1 -1
+## x            1  1</code></pre>
+</div>
+</div>
+<div id="log-link" class="section level2">
+<h2>Log Link</h2>
+<p>The log link is commonly used in the Poisson model.</p>
+<p><span class="math display">\[h(\mu^\text{PA}_{ij}) = \log(\mu_{ij})\]</span>
+From the US model
+<span class="math display">\[
+  \begin{aligned}
+    \mathop{\mathrm{E}}(y_{ij}) &amp; = \mathop{\mathrm{E}}[\mathop{\mathrm{E}}(y_{ij} | u_j)] = \mathop{\mathrm{E}}[h^{-1}(\boldsymbol{\mathbf{x}}^\top_{ij} \boldsymbol{\mathbf{\gamma }}+ \boldsymbol{\mathbf{z}}^\top_{ij} \boldsymbol{\mathbf{u}}_j)] \\
+    &amp; = \mathop{\mathrm{E}}[\exp(\boldsymbol{\mathbf{x}}^\top_{ij} \boldsymbol{\mathbf{\gamma }}+ \boldsymbol{\mathbf{z}}^\top_{ij} \boldsymbol{\mathbf{u}}_j)] \\
+    &amp; = \exp(\boldsymbol{\mathbf{x}}^\top_{ij} \boldsymbol{\mathbf{\gamma}}) \mathop{\mathrm{E}}[\exp(\boldsymbol{\mathbf{z}}^\top_{ij} \boldsymbol{\mathbf{u}}_j))] \\
+    &amp; = \exp(\boldsymbol{\mathbf{x}}^\top_{ij} \boldsymbol{\mathbf{\gamma}}) \exp[\boldsymbol{\mathbf{z}}\top_{ij} \boldsymbol{\mathbf{G}} \boldsymbol{\mathbf{z}}_{ij} / 2] \\
+    &amp; = \exp(\boldsymbol{\mathbf{x}}^\top_{ij} \boldsymbol{\mathbf{\gamma }}+ \boldsymbol{\mathbf{z}}\top_{ij} \boldsymbol{\mathbf{G}} \boldsymbol{\mathbf{z}}_{ij} / 2)
+  \end{aligned}
+\]</span>
+Compare to the population-average model
+<span class="math display">\[\mathop{\mathrm{E}}(y_{ij}) = h^{-1}(\boldsymbol{\mathbf{x}}^\top_{ij} \boldsymbol{\mathbf{\gamma^\text{PA}}}) = \exp(\boldsymbol{\mathbf{x}}^\top_{ij} \boldsymbol{\mathbf{\gamma^\text{PA}}}),\]</span>
+we have <span class="math inline">\(\boldsymbol{\mathbf{\gamma^\text{PA}}}= \boldsymbol{\mathbf{\gamma }}+ [\boldsymbol{\mathbf{z}}^\top_{ij} \boldsymbol{\mathbf{G}} \boldsymbol{\mathbf{z}}_{ij} / 2 \quad \boldsymbol{\mathbf{0}}]^\top\)</span>. So the intercept has an offset, while the other coefficients stay the same.</p>
+<div id="plot-1" class="section level3">
+<h3>Plot</h3>
+<pre class="r"><code># Fixed effects
+gamma0 &lt;- 1
+gamma1 &lt;- 0.2
+# Random intercepts and 
+tau2_u &lt;- 0.25
+# u &lt;- rnorm(num_subjects, mean = 0, sd = sqrt(tau2_u))
+u &lt;- qnorm(seq(0.01, 0.99, length.out = num_subjects), sd = sqrt(tau2_u))
+# Simulate mu_{ij}
+mu &lt;- exp(gamma0 + gamma1 * x + u[subject_id])
+# Plot
+df &lt;- tibble(y = mu, x = x, id = subject_id)
+ggplot(df, aes(x = x, y = y)) + 
+  geom_smooth(aes(group = id), 
+              se = FALSE, 
+              method = &quot;glm&quot;,
+              method.args = list(family = gaussian(&quot;log&quot;)), 
+              size = 0.2) + 
+  geom_smooth(se = FALSE, col = &quot;red&quot;) + 
+  stat_function(fun = function(x) exp(gamma0 + gamma1 * x), 
+                col = &quot;blue&quot;, size = 1.4)</code></pre>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<pre><code>## `geom_smooth()` using method = &#39;gam&#39; and formula &#39;y ~ s(x, bs = &quot;cs&quot;)&#39;</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>The intercept for the red line has an offset of <span class="math inline">\(\tau^2_0 / 2 = 0.125\)</span>.</p>
+</div>
+<div id="compare-nlme-with-gee-1" class="section level3">
+<h3>Compare NLME with GEE</h3>
+<pre class="r"><code># Unit-Specific
+m_us &lt;- glmmTMB(mu ~ x + (x | id), data = df, 
+                family = gaussian(link = &quot;log&quot;), 
+                dispformula = ~ 0)
+# Population-Average
+m_pa &lt;- geeglm(mu ~ x, 
+               family = gaussian(link = &quot;log&quot;),
+               data = df, 
+               id = id, 
+               corstr = &quot;exchangeable&quot;)
+# The coefficients are the same
+cbind(US = fixef(m_us)$cond, PA = coef(m_pa))</code></pre>
+<pre><code>##              US        PA
+## (Intercept) 1.0 1.1178892
+## x           0.2 0.1981924</code></pre>
+<p>The offset is in the intercept.</p>
+</div>
+</div>
+<div id="probit-link" class="section level2">
+<h2>Probit Link</h2>
+<p>The probit link, or the inverse normal cumulative density function, is commonly used in probit regression.
+<span class="math display">\[h(\mu^\text{PA}_{ij}) = \Phi(\mu_{ij})\]</span>
+From the US model
+<span class="math display">\[
+  \begin{aligned}
+    \mathop{\mathrm{E}}(y_{ij}) &amp; = \mathop{\mathrm{E}}[\mathop{\mathrm{E}}(y_{ij} | u_j)] = \mathop{\mathrm{E}}[h^{-1}(\boldsymbol{\mathbf{x}}^\top_{ij} \boldsymbol{\mathbf{\gamma }}+ \boldsymbol{\mathbf{z}}^\top_{ij} \boldsymbol{\mathbf{u}}_j)] \\
+    &amp; = \mathop{\mathrm{E}}[\Phi(\boldsymbol{\mathbf{x}}^\top_{ij} \boldsymbol{\mathbf{\gamma }}+ \boldsymbol{\mathbf{z}}^\top_{ij} \boldsymbol{\mathbf{u}}_j)] \\
+    &amp; = P(Z \leq \boldsymbol{\mathbf{x}}^\top_{ij} \boldsymbol{\mathbf{\gamma }}+ \boldsymbol{\mathbf{z}}^\top_{ij} \boldsymbol{\mathbf{u}}_j) \quad \text{for } Z \sim N(0, 1) \\
+    &amp; = P(Z - \boldsymbol{\mathbf{z}}^\top_{ij} \boldsymbol{\mathbf{u}}_j \leq \boldsymbol{\mathbf{x}}^\top_{ij} \boldsymbol{\mathbf{\gamma}}), 
+  \end{aligned}
+\]</span>
+where <span class="math inline">\(Z - \boldsymbol{\mathbf{z}}^\top_{ij} \boldsymbol{\mathbf{u}}_j \sim N(0, \sqrt{1 + \boldsymbol{\mathbf{z}}^\top_{ij} \boldsymbol{\mathbf{G}} \boldsymbol{\mathbf{z}}_{ij}})\)</span>. So
+<span class="math display">\[
+  \begin{aligned}
+    \mathop{\mathrm{E}}(y_{ij}) &amp; = P\left(\frac{Z - \boldsymbol{\mathbf{z}}^\top_{ij} \boldsymbol{\mathbf{u}}_j}{\sqrt{1 + \boldsymbol{\mathbf{z}}^\top_{ij} \boldsymbol{\mathbf{G}} \boldsymbol{\mathbf{z}}_{ij}}} \leq \frac{\boldsymbol{\mathbf{x}}^\top_{ij} \boldsymbol{\mathbf{\gamma}}}{\sqrt{1 + \boldsymbol{\mathbf{z}}^\top_{ij} \boldsymbol{\mathbf{G}} \boldsymbol{\mathbf{z}}_{ij}}}\right) \\
+    &amp; = \Phi[(1 + \boldsymbol{\mathbf{z}}^\top_{ij} \boldsymbol{\mathbf{G}} \boldsymbol{\mathbf{z}}_{ij})^{-1/2} \boldsymbol{\mathbf{x}}^\top_{ij} \boldsymbol{\mathbf{\gamma}}]
+  \end{aligned}
+\]</span>
+So the PA coefficients shrinks by a factor of <span class="math inline">\((1 + \boldsymbol{\mathbf{z}}^\top_{ij} \boldsymbol{\mathbf{G}} \boldsymbol{\mathbf{z}}_{ij})^{-1/2}\)</span>.</p>
+<div id="random-intercepts-only" class="section level3">
+<h3>Random intercepts only</h3>
+<div id="plot-2" class="section level4">
+<h4>Plot</h4>
+<pre class="r"><code># Fixed effects
+gamma0 &lt;- -0.5
+gamma1 &lt;- 1
+# Random intercepts and 
+tau2_u &lt;- 0.3
+# u &lt;- rnorm(num_subjects, mean = 0, sd = sqrt(tau2_u))
+u &lt;- qnorm(seq(0.01, 0.99, length.out = num_subjects), sd = sqrt(tau2_u))
+# Simulate mu_{ij}
+mu &lt;- pnorm(gamma0 + gamma1 * x + u[subject_id])
+# Plot
+df &lt;- tibble(y = mu, x = x, id = subject_id)
+ggplot(df, aes(x = x, y = y)) + 
+  geom_smooth(aes(group = id), 
+              se = FALSE, 
+              method = &quot;glm&quot;,
+              method.args = list(family = gaussian(&quot;probit&quot;)), 
+              size = 0.2) + 
+  geom_smooth(se = FALSE, col = &quot;red&quot;) + 
+  stat_function(fun = function(x) pnorm(gamma0 + gamma1 * x), 
+                col = &quot;blue&quot;, size = 1.4)</code></pre>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<pre><code>## `geom_smooth()` using method = &#39;gam&#39; and formula &#39;y ~ s(x, bs = &quot;cs&quot;)&#39;</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p>The shrinkage factor is <span class="math inline">\((1 + \tau^2_0)^{-1/2} = 0.877058\)</span>.</p>
+</div>
+<div id="compare-nlme-with-gee-2" class="section level4">
+<h4>Compare NLME with GEE</h4>
+<pre class="r"><code># Unit-Specific
+m_us &lt;- glmmTMB(mu ~ x + (x | id), data = df, 
+                family = gaussian(link = &quot;probit&quot;), 
+                dispformula = ~ 0)
+# Population-Average
+m_pa &lt;- geeglm(mu ~ x, 
+               family = gaussian(link = &quot;probit&quot;),
+               data = df, 
+               id = id, 
+               corstr = &quot;exchangeable&quot;)
+# The coefficients are the same
+cbind(US = fixef(m_us)$cond, PA = coef(m_pa))</code></pre>
+<pre><code>##                    US         PA
+## (Intercept) -0.499999 -0.4458653
+## x            1.000000  0.8858915</code></pre>
+<p>Smaller coefficients for both the intercept and <span class="math inline">\(x\)</span>.</p>
+</div>
+</div>
+<div id="random-intercepts-and-slopes" class="section level3">
+<h3>Random intercepts and slopes</h3>
+<div id="plot-3" class="section level4">
+<h4>Plot</h4>
+<pre class="r"><code># Add random slopes
+tau2_u1 &lt;- 0.15
+# u1 &lt;- rnorm(num_subjects, mean = 0, sd = sqrt(tau2_u1))
+u1 &lt;- qnorm(seq(0.01, 0.99, length.out = num_subjects), 
+            sd = sqrt(tau2_u1))
+# permutate the random effects to make u and u1 independent
+u1 &lt;- sample(u1)
+# Simulate y
+mu2 &lt;- pnorm(gamma0 + (gamma1 + u1[subject_id]) * x + u[subject_id])
+# Plot
+df2 &lt;- tibble(y = mu2, x = x, id = subject_id)
+ggplot(df2, aes(x = x, y = y)) + 
+  geom_smooth(aes(group = id), 
+              se = FALSE, 
+              method = &quot;glm&quot;,
+              method.args = list(family = gaussian(&quot;probit&quot;)), 
+              size = 0.2) + 
+  geom_smooth(se = FALSE, col = &quot;red&quot;) + 
+  stat_function(fun = function(x) pnorm(gamma0 + gamma1 * x), 
+                col = &quot;blue&quot;, size = 1.4)</code></pre>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<pre><code>## `geom_smooth()` using method = &#39;gam&#39; and formula &#39;y ~ s(x, bs = &quot;cs&quot;)&#39;</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p>The shrinking factor is <span class="math inline">\([1 + (\tau^2_0 + 2 \tau_{01} \bar x + \tau^2_1 var(x))]^{-1/2}\)</span> =
+<span class="math inline">\([1 + (0.3 + 0.15 \times 4 / 3)]^{-1/2}\)</span> = 0.8164966.</p>
+</div>
+<div id="compare-nlme-with-gee-3" class="section level4">
+<h4>Compare NLME with GEE</h4>
+<pre class="r"><code># Unit-Specific
+m_us &lt;- glmmTMB(mu2 ~ x + (x | id), data = df2, 
+                family = gaussian(link = &quot;probit&quot;), 
+                dispformula = ~ 0)
+# Population-Average
+m_pa &lt;- geeglm(mu2 ~ x, 
+               family = gaussian(link = &quot;probit&quot;),
+               data = df2, 
+               id = id, 
+               corstr = &quot;exchangeable&quot;)
+# The coefficients are the same
+cbind(US = fixef(m_us)$cond, PA = coef(m_pa))</code></pre>
+<pre><code>##                    US         PA
+## (Intercept) -0.499973 -0.3112705
+## x            1.000002  0.8302407</code></pre>
+<p>Smaller coefficients for both the intercept and <span class="math inline">\(x\)</span>.</p>
+</div>
+</div>
+</div>
+<div id="logit-link" class="section level2">
+<h2>Logit Link</h2>
+<p>The logit link is commonly used in logistic regression.
+<span class="math display">\[h(\mu^\text{PA}_{ij}) = \log \frac{\mu_{ij}}{1 - \mu_{ij}}\]</span></p>
+<p>From the US model
+<span class="math display">\[
+  \begin{aligned}
+    \mathop{\mathrm{E}}(y_{ij}) &amp; = \mathop{\mathrm{E}}[\mathop{\mathrm{E}}(y_{ij} | u_j)] = \mathop{\mathrm{E}}[h^{-1}(\boldsymbol{\mathbf{x}}^\top_{ij} \boldsymbol{\mathbf{\gamma }}+ \boldsymbol{\mathbf{z}}^\top_{ij} \boldsymbol{\mathbf{u}}_j)] \\
+    &amp; = \mathop{\mathrm{E}}[\mathop{\mathrm{logit}}^{-1}(\boldsymbol{\mathbf{x}}^\top_{ij} \boldsymbol{\mathbf{\gamma }}- \boldsymbol{\mathbf{z}}^\top_{ij} \boldsymbol{\mathbf{u}}_j)
+  \end{aligned}
+\]</span></p>
+<p>The integral does not have a closed-form expression and cannot be expressed as a logistic function. However, one can approximates a normal cdf using a logistic function, and vice versa, and there are several ways to do it.<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> <a href="https://www.jstor.org/stable/2531734">Zeger, Liang, and Albert (1988, p. 1054)</a> provides one approximation that results in
+<span class="math display">\[\mathop{\mathrm{E}}(y_{ij}) \approx \mathop{\mathrm{logit}}^{-1}[a_l(\boldsymbol{\mathbf{G}}) \boldsymbol{\mathbf{x}}^\top_{ij} \boldsymbol{\mathbf{\gamma}}],\]</span>
+where <span class="math inline">\(a_l(\boldsymbol{\mathbf{G}}) = (1 + c^2 \boldsymbol{\mathbf{z}}^\top_{ij} \boldsymbol{\mathbf{G}} \boldsymbol{\mathbf{z}}_{ij})^{-1/2}\)</span> and <span class="math inline">\(c^2 = \left(\frac{16}{15}\right)^2 \frac{3}{\pi^2} \approx 1 / 1.7^2 = 0.3460208\)</span>, which was used in <a href="https://us.sagepub.com/en-us/nam/book/fixed-effects-regression-models">Allison (2009)</a>. Some other authors, like Snijders and Bosker (2012), use a simpler approximation with <span class="math inline">\(c^2 = \frac{3}{\pi^2} \approx 0.3039636\)</span>.</p>
+<div id="random-intercepts-only-1" class="section level3">
+<h3>Random intercepts only</h3>
+<div id="plot-4" class="section level4">
+<h4>Plot</h4>
+<pre class="r"><code># Fixed effects
+gamma0 &lt;- -1
+gamma1 &lt;- 2
+# Random intercepts and subject IDs
+tau2_u &lt;- 1
+# u &lt;- rnorm(num_subjects, mean = 0, sd = sqrt(tau2_u))
+u &lt;- qnorm(seq(0.01, 0.99, length.out = num_subjects), sd = sqrt(tau2_u))
+# Simulate y
+mu &lt;- plogis(gamma0 + gamma1 * x + u[subject_id])
+# Plot
+df &lt;- tibble(y = mu, x = x, id = subject_id)
+ggplot(df, aes(x = x, y = y)) + 
+  geom_smooth(aes(group = id), 
+              se = FALSE, 
+              method = &quot;glm&quot;, 
+              method.args = list(family = gaussian(&quot;logit&quot;)), 
+              size = 0.2) + 
+  geom_smooth(se = FALSE, col = &quot;red&quot;) + 
+  stat_function(fun = function(x) plogis(gamma0 + gamma1 * x), 
+                col = &quot;blue&quot;, size = 1.4)</code></pre>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<pre><code>## `geom_smooth()` using method = &#39;gam&#39; and formula &#39;y ~ s(x, bs = &quot;cs&quot;)&#39;</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>The shrinkage factor is <span class="math inline">\((1 + \tau^2_0 / 1.7^2)^{-1/2} = 0.8619342\)</span>.</p>
+</div>
+<div id="compare-nlme-with-gee-4" class="section level4">
+<h4>Compare NLME with GEE</h4>
+<pre class="r"><code># Unit-Specific
+m_us &lt;- glmmTMB(mu ~ x + (x | id), data = df, 
+                family = gaussian(link = &quot;logit&quot;), 
+                dispformula = ~ 0)
+# Population-Average
+m_pa &lt;- geeglm(mu ~ x, 
+               family = gaussian(link = &quot;logit&quot;),
+               data = df, 
+               id = id, 
+               corstr = &quot;exchangeable&quot;)
+# The coefficients are the same
+cbind(US = fixef(m_us)$cond, PA = coef(m_pa))</code></pre>
+<pre><code>##                     US        PA
+## (Intercept) -0.9999994 -0.876522
+## x            2.0000000  1.711613</code></pre>
+<p>Smaller coefficients for both the intercept and <span class="math inline">\(x\)</span>.</p>
+</div>
+</div>
+<div id="random-intercepts-and-slopes-1" class="section level3">
+<h3>Random intercepts and slopes</h3>
+<pre class="r"><code># Add random slopes
+tau2_u1 &lt;- 0.5
+# u1 &lt;- rnorm(num_subjects, mean = 0, sd = sqrt(tau2_u1))
+u1 &lt;- qnorm(seq(0.01, 0.99, length.out = num_subjects), 
+            sd = sqrt(tau2_u1))
+# permutate the random effects to make u and u1 independent
+u1 &lt;- sample(u1)
+# Simulate y
+mu2 &lt;- plogis(gamma0 + (gamma1 + u1[subject_id]) * x + u[subject_id])
+# Plot
+df2 &lt;- tibble(y = mu2, x = x, id = subject_id)
+ggplot(df2, aes(x = x, y = y)) + 
+  geom_smooth(aes(group = id), 
+              se = FALSE, 
+              method = &quot;glm&quot;, 
+              method.args = list(family = gaussian(&quot;logit&quot;)), 
+              size = 0.2) + 
+  geom_smooth(se = FALSE, col = &quot;red&quot;) + 
+  stat_function(fun = function(x) plogis(gamma0 + gamma1 * x), 
+                col = &quot;blue&quot;, size = 1.4)</code></pre>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<pre><code>## `geom_smooth()` using method = &#39;gam&#39; and formula &#39;y ~ s(x, bs = &quot;cs&quot;)&#39;</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<p>The shrinking factor is approximately <span class="math inline">\([1 + (\tau^2_0 + \tau^2_1 var(x)) / 1.7^2]^{-1/2}\)</span> =
+<span class="math inline">\([1 + (1 + 0.5 \times 4 / 3) / 1.7^2]^{-1/2}\)</span> = 0.7963891.</p>
+<div id="compare-nlme-with-gee-5" class="section level4">
+<h4>Compare NLME with GEE</h4>
+<pre class="r"><code># Unit-Specific
+m_us &lt;- glmmTMB(mu2 ~ x + (x | id), data = df2, 
+                family = gaussian(link = &quot;logit&quot;), 
+                dispformula = ~ 0)
+# Population-Average
+m_pa &lt;- geeglm(mu2 ~ x, 
+               family = gaussian(link = &quot;logit&quot;),
+               data = df2, 
+               id = id, 
+               corstr = &quot;exchangeable&quot;)
+# The coefficients are the same
+cbind(US = fixef(m_us)$cond, PA = coef(m_pa))</code></pre>
+<pre><code>##                     US        PA
+## (Intercept) -0.9999936 -0.701903
+## x            1.9999867  1.585452</code></pre>
+</div>
+</div>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a href="http://www.stats.ox.ac.uk/~snijders/mlbook.htm">Snijders &amp; Bosker (2012)</a>, chapter 17.<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+<li id="fn2"><p><a href="https://www.johndcook.com/blog/2010/05/18/normal-approximation-to-logistic/" class="uri">https://www.johndcook.com/blog/2010/05/18/normal-approximation-to-logistic/</a><a href="#fnref2" class="footnote-back">↩︎</a></p></li>
+</ol>
+</div>
