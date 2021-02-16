@@ -1,7 +1,7 @@
 ---
 title: "Adjusting for partial invariance in latent parameter estimation: Comparing forward specification search and approximate invariance methods"
 authors:
-- Mark H. C. Lai
+- Mark H. C. Lai, Yuanfang Liu, & Winnie Wing-Yee Tse
 date: "2021-02-06T00:00:00Z"
 doi: "To be added"
 
