@@ -1,0 +1,114 @@
+---
+title: Mixed Factorial ANOVA in R
+author: marklai
+date: '2021-03-29'
+slug: mixed-factorial-anova-in-r
+categories:
+  - Statistics
+tags:
+  - statistics
+  - ANOVA
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2021-03-29T09:59:03-07:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+output:
+  blogdown::html_page:
+    toc: true
+    df_print: paged
+---
+
+# Load Required Packages
+
+```{r load-pkg}
+library(afex)
+library(tidyr)
+```
+
+
+# Data Description
+
+The fictional data set is part of the data library of the [JASP software](https://jasp-stats.org/), and is from the book by Field (2017)[^field2017]. Here it only contains a subset of the data, where 10 men and 10 women for three speed-dating partners. All three partners were low in attractiveness (however defined), but varied in charisma: high, some, or none. 
+
+[^field2017]: Field, A. P. (2017). *Discovering Statistics Using IBM SPSS Statistics* (5th ed.). Sage.
+
+## Data Import
+
+```{r charisma_data}
+charisma_data <- read.csv("charisma_ugly.csv")
+# Show the first six rows
+head(charisma_data)
+```
+
+## Mixed ANOVA
+
+In R, one needs to first convert the data to a long format, so that each row represents an observation (instead of a person). In this data, there were 60 observations. 
+
+```{r long_data}
+# First, convert to long format data
+long_data <- tidyr::pivot_longer(
+  charisma_data,
+  cols = ug_high:ug_none,
+  # name of IV
+  names_to = "charisma",
+  # remove the "ug_" prefix
+  names_prefix = "ug_", 
+  # name of DV
+  values_to = "rating"
+)
+long_data
+```
+
+```{r mixed_anova}
+mixed_anova <- aov_ez(
+  id = "participant",
+  dv = "rating",
+  data = long_data,
+  between = "gender",
+  within = "charisma"
+)
+```
+
+```{r test-sphericity}
+test_sphericity(mixed_anova)
+```
+
+When one or more independent variable is a within-subject variable, mixed or repeated-measure ANOVA requires testing the assumption of sphericity. Here, the Mauchly's test of sphericity provided insufficient evidence that the assumption of sphericity was violated, $p = `r papaja::printp(test_sphericity(mixed_anova)[1, 2])`$. 
+
+### ANOVA Table
+
+```{r mixed_anova-table}
+mixed_anova
+```
+
+Note that the result by default applies the Greenhousse-Geisser correction for violations of the sphericity assumption, but since the Mauchly's test was not statistically significant, the results would be similar with or without the correction. Also note that the result here reports the generalized $\eta^2$ (the `ges` column), which is different from some other software. See the documentation of the `?afex::nice` page. 
+
+### Plot
+
+```{r}
+afex_plot(mixed_anova, x = "charisma", trace = "gender")
+```
+
+## Sample Result Reporting
+
+```{r, include = FALSE}
+apa_results <- papaja::apa_print(mixed_anova)
+```
+
+```{r, echo = FALSE}
+papaja::apa_table(
+  apa_results$table, 
+  caption = "Two-Way ANOVA Statistics for Study Variables"
+)
+```
+
+
+
+A two-way mixed ANOVA was conducted, with gender (female vs. male) as the between-subject independent variable and charisma (high, some, none) as the within-subject independent variable. There was a significant main effect of charisma, `r apa_results$full_result$charisma`. As shown in the figure, overall female participants provided a higer rating than male participants. There was also a significant main effect of gender, `r apa_results$full_result$gender`. As shown in the figure, ratings were higher for partners who had high charisma. Finally, there was a significant charisma $\times$ gender interaction, `r apa_results$full_result$gender_charisma`. As shown in the figure, while the ratings were similar between female and male participants for partners who had some or no charisma, female participants gave higher ratings for the partner with high charisma, as compared to male participants. 
+
