@@ -34,10 +34,10 @@ links:
 - name: "View journal article"
   url: ""
 url_pdf: '/files/Lai&Hsiao_2021_pm_2spa_am.pdf'
-url_code: 'https://osf.io/h95vx/'
+url_code: ''
 url_dataset: ''
-url_poster: ''
-url_project: 'aera21-aera.ipostersessions.com/Default.aspx?s=F5-60-EC-7F-8B-FC-38-8D-8C-83-D8-EE-6C-E9-BF-96'
+url_poster: 'https://aera21-aera.ipostersessions.com/Default.aspx?s=F5-60-EC-7F-8B-FC-38-8D-8C-83-D8-EE-6C-E9-BF-96'
+url_project: 'https://osf.io/h95vx/'
 url_slides: ''
 url_source: ''
 url_video: ''
