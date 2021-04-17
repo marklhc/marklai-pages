@@ -3,7 +3,7 @@ title: "Adjusting for partial invariance in latent parameter estimation: Compari
 authors:
 - Mark H. C. Lai, Yuanfang Liu, & Winnie Wing-Yee Tse
 date: "2021-02-06T00:00:00Z"
-doi: "To be added"
+doi: "10.3758/s13428-021-01560-2"
 
 # Schedule page publish date (NOT publication's date).
 publishDate: "2021-02-05T00:00:00Z"
