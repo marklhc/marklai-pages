@@ -3,7 +3,7 @@ title: "Adjusting for Measurement Noninvariance With Alignment in Growth Modelin
 authors:
 - Mark H. C. Lai
 date: "2021-06-06T00:00:00Z"
-doi: "To be added"
+doi: "10.1080/00273171.2021.1941730"
 
 # Schedule page publish date (NOT publication's date).
 publishDate: "2021-06-03T00:00:00Z"
