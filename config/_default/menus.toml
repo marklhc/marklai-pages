@@ -14,23 +14,23 @@
   weight = 20
 
 [[main]]
-  name = "Software"
-  url = "#projects"
+  name = "Publications"
+  url = "#featured"
   weight = 30
 
 [[main]]
-  name = "Publications"
-  url = "#featured"
+  name = "Software"
+  url = "#projects"
   weight = 40
+
+[[main]]
+  name = "Presentation"
+  url = "#talks"
+  weight = 50
 
 [[main]]
   name = "Courses"
   url = "#teaching"
-  weight = 50
-
-[[menu]]
-  name = "Presentations"
-  url = "#talks"
   weight = 60
 
 [[main]]
