@@ -14,6 +14,10 @@ weight = 85
 
 +++
 
+Workshops:
+
+- [Advancing Quantitative Science with Monte Carlo Simulation](courses/montecarlo/)
+
 Courses I teach at USC:
 
 - PSYC 314: Experimental Research Methods
