@@ -77,6 +77,10 @@ degree in Psychology at the University of Macau, where I discovered that a
 career of developing and applying quantitative methods in the social sciences
 would be a very good fit to me.
 
+- [Postprints of publications and supplemental materials](publication/)
+- [Open-access course materials (Multilevel Modeling, Bayesian, Simulation)](#teaching)
+- [Software packages](#projects)
+
 I am interested in all kinds of statistical methods, but currently my research
 areas include multilevel modeling, structural equation modeling, effect size
 statistics, and measurement invariance. I also have collaborations on projects
