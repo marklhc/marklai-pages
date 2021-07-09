@@ -32,7 +32,7 @@ featured: true
 
 links:
 - name: "View journal article"
-  url: ""
+  url: "https://www.tandfonline.com/doi/full/10.1080/00273171.2021.1941730"
 url_pdf: '/files/Lai_2021_mbr_awc_growth_am.pdf'
 url_code: 'https://github.com/marklhc/awc-growth-supp'
 url_dataset: ''
