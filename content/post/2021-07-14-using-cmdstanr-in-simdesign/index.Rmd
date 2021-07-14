@@ -1,0 +1,110 @@
+---
+title: Using cmdstanr in SimDesign
+author: marklai
+date: '2021-07-14'
+slug: using-cmdstanr-in-simdesign
+categories:
+  - Programming
+  - Statistics
+tags:
+  - Bayesian
+  - Simulation
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2021-07-14T15:11:50-07:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+```{r}
+library(SimDesign)
+library(cmdstanr)
+```
+
+
+Adapted from https://cran.r-project.org/web/packages/SimDesign/vignettes/SimDesign-intro.html
+
+See https://mc-stan.org/cmdstanr/articles/cmdstanr.html for using `cmdstanr`
+
+```{r}
+Design <- createDesign(sample_size = c(30, 60, 120, 240), 
+                       distribution = c('norm', 'chi'))
+Design
+```
+
+```{r}
+Generate <- function(condition, fixed_objects = NULL) {
+    N <- condition$sample_size
+    dist <- condition$distribution
+    if(dist == 'norm'){
+        dat <- rnorm(N, mean = 3)
+    } else if(dist == 'chi'){
+        dat <- rchisq(N, df = 3)
+    }
+    dat
+}
+```
+
+Define Bayes estimator of the mean with STAN
+
+```{r}
+# STAN model
+bmean_stan <- "
+    data {
+        int<lower=0> N;
+        real x[N];
+    }
+    parameters {
+        real mu;
+        real<lower=0> sigma;
+    }
+    model {
+        target += normal_lpdf(mu | 0, 10);  // weakly informative prior
+        target += normal_lpdf(x | mu, sigma);
+    }
+"
+# Save file
+stan_path <- write_stan_file(bmean_stan)
+mod <- cmdstan_model(stan_path)
+```
+
+```{r}
+Analyse <- function(condition, dat, fixed_objects = NULL) {
+    M0 <- mean(dat)
+    M1 <- mean(dat, trim = .1)
+    M2 <- mean(dat, trim = .2)
+    med <- median(dat)
+    stan_fit <- quiet(mod$sample(list(x = dat, N = length(dat)),
+                                 refresh = 0, chains = 1, 
+                                 show_messages = FALSE))
+    MB <- stan_fit$summary("mu", mean)$mean[1]
+    ret <- c(mean_no_trim = M0, mean_trim.1 = M1, 
+             mean_trim.2 = M2, median = med, 
+             bayes_mean = MB)
+    ret
+}
+```
+
+```{r}
+Summarise <- function(condition, results, fixed_objects = NULL) {
+    obs_bias <- bias(results, parameter = 3)
+    obs_RMSE <- RMSE(results, parameter = 3)
+    ret <- c(bias = obs_bias, RMSE = obs_RMSE, RE = RE(obs_RMSE))
+    ret
+}
+```
+
+```{r}
+res <- runSimulation(Design, replications = 50, generate = Generate, 
+                     analyse = Analyse, summarise = Summarise)
+```
+
+```{r}
+knitr::kable(res)
+```
+

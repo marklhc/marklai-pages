@@ -1,0 +1,362 @@
+---
+title: Using cmdstanr in SimDesign
+author: marklai
+date: '2021-07-14'
+slug: using-cmdstanr-in-simdesign
+categories:
+  - Programming
+  - Statistics
+tags:
+  - Bayesian
+  - Simulation
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2021-07-14T15:11:50-07:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+
+<pre class="r"><code>library(SimDesign)
+library(cmdstanr)</code></pre>
+<pre><code>## This is cmdstanr version 0.4.0</code></pre>
+<pre><code>## - Online documentation and vignettes at mc-stan.org/cmdstanr</code></pre>
+<pre><code>## - CmdStan path set to: /home/hokchiol/.cmdstanr/cmdstan-2.27.0</code></pre>
+<pre><code>## - Use set_cmdstan_path() to change the path</code></pre>
+<p>Adapted from <a href="https://cran.r-project.org/web/packages/SimDesign/vignettes/SimDesign-intro.html" class="uri">https://cran.r-project.org/web/packages/SimDesign/vignettes/SimDesign-intro.html</a></p>
+<p>See <a href="https://mc-stan.org/cmdstanr/articles/cmdstanr.html" class="uri">https://mc-stan.org/cmdstanr/articles/cmdstanr.html</a> for using <code>cmdstanr</code></p>
+<pre class="r"><code>Design &lt;- createDesign(sample_size = c(30, 60, 120, 240), 
+                       distribution = c(&#39;norm&#39;, &#39;chi&#39;))
+Design</code></pre>
+<pre><code>## # A tibble: 8 x 2
+##   sample_size distribution
+##         &lt;dbl&gt; &lt;chr&gt;       
+## 1          30 norm        
+## 2          60 norm        
+## 3         120 norm        
+## 4         240 norm        
+## 5          30 chi         
+## 6          60 chi         
+## 7         120 chi         
+## 8         240 chi</code></pre>
+<pre class="r"><code>Generate &lt;- function(condition, fixed_objects = NULL) {
+    N &lt;- condition$sample_size
+    dist &lt;- condition$distribution
+    if(dist == &#39;norm&#39;){
+        dat &lt;- rnorm(N, mean = 3)
+    } else if(dist == &#39;chi&#39;){
+        dat &lt;- rchisq(N, df = 3)
+    }
+    dat
+}</code></pre>
+<p>Define Bayes estimator of the mean with STAN</p>
+<pre class="r"><code># STAN model
+bmean_stan &lt;- &quot;
+    data {
+        int&lt;lower=0&gt; N;
+        real x[N];
+    }
+    parameters {
+        real mu;
+        real&lt;lower=0&gt; sigma;
+    }
+    model {
+        target += normal_lpdf(mu | 0, 10);  // weakly informative prior
+        target += normal_lpdf(x | mu, sigma);
+    }
+&quot;
+# Save file
+stan_path &lt;- write_stan_file(bmean_stan)
+mod &lt;- cmdstan_model(stan_path)</code></pre>
+<pre class="r"><code>Analyse &lt;- function(condition, dat, fixed_objects = NULL) {
+    M0 &lt;- mean(dat)
+    M1 &lt;- mean(dat, trim = .1)
+    M2 &lt;- mean(dat, trim = .2)
+    med &lt;- median(dat)
+    stan_fit &lt;- quiet(mod$sample(list(x = dat, N = length(dat)),
+                                 refresh = 0, chains = 1, 
+                                 show_messages = FALSE))
+    MB &lt;- stan_fit$summary(&quot;mu&quot;, mean)$mean[1]
+    ret &lt;- c(mean_no_trim = M0, mean_trim.1 = M1, 
+             mean_trim.2 = M2, median = med, 
+             bayes_mean = MB)
+    ret
+}</code></pre>
+<pre class="r"><code>Summarise &lt;- function(condition, results, fixed_objects = NULL) {
+    obs_bias &lt;- bias(results, parameter = 3)
+    obs_RMSE &lt;- RMSE(results, parameter = 3)
+    ret &lt;- c(bias = obs_bias, RMSE = obs_RMSE, RE = RE(obs_RMSE))
+    ret
+}</code></pre>
+<pre class="r"><code>res &lt;- runSimulation(Design, replications = 50, generate = Generate, 
+                     analyse = Analyse, summarise = Summarise)</code></pre>
+<pre><code>## 
+## 
+Design row: 1/8;   Started: Wed Jul 14 16:04:01 2021;   Total elapsed time: 0.00s 
+## 
+## 
+Design row: 2/8;   Started: Wed Jul 14 16:04:13 2021;   Total elapsed time: 12.47s 
+## 
+## 
+Design row: 3/8;   Started: Wed Jul 14 16:04:26 2021;   Total elapsed time: 25.09s 
+## 
+## 
+Design row: 4/8;   Started: Wed Jul 14 16:04:38 2021;   Total elapsed time: 37.82s 
+## 
+## 
+Design row: 5/8;   Started: Wed Jul 14 16:04:51 2021;   Total elapsed time: 50.56s 
+## 
+## 
+Design row: 6/8;   Started: Wed Jul 14 16:05:04 2021;   Total elapsed time: 01m 3.36s 
+## 
+## 
+Design row: 7/8;   Started: Wed Jul 14 16:05:17 2021;   Total elapsed time: 01m 16.40s 
+## 
+## 
+Design row: 8/8;   Started: Wed Jul 14 16:05:30 2021;   Total elapsed time: 01m 29.50s</code></pre>
+<pre><code>## 
+## Simulation complete. Total execution time: 01m 42.53s</code></pre>
+<pre class="r"><code>knitr::kable(res)</code></pre>
+<table>
+<colgroup>
+<col width="3%" />
+<col width="4%" />
+<col width="5%" />
+<col width="5%" />
+<col width="5%" />
+<col width="3%" />
+<col width="5%" />
+<col width="5%" />
+<col width="5%" />
+<col width="5%" />
+<col width="3%" />
+<col width="5%" />
+<col width="5%" />
+<col width="4%" />
+<col width="4%" />
+<col width="3%" />
+<col width="4%" />
+<col width="4%" />
+<col width="2%" />
+<col width="7%" />
+<col width="3%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="right">sample_size</th>
+<th align="left">distribution</th>
+<th align="right">bias.mean_no_trim</th>
+<th align="right">bias.mean_trim.1</th>
+<th align="right">bias.mean_trim.2</th>
+<th align="right">bias.median</th>
+<th align="right">bias.bayes_mean</th>
+<th align="right">RMSE.mean_no_trim</th>
+<th align="right">RMSE.mean_trim.1</th>
+<th align="right">RMSE.mean_trim.2</th>
+<th align="right">RMSE.median</th>
+<th align="right">RMSE.bayes_mean</th>
+<th align="right">RE.mean_no_trim</th>
+<th align="right">RE.mean_trim.1</th>
+<th align="right">RE.mean_trim.2</th>
+<th align="right">RE.median</th>
+<th align="right">RE.bayes_mean</th>
+<th align="right">REPLICATIONS</th>
+<th align="right">SIM_TIME</th>
+<th align="left">COMPLETED</th>
+<th align="right">SEED</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">30</td>
+<td align="left">norm</td>
+<td align="right">0.0135323</td>
+<td align="right">0.0063649</td>
+<td align="right">0.0057046</td>
+<td align="right">0.0359168</td>
+<td align="right">0.0126238</td>
+<td align="right">0.1728266</td>
+<td align="right">0.1819076</td>
+<td align="right">0.1931318</td>
+<td align="right">0.2317444</td>
+<td align="right">0.1740640</td>
+<td align="right">1</td>
+<td align="right">1.107849</td>
+<td align="right">1.248781</td>
+<td align="right">1.798032</td>
+<td align="right">1.0143710</td>
+<td align="right">50</td>
+<td align="right">12.466</td>
+<td align="left">Wed Jul 14 16:04:13 2021</td>
+<td align="right">607535553</td>
+</tr>
+<tr class="even">
+<td align="right">60</td>
+<td align="left">norm</td>
+<td align="right">0.0060820</td>
+<td align="right">0.0078330</td>
+<td align="right">0.0079806</td>
+<td align="right">0.0183116</td>
+<td align="right">0.0059896</td>
+<td align="right">0.1159888</td>
+<td align="right">0.1160552</td>
+<td align="right">0.1211895</td>
+<td align="right">0.1572678</td>
+<td align="right">0.1167410</td>
+<td align="right">1</td>
+<td align="right">1.001145</td>
+<td align="right">1.091685</td>
+<td align="right">1.838430</td>
+<td align="right">1.0130113</td>
+<td align="right">50</td>
+<td align="right">12.623</td>
+<td align="left">Wed Jul 14 16:04:26 2021</td>
+<td align="right">1435651670</td>
+</tr>
+<tr class="odd">
+<td align="right">120</td>
+<td align="left">norm</td>
+<td align="right">0.0001818</td>
+<td align="right">-0.0013701</td>
+<td align="right">-0.0056986</td>
+<td align="right">-0.0105716</td>
+<td align="right">0.0000138</td>
+<td align="right">0.0916888</td>
+<td align="right">0.0944080</td>
+<td align="right">0.0953085</td>
+<td align="right">0.1118630</td>
+<td align="right">0.0919074</td>
+<td align="right">1</td>
+<td align="right">1.060192</td>
+<td align="right">1.080513</td>
+<td align="right">1.488470</td>
+<td align="right">1.0047732</td>
+<td align="right">50</td>
+<td align="right">12.728</td>
+<td align="left">Wed Jul 14 16:04:38 2021</td>
+<td align="right">1642118540</td>
+</tr>
+<tr class="even">
+<td align="right">240</td>
+<td align="left">norm</td>
+<td align="right">0.0132270</td>
+<td align="right">0.0135124</td>
+<td align="right">0.0147355</td>
+<td align="right">0.0128638</td>
+<td align="right">0.0132402</td>
+<td align="right">0.0613395</td>
+<td align="right">0.0658730</td>
+<td align="right">0.0685627</td>
+<td align="right">0.0741162</td>
+<td align="right">0.0617788</td>
+<td align="right">1</td>
+<td align="right">1.153282</td>
+<td align="right">1.249385</td>
+<td align="right">1.459979</td>
+<td align="right">1.0143747</td>
+<td align="right">50</td>
+<td align="right">12.745</td>
+<td align="left">Wed Jul 14 16:04:51 2021</td>
+<td align="right">145487247</td>
+</tr>
+<tr class="odd">
+<td align="right">30</td>
+<td align="left">chi</td>
+<td align="right">-0.1188487</td>
+<td align="right">-0.4320138</td>
+<td align="right">-0.5841755</td>
+<td align="right">-0.7385841</td>
+<td align="right">-0.1219136</td>
+<td align="right">0.4441493</td>
+<td align="right">0.5904500</td>
+<td align="right">0.6943823</td>
+<td align="right">0.8464958</td>
+<td align="right">0.4445001</td>
+<td align="right">1</td>
+<td align="right">1.767292</td>
+<td align="right">2.444214</td>
+<td align="right">3.632383</td>
+<td align="right">1.0015803</td>
+<td align="right">50</td>
+<td align="right">12.797</td>
+<td align="left">Wed Jul 14 16:05:04 2021</td>
+<td align="right">1993903530</td>
+</tr>
+<tr class="even">
+<td align="right">60</td>
+<td align="left">chi</td>
+<td align="right">0.0736822</td>
+<td align="right">-0.2523534</td>
+<td align="right">-0.3764501</td>
+<td align="right">-0.4813258</td>
+<td align="right">0.0698903</td>
+<td align="right">0.2798506</td>
+<td align="right">0.3617264</td>
+<td align="right">0.4626003</td>
+<td align="right">0.5750447</td>
+<td align="right">0.2778716</td>
+<td align="right">1</td>
+<td align="right">1.670736</td>
+<td align="right">2.732495</td>
+<td align="right">4.222316</td>
+<td align="right">0.9859069</td>
+<td align="right">50</td>
+<td align="right">13.038</td>
+<td align="left">Wed Jul 14 16:05:17 2021</td>
+<td align="right">685847106</td>
+</tr>
+<tr class="odd">
+<td align="right">120</td>
+<td align="left">chi</td>
+<td align="right">-0.0129031</td>
+<td align="right">-0.3615869</td>
+<td align="right">-0.5086537</td>
+<td align="right">-0.6513906</td>
+<td align="right">-0.0170686</td>
+<td align="right">0.1948193</td>
+<td align="right">0.4085431</td>
+<td align="right">0.5443622</td>
+<td align="right">0.6858666</td>
+<td align="right">0.1949225</td>
+<td align="right">1</td>
+<td align="right">4.397562</td>
+<td align="right">7.807503</td>
+<td align="right">12.394114</td>
+<td align="right">1.0010599</td>
+<td align="right">50</td>
+<td align="right">13.107</td>
+<td align="left">Wed Jul 14 16:05:30 2021</td>
+<td align="right">294910101</td>
+</tr>
+<tr class="even">
+<td align="right">240</td>
+<td align="left">chi</td>
+<td align="right">-0.0205891</td>
+<td align="right">-0.3781455</td>
+<td align="right">-0.5295659</td>
+<td align="right">-0.6869832</td>
+<td align="right">-0.0210385</td>
+<td align="right">0.1541472</td>
+<td align="right">0.4033476</td>
+<td align="right">0.5467277</td>
+<td align="right">0.7063723</td>
+<td align="right">0.1547961</td>
+<td align="right">1</td>
+<td align="right">6.846802</td>
+<td align="right">12.579718</td>
+<td align="right">20.998880</td>
+<td align="right">1.0084365</td>
+<td align="right">50</td>
+<td align="right">13.026</td>
+<td align="left">Wed Jul 14 16:05:43 2021</td>
+<td align="right">1582964373</td>
+</tr>
+</tbody>
+</table>
