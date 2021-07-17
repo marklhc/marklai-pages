@@ -12,7 +12,7 @@ tags:
 subtitle: ''
 summary: ''
 authors: []
-lastmod: '2021-07-14T15:11:50-07:00'
+lastmod: '2021-07-16T20:42:00-07:00'
 featured: no
 image:
   caption: ''
@@ -21,11 +21,12 @@ image:
 projects: []
 ---
 
-```{r}
+```{r, message = FALSE}
 library(SimDesign)
 library(cmdstanr)
 ```
 
+[Update: Use parallel computing with two cores.]
 
 Adapted from https://cran.r-project.org/web/packages/SimDesign/vignettes/SimDesign-intro.html
 
@@ -75,6 +76,7 @@ mod <- cmdstan_model(stan_path)
 
 ```{r}
 Analyse <- function(condition, dat, fixed_objects = NULL) {
+    mod <- fixed_objects$mod
     M0 <- mean(dat)
     M1 <- mean(dat, trim = .1)
     M2 <- mean(dat, trim = .2)
@@ -101,7 +103,11 @@ Summarise <- function(condition, results, fixed_objects = NULL) {
 
 ```{r}
 res <- runSimulation(Design, replications = 50, generate = Generate, 
-                     analyse = Analyse, summarise = Summarise)
+                     analyse = Analyse, summarise = Summarise, 
+                     parallel = TRUE,
+                     ncores = min(2, parallel::detectCores()), 
+                     fixed_objects = list(mod = mod),
+                     packages = "cmdstanr")
 ```
 
 ```{r}
