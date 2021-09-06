@@ -33,7 +33,7 @@ links:
 - name: "View journal article"
   url: "https://www.tandfonline.com/10.1080/10705511.2021.1977936"
 url_pdf: '/files/Lai&Zhang_2021_sem_mcaa_partial_invariance_am.pdf'
-url_code: 'https://github.com/marklhc/mcaa-supp'
+url_code: 'https://github.com/marklhc/mcaa_supp'
 url_dataset: ''
 url_poster: ''
 url_project: ''
