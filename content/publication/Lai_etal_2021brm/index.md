@@ -27,7 +27,7 @@ tags:
 - measurement invariance
 - Simulation
 - CFA
-featured: true
+featured: false
 
 links:
 - name: "View journal article"

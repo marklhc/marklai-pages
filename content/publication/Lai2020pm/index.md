@@ -27,7 +27,7 @@ tags:
 - Multilevel
 - Reliability
 - CFA
-featured: true
+featured: false
 
 links:
 - name: "View journal article"
