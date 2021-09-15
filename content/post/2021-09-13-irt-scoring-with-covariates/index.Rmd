@@ -1,0 +1,152 @@
+---
+title: IRT Scoring With Covariates
+author: marklai
+date: '2021-09-13'
+slug: irt-scoring-with-covariates
+categories:
+  - Statistics
+tags:
+  - IRT
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2021-09-13T11:38:58-07:00'
+featured: no
+draft: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+I was working on an extension to the two-stage path analysis [Lai & Hsiao (2021)](/publication/lai_etal_2021pm/) related to integrative data analysis, and ran into an issue described in [Davoudzadeh et al. (2021)](https://www.tandfonline.com/doi/abs/10.1080/10705511.2020.1724113) (which is a very inspiring paper). The basic idea is that when doing a multiple-group analysis to obtain factor scores, a multiple-group and a single-group approach generally give different results due to the different priors. This happens for both confirmatory factor analysis (CFA) and item response theory (IRT). The math can be found in the cited paper; here I just make some notes and show the differences. 
+
+## Load Packages
+
+```{r load-pkg}
+library(mirt)
+```
+
+## Simulate Data
+
+I'll use the simulated data from the `mirt::multipleGroup()` function (see `?multipleGroup`). The two groups have different means (0 and 1) but the same SDs (1). Having different SDs make things a bit more complicated, so I avoided it here. 
+
+```{r sim_dat}
+# 15 items, 2 groups, each with n = 1000
+set.seed(12345)
+a <- matrix(abs(rnorm(15, 1, .3)), ncol = 1)
+d <- matrix(rnorm(15, 0, .7), ncol = 1)
+itemtype <- rep('2PL', nrow(a))
+N <- 1000
+sim_dat <- rbind(
+  simdata(a, d, N, itemtype),
+  simdata(a, d, N, itemtype, mu = 1)
+) |> as.data.frame()
+sim_dat$group <- c(rep('D1', N), rep('D2', N))
+```
+
+## IRT Analayses
+
+There are two ways to incorporate the group information: Multiple-group analyses and single-group analyses with the grouping variable as a covariate.
+
+### Single Group With No Covariates
+
+```{r sg_irt}
+sg_irtfit <- mirt(sim_dat[, 1:15], model = 1)
+# Factor score
+fs1 <- fscores(sg_irtfit)
+```
+
+```{r mimic_irt}
+mimic_irtfit <- mirt(sim_dat[, 1:15], model = 1,
+                     covdata = sim_dat[, "group", drop = FALSE],
+                     formula = ~ group)
+# Factor score
+fs2 <- fscores(mimic_irtfit)
+```
+
+### Multiple Group
+
+```{r mg_irt}
+mg_irtfit <- multipleGroup(
+  sim_dat[, 1:15],
+  model = 1,
+  group = sim_dat$group,
+  invariance =
+    c("free_means", "slopes", "intercepts")
+)
+# Factor score
+fs3 <- fscores(mg_irtfit)
+```
+
+### Compare Coefficients
+
+```{r compare-coef}
+# The numbers are virtually the same; however, the single-group approach 
+# standardizes on the combined data, whereas the MIMIC and the multiple-group
+# approaches standardize on just the first group. Therefore, a scale adjustment
+# will be needed to put the parameters on the same scale
+
+# Scale adjustment factor:
+total_sd <- sqrt(1 + coef(mg_irtfit)$D2$GroupPars[1, "MEAN_1"]^2 / 4)
+sg_pars <- coef(sg_irtfit, simplify = TRUE)$items  # single-group (unadjusted)
+sg_pars[, 1] / total_sd  # discriminations with an approximate scale adjustment
+coef(mimic_irtfit, simplify = TRUE)$items  # single-group with covariates
+coef(mg_irtfit, simplify = TRUE)$D1$items  # multiple-group
+```
+
+## Comparing the Factor Scores
+
+As shown below, the single-group approach gives different results then the MIMIC and the multiple-group approaches.
+
+```{r compare-fs}
+head(cbind(fs1, fs2, fs3))
+```
+
+```{r plot-sg-vs-mimic}
+plot(fs1, fs2)
+```
+
+```{r plot-sg-vs-mg}
+plot(fs1, fs3)
+```
+
+This is particularly problematic when looking at the mean differences across groups:
+
+```{r compare-fs-means}
+tapply(fs1, sim_dat$group, mean)  # single-group; shrinkage applies to differences
+tapply(fs2, sim_dat$group, mean)  # MIMIC; shrinkage does not apply to differences
+tapply(fs3, sim_dat$group, mean)  # MGIRT; shrinkage does not apply to differences
+```
+
+In `mirt`, one can change the prior to get factor scores for a pooled population:
+
+```{r fs-with-priors}
+fs1_new <- fscores(sg_irtfit,
+                   # Use the mean implied from MGIRT
+                   mean = 0,
+                   cov = total_sd)
+fs2_new <- fscores(mimic_irtfit, mean = 0, cov = 1)
+fs3_new <- fscores(mg_irtfit, 
+                   mean = c(0, 0), cov = c(1, 1))
+tapply(fs1_new, sim_dat$group, mean)  # single-group; shrinkage applies to differences
+tapply(fs2_new, sim_dat$group, mean)  # MIMIC; shrinkage STILL applies to differences
+tapply(fs3_new, sim_dat$group, mean)  # MGIRT; shrinkage applies to differences
+```
+
+Now that the single-group and the multiple-group analyses are much closer (other than the difference in the means, as the single-group analysis sets the grand mean to 0, whereas the multiple-group analysis sets the mean of the first group to 0):
+
+```{r plot-sg-vs-mg-new}
+plot(fs1_new, fs3_new)
+```
+
+However, it looks like with MIMIC needs a different kind of priors to do scoring.
+
+```{r plot-sg-vs-mimic-new}
+plot(fs1_new, fs2_new)
+```
+
+## Conclusion
+
+As discussed in Davoudzadeh et al. (2021), the default options in getting factor scores in a multiple-group analysis may not be appropriate as it assumes different priors for different groups. This also happens when treating the grouping variable as a covariate, as in the MIMIC (multiple-indicator-multiple-causes) model, which is the basis of the moderated nonlinear factor analysis (Curran et al., doi: 10.1080/00273171.2014.889594)---an approach commonly used for integrative data analysis. This deserves attentions as if one is going to use factor scores to estimate differences among certain subgroups---either the original grouping variable ($G$) in factor score estimation or some other variables related to $G$, one gets different estimates depending on the different factor score approaches.
