@@ -35,7 +35,7 @@ links:
 url_pdf: '/files/Lai&Zhang_2021_sem_mcaa_partial_invariance_am.pdf'
 url_code: 'https://github.com/marklhc/mcaa_supp'
 url_dataset: ''
-url_poster: ''
+url_poster: '/files/mcaa_poster_apa.pdf'
 url_project: ''
 url_slides: ''
 url_source: ''
