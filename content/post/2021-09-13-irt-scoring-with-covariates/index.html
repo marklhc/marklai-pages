@@ -228,7 +228,7 @@ fs3_new &lt;- fscores(mg_irtfit,
 tapply(fs1_new, sim_dat$group, mean)  # single-group; shrinkage applies to differences</code></pre>
 <pre><code>##         D1         D2 
 ## -0.3428453  0.3502421</code></pre>
-<pre class="r"><code>tapply(fs2_new, sim_dat$group, mean)  # MIMIC; shrinkage STILL applies to differences</code></pre>
+<pre class="r"><code>tapply(fs2_new, sim_dat$group, mean)  # MIMIC; shrinkage STILL does not apply to differences</code></pre>
 <pre><code>##           D1           D2 
 ## 0.0001759437 0.9643186768</code></pre>
 <pre class="r"><code>tapply(fs3_new, sim_dat$group, mean)  # MGIRT; shrinkage applies to differences</code></pre>

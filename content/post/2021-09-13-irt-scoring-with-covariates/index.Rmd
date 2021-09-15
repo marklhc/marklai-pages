@@ -131,7 +131,7 @@ fs2_new <- fscores(mimic_irtfit, mean = 0, cov = 1)
 fs3_new <- fscores(mg_irtfit, 
                    mean = c(0, 0), cov = c(1, 1))
 tapply(fs1_new, sim_dat$group, mean)  # single-group; shrinkage applies to differences
-tapply(fs2_new, sim_dat$group, mean)  # MIMIC; shrinkage STILL applies to differences
+tapply(fs2_new, sim_dat$group, mean)  # MIMIC; shrinkage STILL does not apply to differences
 tapply(fs3_new, sim_dat$group, mean)  # MGIRT; shrinkage applies to differences
 ```
 
