@@ -26,6 +26,7 @@ Courses I teach at USC:
     + [Course notes](https://psyc-bayes-notes.netlify.com)
 - PSYC 575: Multilevel Modeling
     + [Course site for 2020 Fall](courses/psyc575/)
+    + [Course site for 2021 Fall](https://psyc575-2021fall.netlify.app/)
 
 Courses I have taught at UC:
 
