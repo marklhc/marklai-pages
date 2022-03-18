@@ -10,12 +10,12 @@
 
 [[main]]
   name = "Posts"
-  url = "#posts"
+  url = "post/"
   weight = 20
 
 [[main]]
   name = "Publications"
-  url = "#featured"
+  url = "publication/"
   weight = 30
 
 [[main]]
@@ -25,12 +25,12 @@
 
 [[main]]
   name = "Presentation"
-  url = "#talks"
+  url = "talk/"
   weight = 50
 
 [[main]]
   name = "Courses"
-  url = "#teaching"
+  url = "courses/"
   weight = 60
 
 [[main]]

@@ -3,7 +3,7 @@
 # An example of using the custom widget to create your own homepage section.
 # To create more sections, duplicate this file and edit the values below as desired.
 widget = "custom"
-active = true
+active = false
 
 # Note: a full width section format can be enabled by commenting out the `title` and `subtitle` with a `#`.
 title = "Teaching"
@@ -27,8 +27,10 @@ Courses I teach at USC:
 - PSYC 575: Multilevel Modeling
     + [Course site for 2020 Fall](courses/psyc575/)
     + [Course site for 2021 Fall](https://psyc575-2021fall.netlify.app/)
+- PSYC 573: Bayesian Data Analysis
+    + [Course site for 2022 Spring](psyc573-2022spring.netlify.app/)
 
-Courses I have taught at UC:
+Courses I taught at UC:
 
 - EDST 7010: Statistical Data Analysis I
 - EDST 7011: Statistical Data Analysis II
