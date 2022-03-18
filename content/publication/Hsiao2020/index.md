@@ -8,7 +8,7 @@ authors:
 # - "Equal contribution"
 # - "Equal contribution"
 date: "2020-06-18T22:16:00Z"
-doi: ""
+doi: "10.1080/10705511.2020.1782206"
 
 # Schedule page publish date (NOT publication's date).
 # publishDate: "2017-01-01T00:00:00Z"
@@ -20,7 +20,7 @@ doi: ""
 publication_types: ["2"]
 
 # Publication name and optional abbreviated publication name.
-publication: "*Structural Equation Modeling: A Multidisciplinary Journal.* Advance Online Publication"
+publication: "*Structural Equation Modeling: A Multidisciplinary Journal, 28*(2), 250--260"
 publication_short: "Struct Equ Modeling"
 
 abstract: "We investigated the performance of two single indicator methods: latent moderated structural equation (LMS) and reliability-adjusted product indicator (RAPI) methods, on testing interaction effects with congeneric measures, which vary in factor loadings and error variances under a common factor. Additionally, in the simulation study, we compared the performance of four reliability estimates (Cronbach's alpha, omega composite, Coefficient H, and greatest lower bound [GLB]) to adjust for the exogenous composites' measurement errors. Results from the study showed that: while estimating interaction effects with exogenous composites from congeneric measures, the four reliability estimates performed comparably well. Recommendations on the choice of reliability estimates between the LMS and the RAPI methods under different sample size and population reliability conditions are further discussed."

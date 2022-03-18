@@ -15,7 +15,7 @@ publishDate: "2021-09-03T00:00:00Z"
 publication_types: ["2"]
 
 # Publication name and optional abbreviated publication name.
-publication: "*Structural Equation Modeling: A Multidisciplinary Journal*. Manuscript accepted for publication"
+publication: "*Structural Equation Modeling: A Multidisciplinary Journal*. Advance online publication"
 publication_short: "STRUCT EQU MODELING"
 
 abstract: "There has been tremendous growth in research on measurement invariance over the past two decades. However, given that psychological tests are commonly used for making classification decisions such as personnel selections or diagnoses, surprisingly, there has been little research on how noninvariance impacts classification accuracy. Millsap & Kwok (2004) proposed a selection accuracy framework for that purpose, which has been recently extended to categorical data. Their framework, however, only deals with classification using a unidimensional test. In contrast, classification in practice usually involves multidimensional tests (e.g., personality) or multiple tests, with different weights assigned to each dimension. In the current paper, we extend Millsap & Kwok's framework for examining the impact of noninvariance to a multidimensional test on classification. We also provide an R script for the proposed method and illustrate it with a personnel selection example using data from a published report featuring a five-factor personality inventory."

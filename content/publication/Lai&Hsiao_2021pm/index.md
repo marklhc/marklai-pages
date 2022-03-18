@@ -1,5 +1,5 @@
 ---
-title: "Two-Stage Path Analysis With Definition Variables: An Alternative Framework to Account for Measurement Error"
+title: "Two-stage path analysis with definition variables: An alternative framework to account for measurement error"
 authors:
 - Mark H. C. Lai, Yu-Yu Hsiao
 date: "2021-04-16T00:00:00Z"
