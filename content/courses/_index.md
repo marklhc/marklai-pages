@@ -22,7 +22,7 @@ Courses I teach at USC:
     + [Course site for 2020 Fall](courses/psyc575/)
     + [Course site for 2021 Fall](https://psyc575-2021fall.netlify.app/)
 - PSYC 573: Bayesian Data Analysis
-    + [Course site for 2022 Spring](psyc573-2022spring.netlify.app/)
+    + [Course site for 2022 Spring](https://psyc573-2022spring.netlify.app/)
 
 Courses I taught at UC:
 
