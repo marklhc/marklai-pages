@@ -10,7 +10,7 @@ header:
 
 Workshops:
 
-- [Advancing Quantitative Science with Monte Carlo Simulation](courses/montecarlo/)
+- [Advancing Quantitative Science with Monte Carlo Simulation](montecarlo/)
 
 Courses I teach at USC:
 
@@ -19,7 +19,7 @@ Courses I teach at USC:
 - PSYC 621: Seminar in Quantitative Psychology (Bayesian Data Analysis)
     + [Course notes](https://psyc-bayes-notes.netlify.com)
 - PSYC 575: Multilevel Modeling
-    + [Course site for 2020 Fall](courses/psyc575/)
+    + [Course site for 2020 Fall](psyc575/)
     + [Course site for 2021 Fall](https://psyc575-2021fall.netlify.app/)
 - PSYC 573: Bayesian Data Analysis
     + [Course site for 2022 Spring](https://psyc573-2022spring.netlify.app/)
