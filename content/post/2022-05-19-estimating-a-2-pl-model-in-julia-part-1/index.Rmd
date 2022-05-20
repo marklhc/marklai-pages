@@ -1,0 +1,564 @@
+---
+title: Estimating a 2-PL Model in Julia (Part 1)
+author: marklai
+date: '2022-05-19'
+slug: estimating-a-2-pl-model-in-julia-part-1
+categories:
+  - Statistics
+tags:
+  - Julia
+  - IRT
+  - statistics
+  - estimation
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2022-05-19T18:11:31-07:00'
+featured: no
+draft: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+The semester is finally over, and for some reason I wanted to consolidate my understanding of some psychometric models, perhaps because I'll be teaching a graduate measurement class soon. I actually spent quite some time learning about estimation of models from item response theory (IRT), which makes me better appreciate the training of the psychometrians from the IRT tradition.
+
+This and the next blog posts focus on the estimation of a basic and commonly used IRT model: the two-parameter logistic (2-PL) model for binary responses, although the idea should generalize to similar IRT models as well. This post will be on the marginal likelihood estimation approach, which I believe is used in the R package `ltm`, and the next post (planned) will be on estimation with the expectation-maximization (EM) algorithm.
+
+These two posts are mostly learning notes for myself, and are based on the following great articles:
+
+-   [Item Parameter Estimation Via Marginal Maximum Likelihood and an EM Algorithm: A Didactic](https://journals.sagepub.com/doi/abs/10.3102/10769986013003243)
+-   [`mirt`: A Multidimensional Item Response Theory Package for the R Environment](https://www.jstatsoft.org/article/download/v048i06/598)
+
+And also, this post is my first complete post using [Quarto](https://quarto.org/)!
+
+## Import Data
+
+``` r
+library(dplyr, include.only = "count")
+library(ltm)
+count(LSAT, `Item 1`, `Item 2`, `Item 3`, `Item 4`, `Item 5`)
+```
+
+       Item 1 Item 2 Item 3 Item 4 Item 5   n
+    1       0      0      0      0      0   3
+    2       0      0      0      0      1   6
+    3       0      0      0      1      0   2
+    4       0      0      0      1      1  11
+    5       0      0      1      0      0   1
+    6       0      0      1      0      1   1
+    7       0      0      1      1      0   3
+    8       0      0      1      1      1   4
+    9       0      1      0      0      0   1
+    10      0      1      0      0      1   8
+    11      0      1      0      1      1  16
+    12      0      1      1      0      1   3
+    13      0      1      1      1      0   2
+    14      0      1      1      1      1  15
+    15      1      0      0      0      0  10
+    16      1      0      0      0      1  29
+    17      1      0      0      1      0  14
+    18      1      0      0      1      1  81
+    19      1      0      1      0      0   3
+    20      1      0      1      0      1  28
+    21      1      0      1      1      0  15
+    22      1      0      1      1      1  80
+    23      1      1      0      0      0  16
+    24      1      1      0      0      1  56
+    25      1      1      0      1      0  21
+    26      1      1      0      1      1 173
+    27      1      1      1      0      0  11
+    28      1      1      1      0      1  61
+    29      1      1      1      1      0  28
+    30      1      1      1      1      1 298
+
+## Two-Parameter Logistic Model
+
+$$P_{ij} = P(y_j | \theta_i) = \frac{\exp(\eta_{ij})}{1 + \exp(\eta_{ij})}$$
+
+where
+
+$$\eta_{ij} = a_j (\theta_i - b_j) = a_j \theta_i + d_j$$
+
+### Estimation with `mirt` in R
+
+``` r
+library(mirt)
+m_2pl <- mirt(LSAT, SE = TRUE)
+```
+
+
+    Iteration: 1, Log-Lik: -2468.601, Max-Change: 0.08059
+    Iteration: 2, Log-Lik: -2467.278, Max-Change: 0.03446
+    Iteration: 3, Log-Lik: -2466.956, Max-Change: 0.02323
+    Iteration: 4, Log-Lik: -2466.797, Max-Change: 0.01444
+    Iteration: 5, Log-Lik: -2466.749, Max-Change: 0.01067
+    Iteration: 6, Log-Lik: -2466.721, Max-Change: 0.00781
+    Iteration: 7, Log-Lik: -2466.683, Max-Change: 0.00426
+    Iteration: 8, Log-Lik: -2466.677, Max-Change: 0.00392
+    Iteration: 9, Log-Lik: -2466.673, Max-Change: 0.00361
+    Iteration: 10, Log-Lik: -2466.657, Max-Change: 0.00235
+    Iteration: 11, Log-Lik: -2466.656, Max-Change: 0.00207
+    Iteration: 12, Log-Lik: -2466.655, Max-Change: 0.00176
+    Iteration: 13, Log-Lik: -2466.654, Max-Change: 0.00039
+    Iteration: 14, Log-Lik: -2466.654, Max-Change: 0.00026
+    Iteration: 15, Log-Lik: -2466.653, Max-Change: 0.00025
+    Iteration: 16, Log-Lik: -2466.653, Max-Change: 0.00021
+    Iteration: 17, Log-Lik: -2466.653, Max-Change: 0.00020
+    Iteration: 18, Log-Lik: -2466.653, Max-Change: 0.00018
+    Iteration: 19, Log-Lik: -2466.653, Max-Change: 0.00016
+    Iteration: 20, Log-Lik: -2466.653, Max-Change: 0.00013
+    Iteration: 21, Log-Lik: -2466.653, Max-Change: 0.00013
+    Iteration: 22, Log-Lik: -2466.653, Max-Change: 0.00010
+
+    Calculating information matrix...
+
+``` r
+m_2pl
+```
+
+
+    Call:
+    mirt(data = LSAT, SE = TRUE)
+
+    Full-information item factor analysis with 1 factor(s).
+    Converged within 1e-04 tolerance after 22 EM iterations.
+    mirt version: 1.36.1 
+    M-step optimizer: BFGS 
+    EM acceleration: Ramsay 
+    Number of rectangular quadrature: 61
+    Latent density type: Gaussian 
+
+    Information matrix estimated with method: Oakes
+    Second-order test: model is a possible local maximum
+    Condition number of information matrix =  21.24458
+
+    Log-likelihood = -2466.653
+    Estimated parameters: 10 
+    AIC = 4953.307
+    BIC = 5002.384; SABIC = 4970.624
+    G2 (21) = 21.23, p = 0.445
+    RMSEA = 0.003, CFI = NaN, TLI = NaN
+
+``` r
+coef(m_2pl, printSE = TRUE,
+     as.data.frame = TRUE)[c(0:4 * 4 + 1,
+                             0:4 * 4 + 2), ]
+```
+
+                    par         SE
+    Item.1.a1 0.8250552 0.25802573
+    Item.2.a1 0.7230608 0.18674963
+    Item.3.a1 0.8899989 0.23243973
+    Item.4.a1 0.6886588 0.18521007
+    Item.5.a1 0.6575904 0.21001626
+    Item.1.d  2.7728009 0.20561517
+    Item.2.d  0.9902689 0.09004037
+    Item.3.d  0.2491043 0.07624768
+    Item.4.d  1.2848516 0.09906477
+    Item.5.d  2.0536381 0.13545920
+
+## Marginal Maximum Likelihood (MML) Estimation
+
+The main challenge of estimation in IRT, as in other latent variable models, is that there are both person (i.e., $\theta$) and item parameters (i.e., $a$ and $d$ in the 2-PL model). This is the same in the common factor model with continuous responses, but there we usually marginalize out the person parameters. The idea is the same here with MML, except it's more difficult because while we can exploit the normality with the factor model so that the marginal distribution of the data is multivariate normal, in IRT we cannot get rid of the integral when marginalization. Let's start with the likelihood function.
+
+Likelihood function for a response
+
+$$L(a_j, d_j; y_{ij}, \theta_i) = P(y_{ij} \mid \theta_i, a_j, d_j) = P_{ij}^{y_{ij}} (1 - P_{ij})^{1 - y_{ij}}$$
+
+Log-likelihood function
+
+$$\ell(a_j, d_j; y_{ij}, \theta_i) = y_{ij} \log \eta_{ij} - \log[1 + \exp(\eta_{ij})]$$
+
+Individual conditional likelihood
+
+$$\ell(\mathbf{a}, \mathbf{d}; \mathbf{y_i}, \theta_i) = \sum_j \ell(a_j, d_j; y_{ij}, \theta_i)$$
+
+Individual integrated loglikelihood
+
+$$
+\begin{aligned}
+\ell_i & = \ell(\mathbf{a}, \mathbf{d}; \mathbf{y_i}) = \log L(\mathbf{a}, \mathbf{d}; \mathbf{y_i}) \\
+       & = \log \int L(\mathbf{a}, \mathbf{d}; \mathbf{y_i}, \theta) f(\theta) d \theta \\
+       & = \log \int \exp [\ell(\mathbf{a}, \mathbf{d}; \mathbf{y_i}, \theta)] f(\theta) d \theta
+\end{aligned}
+$$
+
+Marginal loglikelihood
+
+$$\ell(\mathbf{a}, \mathbf{d}; \mathbf{y}, \theta) = \sum_i \ell_i = \sum_i \log \int \exp [\ell(\mathbf{a}, \mathbf{d}; \mathbf{y_i}, \theta)] f(\theta) d \theta$$
+
+#### Quadrature
+
+With the assumption that $\theta \sim N(0, 1)$, we have
+
+$$\ell_i = \log \int \exp[\ell(\mathbf{a}, \mathbf{d}; \mathbf{y_i}, \theta)] \frac{\exp(-\theta^2 / 2)}{\sqrt{2 \pi}} d \theta,$$
+
+which is not easy to evaluate, but can be approximated using [Gaussian-Hermite (GH) quadrature](https://en.wikipedia.org/wiki/Gauss%E2%80%93Hermite_quadrature). The GH quadrature is used to approximate an integral of the form
+
+$$\int_{-\infty}^\infty g(x) \exp(-x^2) dx$$
+
+with
+
+$$\sum_{k = 1}^q w_k g(x_k),$$
+
+where $q$ is the number of quadrature points. For example, we can approximate $\int x^2 \exp(-x^2) dx$ over the real line as
+
+``` julia
+using FastGaussQuadrature: gausshermite
+gh5 = gausshermite(5)  # 5 quadrature points
+```
+
+    ([-2.0201828704560856, -0.9585724646138196, -8.881784197001252e-16, 0.9585724646138196, 2.0201828704560856], [0.019953242059045872, 0.39361932315224074, 0.9453087204829428, 0.39361932315224074, 0.019953242059045872])
+
+``` julia
+# First element is the nodes
+gh5[1]
+```
+
+    5-element Vector{Float64}:
+     -2.0201828704560856
+     -0.9585724646138196
+     -8.881784197001252e-16
+      0.9585724646138196
+      2.0201828704560856
+
+``` julia
+# Second element is the weights
+gh5[2]
+```
+
+    5-element Vector{Float64}:
+     0.019953242059045872
+     0.39361932315224074
+     0.9453087204829428
+     0.39361932315224074
+     0.019953242059045872
+
+``` julia
+# Approximate integral
+using LinearAlgebra
+dot(gh5[2], gh5[1] .^ 2)
+```
+
+    0.8862269254527585
+
+When we have the standard normal density, the integral has the form
+
+$$\int_{-\infty}^\infty g(t) \frac{\exp(-t^2 / 2)}{\sqrt{2\pi}} dt,$$
+
+and to use GH quadrature, we need to use a change of variable $x = t / \sqrt{2}$ so that
+
+$$
+  \begin{aligned}
+  \int_{-\infty}^\infty g(t) \frac{\exp(-t^2 / 2)}{\sqrt{2\pi}} dt & = \int_{-\infty}^\infty g(\sqrt{2} x) \frac{\exp(-x^2)}{\sqrt{2\pi}} \sqrt{2} dx \\
+  & \approx \sum_{k} \frac{w_k}{\sqrt{ \pi}} g(\sqrt{2} x).
+  \end{aligned}
+$$
+
+Because we have ${w_k}{\sqrt{\pi}}$ before the likelihood term, we need to divide the qudrature weights by $\sqrt{\pi}$. Similarly, because the likelihood is defined in terms of $\sqrt{2} x_k$, we need to multiply the quadrature nodes by $\sqrt{2}$. For example, to approximate $\int (x^3 + 2 x^2) \phi(x) dx$, where $\phi(\cdot)$ is the normal density, we need
+
+``` julia
+new_nodes = gh5[1] .* √2
+```
+
+    5-element Vector{Float64}:
+     -2.8569700138728056
+     -1.3556261799742675
+     -1.2560739669470201e-15
+      1.3556261799742675
+      2.8569700138728056
+
+``` julia
+new_weights = gh5[2] ./ √π
+```
+
+    5-element Vector{Float64}:
+     0.011257411327720667
+     0.22207592200561244
+     0.5333333333333339
+     0.22207592200561244
+     0.011257411327720667
+
+``` julia
+dot(new_weights, new_nodes .^ 3 + 2 .* (new_nodes .^ 2))
+```
+
+    2.0000000000000018
+
+Back to the 2-PL model. Using a change of variable $x = \theta / sqrt{2}$, we can approximate the marginal loglikelihood
+
+$$
+  \begin{aligned}
+  \ell(\mathbf{a}, \mathbf{d}; \mathbf{y}, \theta) & = \sum_i \log \int \exp [\ell(\mathbf{a}, \mathbf{d}; \mathbf{y_i}, \theta)] \frac{\exp(-\theta^2 / 2)}{\sqrt{2 \pi}} d \theta \\
+          & \approx \sum_i \log \sum_k \frac{w_k}{\sqrt{\pi}} \exp [\ell(\mathbf{a}, \mathbf{d}; \mathbf{y_i}, \sqrt{2} x_k)]
+  \end{aligned}
+$$
+
+## Implement MML Estimation in Julia
+
+### Import R data
+
+``` julia
+using RCall
+lsat = rcopy(R"mirt::LSAT6")
+```
+
+    30×6 DataFrame
+     Row │ Item_1  Item_2  Item_3  Item_4  Item_5  Freq
+         │ Int64   Int64   Int64   Int64   Int64   Int64
+    ─────┼───────────────────────────────────────────────
+       1 │      0       0       0       0       0      3
+       2 │      0       0       0       0       1      6
+       3 │      0       0       0       1       0      2
+       4 │      0       0       0       1       1     11
+       5 │      0       0       1       0       0      1
+       6 │      0       0       1       0       1      1
+       7 │      0       0       1       1       0      3
+       8 │      0       0       1       1       1      4
+      ⋮  │   ⋮       ⋮       ⋮       ⋮       ⋮       ⋮
+      24 │      1       1       0       0       1     56
+      25 │      1       1       0       1       0     21
+      26 │      1       1       0       1       1    173
+      27 │      1       1       1       0       0     11
+      28 │      1       1       1       0       1     61
+      29 │      1       1       1       1       0     28
+      30 │      1       1       1       1       1    298
+                                          15 rows omitted
+
+### Compute marginal loglikelihood
+
+``` julia
+using LinearAlgebra, LogExpFunctions
+# Helper for computing logits: ηᵢⱼ = aⱼθ + dⱼ
+function compute_logits(θ, a, d)
+    [θ[i] * a[j] + d[j]
+     for i = eachindex(θ), j = eachindex(a)]
+end
+```
+
+    compute_logits (generic function with 1 method)
+
+``` julia
+# Main function for computing marginal loglik
+function marginal_loglik_2pl(par, y, n, θ, logw)
+    num_items = size(y, 2)
+    a = par[1:num_items]
+    d = par[num_items+1:end]
+    η = compute_logits(θ, a, d)
+    sum1pexpη = sum(log1pexp, η, dims=2)
+    ret = zero(eltype(par))
+    for l in eachindex(n)
+        @inbounds ret += n[l] * logsumexp(logw .+ η * view(y, l, :) .- sum1pexpη)
+    end
+    ret
+end
+```
+
+    marginal_loglik_2pl (generic function with 1 method)
+
+Example
+
+``` julia
+gh15 = gausshermite(15)  # 15 quadrature points
+```
+
+    ([-4.499990707309391, -3.669950373404453, -2.9671669279056054, -2.3257324861738606, -1.7199925751864926, -1.136115585210924, -0.5650695832555779, -3.552713678800501e-15, 0.5650695832555779, 1.136115585210924, 1.7199925751864926, 2.3257324861738606, 2.9671669279056054, 3.669950373404453, 4.499990707309391], [1.5224758042535368e-9, 1.0591155477110773e-6, 0.00010000444123250024, 0.0027780688429127607, 0.030780033872546228, 0.15848891579593563, 0.41202868749889865, 0.5641003087264175, 0.41202868749889865, 0.15848891579593563, 0.030780033872546228, 0.0027780688429127607, 0.00010000444123250024, 1.0591155477110773e-6, 1.5224758042535368e-9])
+
+``` julia
+gh15_node = gh15[1] .* √2
+```
+
+    15-element Vector{Float64}:
+     -6.363947888829838
+     -5.190093591304782
+     -4.196207711269019
+     -3.289082424398771
+     -2.4324368270097634
+     -1.6067100690287344
+     -0.7991290683245511
+     -5.0242958677880805e-15
+      0.7991290683245511
+      1.6067100690287344
+      2.4324368270097634
+      3.289082424398771
+      4.196207711269019
+      5.190093591304782
+      6.363947888829838
+
+``` julia
+gh15_weight = gh15[2] ./ √π
+```
+
+    15-element Vector{Float64}:
+     8.589649899633383e-10
+     5.975419597920666e-7
+     5.642146405189039e-5
+     0.0015673575035499477
+     0.01736577449213769
+     0.08941779539984435
+     0.23246229360973225
+     0.31825951825951826
+     0.23246229360973225
+     0.08941779539984435
+     0.01736577449213769
+     0.0015673575035499477
+     5.642146405189039e-5
+     5.975419597920666e-7
+     8.589649899633383e-10
+
+``` julia
+θ₀ = [ones(5); zeros(5)]  # initial values [a₁, …, d₁, … ]
+```
+
+    10-element Vector{Float64}:
+     1.0
+     1.0
+     1.0
+     1.0
+     1.0
+     0.0
+     0.0
+     0.0
+     0.0
+     0.0
+
+``` julia
+# Note:
+#   1. requires matrix input for y
+#   2. uses log(w) instead of w as input
+marginal_loglik_2pl(θ₀,
+    Matrix(lsat[:, 1:5]), lsat[:, 6],
+    gh15_node, log.(gh15_weight))
+```
+
+    -3182.386241129594
+
+### Optimization
+
+We can now use generic optimization algorithms to search for parameter values that maximize the marginal loglikelihood function, such as those in [`Optim.jl`](https://julianlsolvers.github.io/Optim.jl/stable/). Just note that the `optimize` function does *minimization*, so we need to switch the sign.
+
+``` julia
+using Optim
+# Use anonymous function to pass additional arguments
+opt1 = optimize(x -> -marginal_loglik_2pl(x,
+        Matrix(lsat[:, 1:5]), lsat[:, 6],
+        gh15_node, log.(gh15_weight)),
+    θ₀, LBFGS())
+```
+
+     * Status: success
+
+     * Candidate solution
+        Final objective value:     2.466653e+03
+
+     * Found with
+        Algorithm:     L-BFGS
+
+     * Convergence measures
+        |x - x'|               = 0.00e+00 ≤ 0.0e+00
+        |x - x'|/|x'|          = 0.00e+00 ≤ 0.0e+00
+        |f(x) - f(x')|         = 0.00e+00 ≤ 0.0e+00
+        |f(x) - f(x')|/|f(x')| = 0.00e+00 ≤ 0.0e+00
+        |g(x)|                 = 1.13e-07 ≰ 1.0e-08
+
+     * Work counters
+        Seconds run:   1  (vs limit Inf)
+        Iterations:    27
+        f(x) calls:    79
+        ∇f(x) calls:   79
+
+``` julia
+opt1.minimizer
+```
+
+    10-element Vector{Float64}:
+     0.8256595178534981
+     0.7227442534360561
+     0.8908743624210756
+     0.6883680043418308
+     0.6568559896469349
+     2.7732343965273114
+     0.9902012139683823
+     0.24914751010804564
+     1.2847569367785143
+     2.053270467746726
+
+Looks like we got similar estimates as in `mirt` in R!
+
+### Benchmarking
+
+The previous call of `optimize` uses the [L-BFGS algorithm](https://en.wikipedia.org/wiki/Limited-memory_BFGS) with the gradients obtained by [finite differences](https://julianlsolvers.github.io/Optim.jl/stable/#user/gradientsandhessians/#finite-differences). One nice thing in Julia is that we can use [automatic differentiation](https://julianlsolvers.github.io/Optim.jl/stable/#user/gradientsandhessians/#automatic-differentiation). Let's apply that. I'll also add the standard errors from the Hessian, and also do some benchmarking.
+
+``` julia
+using NLSolversBase
+# Wrap in a function
+function estimate_2pl_mml(y, n, init, n_quadpts=101)
+    # Convert y to matrix
+    y = Matrix(y)
+    # Obtain quadrature nodes and weights
+    ghq = gausshermite(101)
+    ghq_θ = ghq[1] .* √2
+    ghq_logw = log.(ghq[2]) .- log(π) / 2
+    # Use `TwiceDifferentiable` to get Hessian
+    func = TwiceDifferentiable(
+        x -> -marginal_loglik_2pl(x,
+            Matrix(lsat[:, 1:5]), lsat[:, 6],
+            gh15_node, log.(gh15_weight)),
+        init; autodiff=:forward)
+    opt = optimize(func, init, LBFGS())
+    est = opt.minimizer
+    # Get standard error by inverting hessian
+    numerical_hessian = hessian!(func, est)
+    # Return results
+    hcat(est,
+         sqrt.(diag(inv(numerical_hessian))))
+end
+```
+
+    estimate_2pl_mml (generic function with 2 methods)
+
+We can benchmark the implementation:
+
+``` julia
+using BenchmarkTools
+@btime estimate_2pl_mml(lsat[:, 1:5], lsat[:, 6], θ₀)
+```
+
+      3.145 ms (7787 allocations: 7.89 MiB)
+
+    10×2 Matrix{Float64}:
+     0.82566   0.258115
+     0.722744  0.18668
+     0.890874  0.232763
+     0.688368  0.185143
+     0.656856  0.209909
+     2.77323   0.205744
+     0.990201  0.090019
+     0.249148  0.0762729
+     1.28476   0.0990375
+     2.05327   0.135359
+
+Compare to `ltm` and `mirt` in R:
+
+``` r
+bench::mark(
+    mirt = mirt(LSAT, SE = TRUE, verbose = FALSE),
+    ltm = ltm(LSAT ~ z1),
+    check = FALSE
+)
+```
+
+    Warning: Some expressions had a GC in every iteration; so filtering is disabled.
+
+    # A tibble: 2 × 6
+      expression      min   median `itr/sec` mem_alloc `gc/sec`
+      <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
+    1 mirt         74.9ms   85.1ms      11.9    10.5MB     5.97
+    2 ltm            43ms   44.3ms      22.5    22.6MB    22.5 
+
+So looks like the julia implementation is pretty fast. Of course, keep in mind that the functions in the R packages are written more generally for other types of IRT models, and that those functions may compute a few more things than just the estimates and the standard errors.
+
+P.S., I also tried to code the analytic gradient for the loglikelihood function with respect to the parameters, which took me quite some time, especially for getting the quadrature to work properly. However, supplying the analytic gradient seems to perform worse than automatic differentiation (AD), probably because my code is not optimized, but also perhaps AD is pretty good already. Perhaps the lesson is that with Julia and AD, I can gratefully skip the part of deriving and coding the gradients.
