@@ -3,6 +3,9 @@ title: Actor Partner Interdependence Model With Multilevel Analysis
 author: marklai
 date: '2021-10-23'
 slug: actor-partner-interdependence-model-with-multilevel-analysis
+output:
+  blogdown::html_page:
+    toc: true
 categories:
   - Statistics
 tags:

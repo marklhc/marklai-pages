@@ -3,6 +3,9 @@ title: Confidence Intervals for Multilevel R-Squared
 author: marklai
 date: '2022-05-12'
 slug: confidence-intervals-for-multilevel-r-squared
+output:
+  blogdown::html_page:
+    toc: true
 categories:
   - Statistics
 tags:

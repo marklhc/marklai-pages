@@ -3,6 +3,9 @@ title: Actor Partner Interdependence Model With Multilevel Analysis
 author: marklai
 date: '2021-10-23'
 slug: actor-partner-interdependence-model-with-multilevel-analysis
+output:
+  blogdown::html_page:
+    toc: true
 categories:
   - Statistics
 tags:
@@ -20,8 +23,22 @@ image:
 projects: []
 ---
 
-<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
 
+<div id="TOC">
+<ul>
+<li><a href="#load-packages">Load Packages</a></li>
+<li><a href="#data">Data</a></li>
+<li><a href="#hypothetical-research-question">Hypothetical Research Question</a></li>
+<li><a href="#distinguishable-dyads">Distinguishable Dyads</a></li>
+<li><a href="#indistinguishable-dyads">Indistinguishable Dyads</a>
+<ul>
+<li><a href="#model-comparison">Model Comparison</a></li>
+<li><a href="#using-sem">Using SEM</a></li>
+<li><a href="#distinguishable-dyads-1">Distinguishable Dyads</a></li>
+<li><a href="#indistinguishable-dyads-1">Indistinguishable Dyads</a></li>
+</ul></li>
+</ul>
+</div>
 
 <p>Every time I teach multilevel modeling (MLM) at USC, I have students interested in running the actor partner independence model (APIM) using dyadic model. While such models are easier to fit with structural equation modeling, it can also be fit using MLM. In this post I provide a software tutorial for fitting such a model using MLM, and contrast to results to SEM.</p>
 <p>Note that this is not a conceptual introduction to APIM. Please check out <a href="https://psycnet.apa.org/record/2000-07611-017">this chapter</a> and <a href="https://psycnet.apa.org/record/2017-05295-001">this paper</a>.</p>
@@ -320,7 +337,7 @@ summary(m3)</code></pre>
 <pre class="r"><code># Wide format
 aciwide &lt;- filter(acipair, Partnum == 1)  # Actor = Wife; Partner = Husband
 library(lavaan)</code></pre>
-<pre><code>## This is lavaan 0.6-9
+<pre><code>## This is lavaan 0.6-11
 ## lavaan is FREE software! Please report any bugs.</code></pre>
 <pre><code>## 
 ## Attaching package: &#39;lavaan&#39;</code></pre>
@@ -330,7 +347,7 @@ library(lavaan)</code></pre>
 <pre class="r"><code>apim_mod &lt;- &#39; Satisfaction_A + Satisfaction_P ~ OtherPos_A + OtherPos_P &#39;
 apim_fit &lt;- sem(apim_mod, data = aciwide)
 summary(apim_fit)</code></pre>
-<pre><code>## lavaan 0.6-9 ended normally after 17 iterations
+<pre><code>## lavaan 0.6-11 ended normally after 12 iterations
 ## 
 ##   Estimator                                         ML
 ##   Optimization method                           NLMINB
@@ -398,7 +415,7 @@ plot(p4)</code></pre>
                Satisfaction_P ~ m * 1 &#39;
 apim2_fit &lt;- sem(apim2_mod, data = aciwide)
 summary(apim2_fit)</code></pre>
-<pre><code>## lavaan 0.6-9 ended normally after 19 iterations
+<pre><code>## lavaan 0.6-11 ended normally after 22 iterations
 ## 
 ##   Estimator                                         ML
 ##   Optimization method                           NLMINB

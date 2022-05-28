@@ -3,6 +3,9 @@ title: Confidence Intervals for Multilevel R-Squared
 author: marklai
 date: '2022-05-12'
 slug: confidence-intervals-for-multilevel-r-squared
+output:
+  blogdown::html_page:
+    toc: true
 categories:
   - Statistics
 tags:
@@ -22,6 +25,28 @@ projects: []
 ---
 
 
+<div id="TOC">
+<ul>
+<li><a href="#load-packages">Load Packages</a></li>
+<li><a href="#an-example-multilevel-model">An Example Multilevel Model</a>
+<ul>
+<li><a href="#nakagawa-johnson-schielzeth-r2">Nakagawa-Johnson-Schielzeth <span class="math inline">\(R^2\)</span></a></li>
+<li><a href="#right-sterba-r2">Right-Sterba <span class="math inline">\(R^2\)</span></a></li>
+</ul></li>
+<li><a href="#confidence-intervals-for-r2">Confidence Intervals for <span class="math inline">\(R^2\)</span></a></li>
+<li><a href="#parametric-bootstrap">Parametric Bootstrap</a>
+<ul>
+<li><a href="#bias-corrected-estimate">Bias-corrected estimate</a></li>
+<li><a href="#confidence-intervals">Confidence intervals</a></li>
+</ul></li>
+<li><a href="#residual-bootstrap">Residual Bootstrap</a>
+<ul>
+<li><a href="#confidence-intervals-1">Confidence Intervals</a></li>
+</ul></li>
+<li><a href="#bootstrap-ci-with-transformation">Bootstrap CI With Transformation</a></li>
+<li><a href="#conclusion">Conclusion</a></li>
+</ul>
+</div>
 
 <div id="load-packages" class="section level2">
 <h2>Load Packages</h2>
