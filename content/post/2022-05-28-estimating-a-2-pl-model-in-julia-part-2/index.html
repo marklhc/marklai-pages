@@ -1,0 +1,364 @@
+---
+title: Estimating a 2-PL Model in Julia (Part 2)
+author: marklai
+date: '2022-05-28'
+slug: estimating-a-2-pl-model-in-julia-part-2
+output:
+  blogdown::html_page:
+    toc: true
+categories:
+  - Statistics
+  - Programming
+tags:
+  - statistics
+  - IRT
+  - Julia
+  - estimation
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2022-05-28T14:48:40-07:00'
+featured: no
+draft: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+
+<div id="TOC">
+<ul>
+<li><a href="#e-step">E-Step</a></li>
+<li><a href="#m-step">M-Step</a></li>
+<li><a href="#estimating-a-2-pl-model-with-em-in-julia">Estimating a 2-PL Model with EM in Julia</a>
+<ul>
+<li><a href="#find-bar-r_jk-and-bar-n_k">Find <span class="math inline">\(\bar r_{jk}\)</span> and <span class="math inline">\(\bar n_k\)</span></a></li>
+<li><a href="#solve-estimating-equations">Solve estimating equations</a></li>
+<li><a href="#iterations">Iterations</a></li>
+<li><a href="#stopping-criteria">Stopping criteria</a></li>
+</ul></li>
+<li><a href="#benchmarking">Benchmarking</a></li>
+<li><a href="#remark">Remark</a></li>
+</ul>
+</div>
+
+<div class="hidden">
+<p><span class="math display">\[
+  \newcommand{\bv}[1]{\boldsymbol{\mathbf{#1}}}
+\]</span></p>
+</div>
+<p>The EM algorithm is usually used for estimation problems that involve some latent variables <span class="math inline">\(\bv Z\)</span> and parameters <span class="math inline">\(\bv \omega\)</span>, where the conditional likelihood <span class="math inline">\(L(\bv \omega; \bv Y, \bv Z)\)</span> is relatively easy to solve, but the marginal likelihood, which requires integrating <span class="math inline">\(\bv Z\)</span> out, is intractable. In the 2-PL estimation problem, we consider the item parameters <span class="math inline">\(\bv a\)</span> and <span class="math inline">\(\bv d\)</span> as <span class="math inline">\(\bv \omega\)</span>, and the person parameters <span class="math inline">\(\bv \theta\)</span> as <span class="math inline">\(\bv Z\)</span>.</p>
+<p>In a general IRT model, the marginal likelihood function <span class="math inline">\(L(\bv \omega; \bv Y)\)</span> requires integrating out the person parameters <span class="math inline">\(\bv \theta\)</span>, which is usually difficult. We can instead use the EM algorithm. First, we can define the complete-data likelihood</p>
+<p><span class="math display">\[L(\bv \omega; \bv Y, \bv \theta) = P(\bv Y \mid \bv \theta, \bv \omega) P(\bv \theta \mid \bv \omega)\]</span></p>
+<p>assuming that observations are independently and identically distributed given <span class="math inline">\(\bv \theta\)</span>, and <strong>local independence</strong> such that the item responses are independent when conditioning on <span class="math inline">\(\bv \theta\)</span>, we have</p>
+<p><span class="math display">\[L(\bv \omega; \bv Y, \bv \theta) = \prod_i^N \prod_j L_{ij} P(\theta_i \mid \bv \omega_j)\]</span></p>
+<p>where <span class="math inline">\(L_{ij} = P(y_{ij} \mid \theta_i, \bv \omega_j)\)</span>. Thus, the complete-data <em>loglikelihood</em> is</p>
+<p><span class="math display">\[\ell(\bv \omega; \bv Y, \bv \theta) = \log L(\bv \omega; \bv Y, \bv \theta) = \sum_i^N \sum_j \left[\ell_{ij} + \log P(\theta_i \mid \bv \omega_j)\right],\]</span></p>
+<p>where <span class="math inline">\(\ell_{ij} = \log L_{ij}\)</span></p>
+<p>With the <a href="https://en.wikipedia.org/wiki/Expectation%E2%80%93maximization_algorithm">EM algorithm</a>, we update our parameter estimates by iterating between two steps:</p>
+<ul>
+<li>E-step: obtain <span class="math inline">\(E_{\bv \theta \mid \bv Y, \bv \omega^{(t)}}[\ell(\bv \omega; \bv Y, \bv \theta)]\)</span> with respect to the conditional distribution <span class="math inline">\(\bv \theta \mid \bv Y, \bv \omega^{(t)}\)</span>, treating <span class="math inline">\(\bv \omega^{(t)}\)</span> as known;</li>
+<li>M-step: obtain new <span class="math inline">\(\bv \omega^{(t + 1)}\)</span> that maximizes <span class="math inline">\(E_{\bv \theta \mid \bv Y, \bv \omega^{(t)}}[\ell(\bv \omega; \bv Y, \bv \theta)]\)</span>.</li>
+</ul>
+<p>Note: the setup of the problem in this post deviates a bit from the one in the original <a href="https://link.springer.com/article/10.1007/BF02293801">Bock and Aitkin paper</a>, which assumes a multinomial distribution of the sample counts of each response pattern. The resulting estimating equations should be the same.</p>
+<div id="e-step" class="section level2">
+<h2>E-Step</h2>
+<p>First consider the E-step for the 2-PL model, which has</p>
+<p><span class="math display">\[
+  \begin{aligned}
+    \ell_{ij} &amp; = y_{ij} \log \eta_{ij} - \log[1 + \exp(\eta_{ij})] \\
+    \eta_{ij} &amp; = a_j \theta_i + d_j
+  \end{aligned}.
+\]</span></p>
+<p>In addition, in IRT, because item responses are discrete, the <span class="math inline">\(N\)</span> observations can usually be reduced to a smaller number of <span class="math inline">\(l\)</span> response patterns. For example, with the <code>LSAT</code> data, which has 1,000 observations, it only has 30 response patterns of 5 binary items:</p>
+<pre class="julia"><code>using RCall
+lsat = rcopy(R&quot;mirt::LSAT6&quot;)</code></pre>
+<pre><code>30×6 DataFrame
+ Row │ Item_1  Item_2  Item_3  Item_4  Item_5  Freq
+     │ Int64   Int64   Int64   Int64   Int64   Int64
+─────┼───────────────────────────────────────────────
+   1 │      0       0       0       0       0      3
+   2 │      0       0       0       0       1      6
+   3 │      0       0       0       1       0      2
+   4 │      0       0       0       1       1     11
+   5 │      0       0       1       0       0      1
+   6 │      0       0       1       0       1      1
+   7 │      0       0       1       1       0      3
+   8 │      0       0       1       1       1      4
+  ⋮  │   ⋮       ⋮       ⋮       ⋮       ⋮       ⋮
+  24 │      1       1       0       0       1     56
+  25 │      1       1       0       1       0     21
+  26 │      1       1       0       1       1    173
+  27 │      1       1       1       0       0     11
+  28 │      1       1       1       0       1     61
+  29 │      1       1       1       1       0     28
+  30 │      1       1       1       1       1    298
+                                      15 rows omitted</code></pre>
+<p>So instead of computing the loglikelihood for 1,000 observations, we only need to do it for <span class="math inline">\(s = 30\)</span> response patterns. So the complete-data loglikelihood can be written as</p>
+<p><span class="math display">\[\ell(\bv \omega; \bv Y, \bv \theta) = \sum_{l = 1}^s \sum_j n_l \ell_{lj} + \sum_{i = 1}^n \sum_j \log P(\theta_i \mid \bv \omega_j),\]</span></p>
+<p>with <span class="math inline">\(\ell_{lj} = \log L_{lj} = \log P(y_{lj} \mid \bv \omega_j, \theta)\)</span> for a fixed <span class="math inline">\(\theta\)</span> value.</p>
+<p>For the E-step, we first need the conditional distribution <span class="math inline">\(P(\theta \mid \bv Y, \bv a^{(t)}, \bv d^{(t)})\)</span> with some fixed values of <span class="math inline">\(\bv a^{(t)}\)</span> and <span class="math inline">\(\bv d^{(t)}\)</span>, which can be obtained with Bayes’ theorem</p>
+<p><span class="math display">\[P(\theta_i \mid \bv y_l, \bv a^{(t)}, \bv d^{(t)}) = \frac{P(\bv y_l \mid \theta_i, \bv a^{(t)}, \bv d^{(t)})P(\theta_i)}{\int P(\bv y_l \mid \theta, \bv a^{(t)} \bv d^{(t)})P(\theta) d\theta}\]</span></p>
+<p>We need a prior distribution <span class="math inline">\(P(\theta)\)</span>, which is commonly chosen as a normal distribution (and standard normal for single group analysis). Using Gaussian-Hermite (GH) quadrature to replace <span class="math inline">\(P(\theta_k)\)</span> by <span class="math inline">\(w_k\)</span>, where <span class="math inline">\(k\)</span> being one of the <span class="math inline">\(q\)</span> quadrature points, and replacing the intergral with the finite sum, we have:</p>
+<p><span class="math display">\[
+  \begin{aligned}
+  P(\theta_k \mid \bv y_l, \bv a^{(t)}, \bv d^{(t)}) &amp; \approx \frac{P(\bv y_l \mid \theta_i, \bv a, \bv d) w_k}{\sum_{k = 1}^q P(\bv y_l \mid \theta, \bv a \bv d) w_k} \\
+  &amp; = \frac{L^{(t)}_l(\theta_k)w_k}{\sum_k L^{(t)}_l(\theta_k) w_k} \\
+  &amp; = \frac{L^{(t)}_l(\theta_k)w_k}{P_l}
+  \end{aligned}
+\]</span></p>
+<p>Note the subscript <span class="math inline">\((t)\)</span> indicating that <span class="math inline">\(L^{(t)}_l(\cdot)\)</span> is a function of <span class="math inline">\(\theta\)</span> with fixed values of the item parameters. Now we can taking the expectation of the complete-data loglikelihood with respect to the conditional distribution we just saw:</p>
+<p><span class="math display">\[
+  \begin{aligned}
+  E_{\bv \theta \mid \bv Y, \bv \omega^{(t)}}[\ell(\bv \omega; \bv Y, \bv \theta)]
+  &amp; = E_{\bv \theta \mid \bv Y, \bv \omega^{(t)}}\left[\sum_l \sum_j n_l \ell_{lj} \right] \\
+  &amp; \quad + E_{\bv \theta \mid \bv Y, \bv \omega^{(t)}} \left[\sum_l \sum_j \log P(\theta_i \mid \bv \omega^{(t)})\right],
+  \end{aligned}
+\]</span></p>
+<p>Note that the second expectation term is not a function of the item parameters (it is a function of <span class="math inline">\(\theta\)</span> treating the item parameters as fixed), so we can write it as <span class="math inline">\(h(\bv \theta)\)</span>, which is a constant for the maximization step. So using G-H quadrature to approximate the integral when taking the expectation, we have</p>
+<p><span class="math display">\[
+  \begin{aligned}
+  E_{\bv \theta \mid \bv Y, \bv \omega^{(t)}}[\ell(\bv \omega; \bv Y, \bv \theta)]
+  &amp; = \int \left[\sum_l \sum_j n_l \ell_{lj} P(\theta \mid \bv y_l, \bv \omega^{(t)})\right] d \theta + h(\bv \theta) \\
+  &amp; = \sum_k \sum_l \sum_j \frac{ n_l \ell_{lj} L^{(t)}_l(\theta_k)w_k}{P_l} + h(\bv \theta)
+  \end{aligned}
+\]</span></p>
+</div>
+<div id="m-step" class="section level2">
+<h2>M-Step</h2>
+<p>In the M-step, we find new values <span class="math inline">\(\bv \omega^{(t + 1)}\)</span> that maximize the expected loglikelihood above. To find the maximizer, we take the derivative of the expected loglikelihood with respect to each parameter, and set the derivative to zero. This gives us a set of <em>estimating equations</em>. First, it can be verified that</p>
+<p><span class="math display">\[
+  \begin{aligned}
+    \frac{\partial \ell_{lj}}{\partial a_j} &amp; = \left[y_{lj} - P_j(\theta_k)\right] \theta_k \\
+    \frac{\partial \ell_{lj}}{\partial d_j} &amp; = y_{lj} - P_j(\theta_k),
+  \end{aligned}
+\]</span></p>
+<p>where <span class="math inline">\(P_j(\theta_k) = \eta_{kj} / (1 + \eta_{kj})\)</span>. So the derivative of the expected loglikelihood with respect to <span class="math inline">\(a_j\)</span> is</p>
+<p><span class="math display">\[
+  \begin{aligned}
+  \frac{\partial}{\partial a_j} E_{\bv \theta \mid \bv Y, \bv \omega^{(t)}}[\ell(\bv \omega; \bv Y, \bv \theta)]
+  &amp; = \sum_k \sum_l \frac{n_l [y_{lj} - P_j(\theta_k)] \theta_k L^{(t)}_l(\theta_k)w_k}{P_l}.
+  \end{aligned}
+\]</span></p>
+<p>Following the previous literature, let</p>
+<p><span class="math display">\[
+  \begin{aligned}
+  \bar r_{jk} &amp; = \sum_l \frac{n_l y_{lj} L^{(t)}_l(\theta_k)w_k}{P_l} \\
+  \bar n_k &amp; = \sum_l \frac{n_l L^{(t)}_l(\theta_k)w_k}{P_l},
+  \end{aligned}
+\]</span></p>
+<p>where <span class="math inline">\(n_k\)</span> is the expected number of participants with ability level <span class="math inline">\(\theta_k\)</span>, and <span class="math inline">\(r_{jk}\)</span> is the expected number of participants with ability level <span class="math inline">\(\theta_k\)</span> endorsing item <span class="math inline">\(j\)</span>. Then the estimating equations are</p>
+<p><span class="math display">\[
+  \begin{aligned}
+  \sum_k [\bar r_{jk} - \bar n_k P_j(\theta_k)] = 0 \\
+  \sum_k [\bar r_{jk} - \bar n_k P_j(\theta_k)] \theta_k = 0
+  \end{aligned}
+\]</span></p>
+<p>for <span class="math inline">\(j = 1, \ldots, p\)</span> where <span class="math inline">\(p\)</span> is the number of items. These can be solved using non-linear solvers.</p>
+</div>
+<div id="estimating-a-2-pl-model-with-em-in-julia" class="section level2">
+<h2>Estimating a 2-PL Model with EM in Julia</h2>
+<p>Here is my attempt to implement the EM algorithm in Julia, following the steps laid out in Harwell (1988). First, load the packages</p>
+<pre class="julia"><code>using LinearAlgebra, LogExpFunctions
+using FastGaussQuadrature: gausshermite
+using NLsolve
+using BenchmarkTools</code></pre>
+<div id="find-bar-r_jk-and-bar-n_k" class="section level3">
+<h3>Find <span class="math inline">\(\bar r_{jk}\)</span> and <span class="math inline">\(\bar n_k\)</span></h3>
+<pre class="julia"><code># Helper for computing logits: ηᵢⱼ = aⱼθ + dⱼ
+function compute_logits(θ, a, d)
+    [θ[i] * a[j] + d[j]
+     for i = eachindex(θ), j = eachindex(a)]
+end</code></pre>
+<pre><code>compute_logits (generic function with 1 method)</code></pre>
+<pre class="julia"><code>function eloglik_2pl_em(y, n, θ, w, parₜ)
+    num_items = size(y, 2)
+    aₜ = parₜ[1:num_items]
+    dₜ = parₜ[num_items+1:end]
+    ηₜ = compute_logits(θ, aₜ, dₜ)
+    sum1pexpη = sum(log1pexp, ηₜ, dims=2)
+    wpy_given_θ = Matrix{eltype(aₜ)}(undef, length(θ), length(n))
+    for l in eachindex(n)
+        wpy_given_θ[:, l] = w .* exp.(ηₜ * view(y, l, :) .- sum1pexpη)
+    end
+    pθ_given_y = wpy_given_θ ./ sum(wpy_given_θ, dims=1)
+    (bar_nₖ=pθ_given_y * n,
+        bar_rⱼₖ=pθ_given_y * (n .* y))
+end</code></pre>
+<pre><code>eloglik_2pl_em (generic function with 1 method)</code></pre>
+<pre class="julia"><code># Test:
+gh15 = gausshermite(15)  # 15 quadrature points</code></pre>
+<pre><code>([-4.499990707309391, -3.669950373404453, -2.9671669279056054, -2.3257324861738606, -1.7199925751864926, -1.136115585210924, -0.5650695832555779, -3.552713678800501e-15, 0.5650695832555779, 1.136115585210924, 1.7199925751864926, 2.3257324861738606, 2.9671669279056054, 3.669950373404453, 4.499990707309391], [1.5224758042535368e-9, 1.0591155477110773e-6, 0.00010000444123250024, 0.0027780688429127607, 0.030780033872546228, 0.15848891579593563, 0.41202868749889865, 0.5641003087264175, 0.41202868749889865, 0.15848891579593563, 0.030780033872546228, 0.0027780688429127607, 0.00010000444123250024, 1.0591155477110773e-6, 1.5224758042535368e-9])</code></pre>
+<pre class="julia"><code>gh15_node = gh15[1] .* √2</code></pre>
+<pre><code>15-element Vector{Float64}:
+ -6.363947888829838
+ -5.190093591304782
+ -4.196207711269019
+ -3.289082424398771
+ -2.4324368270097634
+ -1.6067100690287344
+ -0.7991290683245511
+ -5.0242958677880805e-15
+  0.7991290683245511
+  1.6067100690287344
+  2.4324368270097634
+  3.289082424398771
+  4.196207711269019
+  5.190093591304782
+  6.363947888829838</code></pre>
+<pre class="julia"><code>gh15_weight = gh15[2] ./ √π</code></pre>
+<pre><code>15-element Vector{Float64}:
+ 8.589649899633383e-10
+ 5.975419597920666e-7
+ 5.642146405189039e-5
+ 0.0015673575035499477
+ 0.01736577449213769
+ 0.08941779539984435
+ 0.23246229360973225
+ 0.31825951825951826
+ 0.23246229360973225
+ 0.08941779539984435
+ 0.01736577449213769
+ 0.0015673575035499477
+ 5.642146405189039e-5
+ 5.975419597920666e-7
+ 8.589649899633383e-10</code></pre>
+<pre class="julia"><code>exp1 = eloglik_2pl_em(Matrix(lsat[:, 1:5]), lsat[:, 6],
+    gh15_node, gh15_weight,
+    [ones(5); zeros(5)])</code></pre>
+<pre><code>(bar_nₖ = [2.7564518778742383e-8, 2.0114861555321952e-5, 0.002128243156556154, 0.07560094100777943, 1.3352261691433547, 14.249248990842812, 89.7255889231157, 278.1775106946097, 365.8604302697971, 199.39830527246278, 46.43045474007526, 4.57238810409275, 0.17124982332670236, 0.001845015100526724, 2.6708429185723037e-6], bar_rⱼₖ = [4.138800953383068e-10 4.341143688898378e-11 … 8.455317850390647e-11 2.4966992659649684e-10; 9.488948442862142e-7 1.0961092559330794e-7 … 2.0276924419430197e-7 5.791071220863187e-7; … ; 0.0018436478096575996 0.0018377274514118978 … 0.0018394578991136525 0.0018424609777163434; 2.670229820441103e-6 2.667573675000273e-6 … 2.6683500732256074e-6 2.669698207072498e-6])</code></pre>
+<p>The output is a tuple, with the first element <code>bar_nₖ</code> being a <span class="math inline">\(q\)</span> <span class="math inline">\(\times\)</span> 1 vector and <code>bar_rⱼₖ</code> being a <span class="math inline">\(q\)</span> <span class="math inline">\(\times\)</span> <span class="math inline">\(p\)</span> matrix.</p>
+</div>
+<div id="solve-estimating-equations" class="section level3">
+<h3>Solve estimating equations</h3>
+<pre class="julia"><code>function compute_probs(θ, a, d)
+    [logistic(θ[i] * a[j] + d[j]) for i = eachindex(θ), j = eachindex(a)]
+end</code></pre>
+<pre><code>compute_probs (generic function with 1 method)</code></pre>
+<pre class="julia"><code>function esteq_2pl_em(par, bar_r, bar_n, θ)
+    num_items = size(bar_r, 2)
+    a = par[1:num_items]
+    d = par[num_items+1:end]
+    rmntpθ = bar_r .- bar_n .* compute_probs(θ, a, d)
+    vec([sum(rmntpθ, dims=1) θ&#39; * rmntpθ])
+end</code></pre>
+<pre><code>esteq_2pl_em (generic function with 1 method)</code></pre>
+<pre class="julia"><code># Test:
+root1 = nlsolve(x -&gt; esteq_2pl_em(x, 
+    exp1.bar_rⱼₖ, exp1.bar_nₖ, gh15_node),
+    [ones(5); zeros(5)])</code></pre>
+<pre><code>Results of Nonlinear Solver Algorithm
+ * Algorithm: Trust-region with dogleg and autoscaling
+ * Starting Point: [1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+ * Zero: [0.9441787368725837, 0.9412834339373086, 0.9702850411757558, 0.932179532744094, 0.9197528908890249, 2.166166737455263, 0.41020205101729856, -0.37879989990817486, 0.7262454452107591, 1.5321165384312954]
+ * Inf-norm of residuals: 0.000000
+ * Iterations: 6
+ * Convergence: true
+   * |x - x&#39;| &lt; 0.0e+00: false
+   * |f(x)| &lt; 1.0e-08: true
+ * Function Calls (f): 7
+ * Jacobian Calls (df/dx): 7</code></pre>
+<p>The solution is contained in the <code>zero</code> field. These will be passed back to the E-step.</p>
+</div>
+<div id="iterations" class="section level3">
+<h3>Iterations</h3>
+<p>We can do two more iterations:</p>
+<pre class="julia"><code>exp2 = eloglik_2pl_em(Matrix(lsat[:, 1:5]), lsat[:, 6],
+    gh15_node, gh15_weight,
+    root1.zero)</code></pre>
+<pre><code>(bar_nₖ = [1.7202823621463788e-7, 0.00012478229640175463, 0.012917226708649957, 0.42950281900235543, 6.374685649928196, 47.54065170285358, 177.55073039082802, 324.1944490261614, 289.0821550106182, 125.99472138888558, 26.268899898287724, 2.460042585603299, 0.09015529832828216, 0.0009626597451594212, 1.3887248384670485e-6], bar_rⱼₖ = [5.372365387113749e-9 6.042186880320284e-10 … 1.1967481795709406e-9 3.692939772198374e-9; 1.1195428419388414e-5 1.486089377064305e-6 … 2.671355380687325e-6 7.62773320369415e-6; … ; 0.0009620030652981468 0.000959109431245618 … 0.0009598307020344003 0.0009612789437790556; 1.3884114755863066e-6 1.3870244275199353e-6 … 1.3873554006168715e-6 1.3880472692324014e-6])</code></pre>
+<pre class="julia"><code>root2 = nlsolve(x -&gt; esteq_2pl_em(x, 
+    exp2.bar_rⱼₖ, exp2.bar_nₖ, gh15_node),
+    root1.zero)</code></pre>
+<pre><code>Results of Nonlinear Solver Algorithm
+ * Algorithm: Trust-region with dogleg and autoscaling
+ * Starting Point: [0.9441787368725837, 0.9412834339373086, 0.9702850411757558, 0.932179532744094, 0.9197528908890249, 2.166166737455263, 0.41020205101729856, -0.37879989990817486, 0.7262454452107591, 1.5321165384312954]
+ * Zero: [0.8851376144605885, 0.8780270229700008, 0.9305712408536134, 0.8617362606683743, 0.8410113215381403, 2.5424571803032903, 0.781691569809412, -0.0034125639910551494, 1.0943152659197337, 1.8930834808194317]
+ * Inf-norm of residuals: 0.000000
+ * Iterations: 4
+ * Convergence: true
+   * |x - x&#39;| &lt; 0.0e+00: false
+   * |f(x)| &lt; 1.0e-08: true
+ * Function Calls (f): 5
+ * Jacobian Calls (df/dx): 5</code></pre>
+<pre class="julia"><code>exp3 = eloglik_2pl_em(Matrix(lsat[:, 1:5]), lsat[:, 6],
+    gh15_node, gh15_weight,
+    root2.zero)</code></pre>
+<pre><code>(bar_nₖ = [4.3023109522800455e-7, 0.0003040218519114245, 0.02987372125524563, 0.9055221912858598, 11.602389316066303, 71.03280737295191, 214.59437201659995, 325.67522637877084, 253.23782066569376, 101.01070654940031, 20.01802278052005, 1.826159972919833, 0.06609181187521956, 0.000701760614451534, 1.0099632324488185e-6], bar_rⱼₖ = [2.0531055047839344e-8 2.5014192320684056e-9 … 4.965693882437507e-9 1.5557900531690245e-8; 3.8265586589167865e-5 5.753192037170773e-6 … 1.0076467391887043e-5 2.8241538126234826e-5; … ; 0.0007012180412131716 0.0006987629848589311 … 0.0006992811247620892 0.0007004963056719968; 1.00968636885505e-6 1.0084204735673418e-6 … 1.008662595953656e-6 1.0092845394530493e-6])</code></pre>
+<pre class="julia"><code>root3 = nlsolve(x -&gt; esteq_2pl_em(x, 
+    exp3.bar_rⱼₖ, exp3.bar_nₖ, gh15_node),
+    root2.zero)</code></pre>
+<pre><code>Results of Nonlinear Solver Algorithm
+ * Algorithm: Trust-region with dogleg and autoscaling
+ * Starting Point: [0.8851376144605885, 0.8780270229700008, 0.9305712408536134, 0.8617362606683743, 0.8410113215381403, 2.5424571803032903, 0.781691569809412, -0.0034125639910551494, 1.0943152659197337, 1.8930834808194317]
+ * Zero: [0.8479491477352421, 0.8323916555812338, 0.902644467313084, 0.8111833641429015, 0.7863596508859064, 2.6865158580988453, 0.9283333274643143, 0.1559502636058875, 1.2352944393730914, 2.0242412851515406]
+ * Inf-norm of residuals: 0.000000
+ * Iterations: 4
+ * Convergence: true
+   * |x - x&#39;| &lt; 0.0e+00: false
+   * |f(x)| &lt; 1.0e-08: true
+ * Function Calls (f): 5
+ * Jacobian Calls (df/dx): 5</code></pre>
+</div>
+<div id="stopping-criteria" class="section level3">
+<h3>Stopping criteria</h3>
+<p>One way to stop the iteration is when the absolute change in the parameter estimates is less than a certain threshold (e.g., 0.00001). For example, the following shows the maximum absolute change in the parameter estimates from the second and the third iteration:</p>
+<pre class="julia"><code>maximum(abs.(root3.zero .- root2.zero))</code></pre>
+<pre><code>0.15936282759694267</code></pre>
+<p>which is pretty large. So we should do more iterations.</p>
+</div>
+</div>
+<div id="benchmarking" class="section level2">
+<h2>Benchmarking</h2>
+<p>We can wrap the steps into a function</p>
+<pre class="julia"><code>function estimate_2pl_em(y, n, init, 
+    n_quadpts=101, par_tol=1e-5, rtol=1e-5, max_iter=1000)
+    parₜ = init
+    parₜ₊₁ = parₜ
+    # Convert y to matrix
+    y = Matrix(y)
+    # Obtain quadrature nodes and weights
+    ghq = gausshermite(n_quadpts)
+    ghq_θ = ghq[1] .* √2
+    ghq_w = ghq[2] ./ √π
+    i = 1
+    while i &lt; max_iter
+        expₜ = eloglik_2pl_em(y, n,
+    ghq_θ, ghq_w, parₜ)
+        root = nlsolve(x -&gt; esteq_2pl_em(x, 
+    expₜ.bar_rⱼₖ, expₜ.bar_nₖ, ghq_θ),
+            parₜ, autodiff=:forward)
+        parₜ₊₁ = root.zero
+        if maximum(abs.(parₜ₊₁ - parₜ)) &lt; par_tol
+            break
+        else
+            parₜ = parₜ₊₁
+            i += 1
+        end
+    end
+    (estimate=parₜ₊₁, num_iter=i)
+end</code></pre>
+<pre><code>estimate_2pl_em (generic function with 5 methods)</code></pre>
+<pre class="julia"><code>@btime est_em = estimate_2pl_em(lsat[:, 1:5], lsat[:, 6], [ones(5); zeros(5)])</code></pre>
+<pre><code>  16.968 ms (16212 allocations: 29.76 MiB)
+
+(estimate = [0.8256464036061023, 0.7227767138869371, 0.8907854481666115, 0.6883896452213724, 0.6568975184341934, 2.773226187628446, 0.9902095352382095, 0.24914112339506816, 1.284763785097769, 2.0532889359951128], num_iter = 66)</code></pre>
+<p>Compare to <code>mirt</code></p>
+<pre class="r"><code>data(&quot;LSAT&quot;, package = &quot;ltm&quot;)
+library(mirt)
+bench::mark(
+    mirt = mirt(LSAT,
+                verbose = FALSE, quadpts = 101,
+                TOL = 1e-5)
+)</code></pre>
+<pre><code># A tibble: 1 × 6
+  expression      min   median `itr/sec` mem_alloc `gc/sec`
+  &lt;bch:expr&gt; &lt;bch:tm&gt; &lt;bch:tm&gt;     &lt;dbl&gt; &lt;bch:byt&gt;    &lt;dbl&gt;
+1 mirt          107ms    107ms      9.38    22.4MB     28.1</code></pre>
+</div>
+<div id="remark" class="section level2">
+<h2>Remark</h2>
+<p>My implementation of the EM takes a shorter time to run than direct MML (see my post in <a href="/2022/05/19/estimating-a-2-pl-model-in-julia-part-1/">Part 1</a>), but it does not compute the standard errors. Also, it probably uses a different convergence criterion than direct MML using <code>Optim.jl</code>, so it’s hard to say which one is faster.</p>
+</div>
