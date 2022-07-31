@@ -3,6 +3,9 @@ title: Using cmdstanr in SimDesign
 author: marklai
 date: '2021-07-14'
 slug: using-cmdstanr-in-simdesign
+output:
+  blogdown::html_page:
+    toc: true
 categories:
   - Programming
   - Statistics
@@ -21,7 +24,6 @@ image:
 projects: []
 ---
 
-<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
 
 
 <pre class="r"><code>library(SimDesign)
@@ -32,7 +34,7 @@ library(cmdstanr)</code></pre>
 <pre class="r"><code>Design &lt;- createDesign(sample_size = c(30, 60, 120, 240), 
                        distribution = c(&#39;norm&#39;, &#39;chi&#39;))
 Design</code></pre>
-<pre><code>## # A tibble: 8 x 2
+<pre><code>## # A tibble: 8 × 2
 ##   sample_size distribution
 ##         &lt;dbl&gt; &lt;chr&gt;       
 ## 1          30 norm        
@@ -72,6 +74,11 @@ bmean_stan &lt;- &quot;
 # Save file
 stan_path &lt;- write_stan_file(bmean_stan)
 mod &lt;- cmdstan_model(stan_path)</code></pre>
+<pre><code>## Warning in &#39;/tmp/RtmpVU5PBw/model-7f13b1ada25b1.stan&#39;, line 4, column 8: Declaration
+##     of arrays by placing brackets after a variable name is deprecated and
+##     will be removed in Stan 2.32.0. Instead use the array keyword before the
+##     type. This can be changed automatically using the auto-format flag to
+##     stanc</code></pre>
 <pre class="r"><code>Analyse &lt;- function(condition, dat, fixed_objects = NULL) {
     mod &lt;- fixed_objects$mod
     M0 &lt;- mean(dat)
@@ -103,30 +110,30 @@ mod &lt;- cmdstan_model(stan_path)</code></pre>
 ## Number of parallel clusters in use: 2</code></pre>
 <pre><code>## 
 ## 
-Design row: 1/8;   Started: Fri Jul 16 20:47:30 2021;   Total elapsed time: 0.00s 
+Design row: 1/8;   Started: Sun Jul 31 00:06:14 2022;   Total elapsed time: 0.00s 
 ## 
 ## 
-Design row: 2/8;   Started: Fri Jul 16 20:47:36 2021;   Total elapsed time: 6.71s 
+Design row: 2/8;   Started: Sun Jul 31 00:06:21 2022;   Total elapsed time: 6.80s 
 ## 
 ## 
-Design row: 3/8;   Started: Fri Jul 16 20:47:43 2021;   Total elapsed time: 13.57s 
+Design row: 3/8;   Started: Sun Jul 31 00:06:27 2022;   Total elapsed time: 12.65s 
 ## 
 ## 
-Design row: 4/8;   Started: Fri Jul 16 20:47:50 2021;   Total elapsed time: 20.62s 
+Design row: 4/8;   Started: Sun Jul 31 00:06:34 2022;   Total elapsed time: 19.65s 
 ## 
 ## 
-Design row: 5/8;   Started: Fri Jul 16 20:47:57 2021;   Total elapsed time: 27.44s 
+Design row: 5/8;   Started: Sun Jul 31 00:06:39 2022;   Total elapsed time: 25.48s 
 ## 
 ## 
-Design row: 6/8;   Started: Fri Jul 16 20:48:04 2021;   Total elapsed time: 34.50s 
+Design row: 6/8;   Started: Sun Jul 31 00:06:45 2022;   Total elapsed time: 31.54s 
 ## 
 ## 
-Design row: 7/8;   Started: Fri Jul 16 20:48:11 2021;   Total elapsed time: 41.48s 
+Design row: 7/8;   Started: Sun Jul 31 00:06:52 2022;   Total elapsed time: 38.26s 
 ## 
 ## 
-Design row: 8/8;   Started: Fri Jul 16 20:48:18 2021;   Total elapsed time: 48.45s</code></pre>
+Design row: 8/8;   Started: Sun Jul 31 00:06:59 2022;   Total elapsed time: 44.83s</code></pre>
 <pre><code>## 
-## Simulation complete. Total execution time: 55.24s</code></pre>
+## Simulation complete. Total execution time: 50.90s</code></pre>
 <pre class="r"><code>knitr::kable(res)</code></pre>
 <table>
 <colgroup>
@@ -181,186 +188,186 @@ Design row: 8/8;   Started: Fri Jul 16 20:48:18 2021;   Total elapsed time: 48.4
 <tr class="odd">
 <td align="right">30</td>
 <td align="left">norm</td>
-<td align="right">-0.0143934</td>
-<td align="right">-0.0140785</td>
-<td align="right">-0.0147392</td>
-<td align="right">0.0045262</td>
-<td align="right">-0.0166660</td>
-<td align="right">0.1956562</td>
-<td align="right">0.1971230</td>
-<td align="right">0.2040291</td>
-<td align="right">0.2316866</td>
-<td align="right">0.1938838</td>
+<td align="right">-0.0118190</td>
+<td align="right">0.0014862</td>
+<td align="right">0.0126367</td>
+<td align="right">0.0417798</td>
+<td align="right">-0.0124052</td>
+<td align="right">0.1925357</td>
+<td align="right">0.1962211</td>
+<td align="right">0.1974239</td>
+<td align="right">0.2340095</td>
+<td align="right">0.1931643</td>
 <td align="right">1</td>
-<td align="right">1.0150497</td>
-<td align="right">1.087420</td>
-<td align="right">1.402215</td>
-<td align="right">0.9819646</td>
+<td align="right">1.038649</td>
+<td align="right">1.051421</td>
+<td align="right">1.477217</td>
+<td align="right">1.0065399</td>
 <td align="right">50</td>
-<td align="right">6.707</td>
-<td align="left">Fri Jul 16 20:47:36 2021</td>
-<td align="right">1155884559</td>
+<td align="right">6.802</td>
+<td align="left">Sun Jul 31 00:06:21 2022</td>
+<td align="right">919770021</td>
 </tr>
 <tr class="even">
 <td align="right">60</td>
 <td align="left">norm</td>
-<td align="right">-0.0122980</td>
-<td align="right">-0.0045903</td>
-<td align="right">-0.0005297</td>
-<td align="right">-0.0105580</td>
-<td align="right">-0.0136677</td>
-<td align="right">0.1370023</td>
-<td align="right">0.1382397</td>
-<td align="right">0.1459679</td>
-<td align="right">0.1812020</td>
-<td align="right">0.1373340</td>
+<td align="right">0.0138500</td>
+<td align="right">0.0123798</td>
+<td align="right">0.0159013</td>
+<td align="right">0.0143448</td>
+<td align="right">0.0137575</td>
+<td align="right">0.1294069</td>
+<td align="right">0.1322249</td>
+<td align="right">0.1340543</td>
+<td align="right">0.1620916</td>
+<td align="right">0.1296239</td>
 <td align="right">1</td>
-<td align="right">1.0181467</td>
-<td align="right">1.135165</td>
-<td align="right">1.749325</td>
-<td align="right">1.0048490</td>
+<td align="right">1.044027</td>
+<td align="right">1.073117</td>
+<td align="right">1.568940</td>
+<td align="right">1.0033577</td>
 <td align="right">50</td>
-<td align="right">6.868</td>
-<td align="left">Fri Jul 16 20:47:43 2021</td>
-<td align="right">213786095</td>
+<td align="right">5.844</td>
+<td align="left">Sun Jul 31 00:06:27 2022</td>
+<td align="right">1147125301</td>
 </tr>
 <tr class="odd">
 <td align="right">120</td>
 <td align="left">norm</td>
-<td align="right">0.0208751</td>
-<td align="right">0.0217285</td>
-<td align="right">0.0264014</td>
-<td align="right">0.0256413</td>
-<td align="right">0.0209361</td>
-<td align="right">0.0907938</td>
-<td align="right">0.0893537</td>
-<td align="right">0.0929886</td>
-<td align="right">0.1156134</td>
-<td align="right">0.0903492</td>
+<td align="right">0.0248642</td>
+<td align="right">0.0251620</td>
+<td align="right">0.0262231</td>
+<td align="right">0.0309249</td>
+<td align="right">0.0243947</td>
+<td align="right">0.0903066</td>
+<td align="right">0.0925141</td>
+<td align="right">0.0966194</td>
+<td align="right">0.1155442</td>
+<td align="right">0.0896688</td>
 <td align="right">1</td>
-<td align="right">0.9685308</td>
-<td align="right">1.048931</td>
-<td align="right">1.621454</td>
-<td align="right">0.9902303</td>
+<td align="right">1.049486</td>
+<td align="right">1.144695</td>
+<td align="right">1.637034</td>
+<td align="right">0.9859249</td>
 <td align="right">50</td>
-<td align="right">7.047</td>
-<td align="left">Fri Jul 16 20:47:50 2021</td>
-<td align="right">1703241818</td>
+<td align="right">7.003</td>
+<td align="left">Sun Jul 31 00:06:34 2022</td>
+<td align="right">165936352</td>
 </tr>
 <tr class="even">
 <td align="right">240</td>
 <td align="left">norm</td>
-<td align="right">0.0013774</td>
-<td align="right">0.0004119</td>
-<td align="right">-0.0008972</td>
-<td align="right">-0.0045711</td>
-<td align="right">0.0012332</td>
-<td align="right">0.0603574</td>
-<td align="right">0.0670987</td>
-<td align="right">0.0702712</td>
-<td align="right">0.0764060</td>
-<td align="right">0.0605045</td>
+<td align="right">-0.0124981</td>
+<td align="right">-0.0135860</td>
+<td align="right">-0.0141574</td>
+<td align="right">-0.0148045</td>
+<td align="right">-0.0123418</td>
+<td align="right">0.0681080</td>
+<td align="right">0.0685800</td>
+<td align="right">0.0715182</td>
+<td align="right">0.0827685</td>
+<td align="right">0.0688086</td>
 <td align="right">1</td>
-<td align="right">1.2358569</td>
-<td align="right">1.355482</td>
-<td align="right">1.602485</td>
-<td align="right">1.0048809</td>
+<td align="right">1.013908</td>
+<td align="right">1.102646</td>
+<td align="right">1.476840</td>
+<td align="right">1.0206777</td>
 <td align="right">50</td>
-<td align="right">6.822</td>
-<td align="left">Fri Jul 16 20:47:57 2021</td>
-<td align="right">648212189</td>
+<td align="right">5.828</td>
+<td align="left">Sun Jul 31 00:06:39 2022</td>
+<td align="right">1169202745</td>
 </tr>
 <tr class="odd">
 <td align="right">30</td>
 <td align="left">chi</td>
-<td align="right">0.0680224</td>
-<td align="right">-0.2437804</td>
-<td align="right">-0.3879277</td>
-<td align="right">-0.5058365</td>
-<td align="right">0.0626927</td>
-<td align="right">0.4134172</td>
-<td align="right">0.4867666</td>
-<td align="right">0.5835795</td>
-<td align="right">0.7087428</td>
-<td align="right">0.4069942</td>
+<td align="right">0.0300504</td>
+<td align="right">-0.2925417</td>
+<td align="right">-0.4179901</td>
+<td align="right">-0.4775784</td>
+<td align="right">0.0219484</td>
+<td align="right">0.4460887</td>
+<td align="right">0.5256165</td>
+<td align="right">0.6078532</td>
+<td align="right">0.7030688</td>
+<td align="right">0.4428674</td>
 <td align="right">1</td>
-<td align="right">1.3863230</td>
-<td align="right">1.992613</td>
-<td align="right">2.939004</td>
-<td align="right">0.9691687</td>
+<td align="right">1.388339</td>
+<td align="right">1.856757</td>
+<td align="right">2.484010</td>
+<td align="right">0.9856100</td>
 <td align="right">50</td>
-<td align="right">7.057</td>
-<td align="left">Fri Jul 16 20:48:04 2021</td>
-<td align="right">293952656</td>
+<td align="right">6.064</td>
+<td align="left">Sun Jul 31 00:06:45 2022</td>
+<td align="right">666552130</td>
 </tr>
 <tr class="even">
 <td align="right">60</td>
 <td align="left">chi</td>
-<td align="right">0.0255707</td>
-<td align="right">-0.3003029</td>
-<td align="right">-0.4448222</td>
-<td align="right">-0.6133256</td>
-<td align="right">0.0226806</td>
-<td align="right">0.2952694</td>
-<td align="right">0.4061513</td>
-<td align="right">0.5287628</td>
-<td align="right">0.7011751</td>
-<td align="right">0.2954366</td>
+<td align="right">0.0302642</td>
+<td align="right">-0.3434107</td>
+<td align="right">-0.5061163</td>
+<td align="right">-0.6635279</td>
+<td align="right">0.0306421</td>
+<td align="right">0.3189606</td>
+<td align="right">0.4417358</td>
+<td align="right">0.5724486</td>
+<td align="right">0.7151231</td>
+<td align="right">0.3217270</td>
 <td align="right">1</td>
-<td align="right">1.8920771</td>
-<td align="right">3.206897</td>
-<td align="right">5.639183</td>
-<td align="right">1.0011332</td>
+<td align="right">1.918011</td>
+<td align="right">3.221060</td>
+<td align="right">5.026751</td>
+<td align="right">1.0174211</td>
 <td align="right">50</td>
-<td align="right">6.982</td>
-<td align="left">Fri Jul 16 20:48:11 2021</td>
-<td align="right">1580098197</td>
+<td align="right">6.715</td>
+<td align="left">Sun Jul 31 00:06:52 2022</td>
+<td align="right">245891705</td>
 </tr>
 <tr class="odd">
 <td align="right">120</td>
 <td align="left">chi</td>
-<td align="right">-0.0024911</td>
-<td align="right">-0.3544988</td>
-<td align="right">-0.5001829</td>
-<td align="right">-0.6578762</td>
-<td align="right">-0.0042656</td>
-<td align="right">0.2053864</td>
-<td align="right">0.3991411</td>
-<td align="right">0.5312851</td>
-<td align="right">0.6957194</td>
-<td align="right">0.2069861</td>
+<td align="right">0.0297133</td>
+<td align="right">-0.3006558</td>
+<td align="right">-0.4464628</td>
+<td align="right">-0.5809295</td>
+<td align="right">0.0288748</td>
+<td align="right">0.2420612</td>
+<td align="right">0.3748495</td>
+<td align="right">0.4983842</td>
+<td align="right">0.6294695</td>
+<td align="right">0.2401434</td>
 <td align="right">1</td>
-<td align="right">3.7766732</td>
-<td align="right">6.691319</td>
-<td align="right">11.474263</td>
-<td align="right">1.0156382</td>
+<td align="right">2.398079</td>
+<td align="right">4.239144</td>
+<td align="right">6.762371</td>
+<td align="right">0.9842171</td>
 <td align="right">50</td>
-<td align="right">6.967</td>
-<td align="left">Fri Jul 16 20:48:18 2021</td>
-<td align="right">1319943732</td>
+<td align="right">6.571</td>
+<td align="left">Sun Jul 31 00:06:59 2022</td>
+<td align="right">1719562701</td>
 </tr>
 <tr class="even">
 <td align="right">240</td>
 <td align="left">chi</td>
-<td align="right">0.0454342</td>
-<td align="right">-0.3016734</td>
-<td align="right">-0.4468632</td>
-<td align="right">-0.5820299</td>
-<td align="right">0.0447952</td>
-<td align="right">0.1874962</td>
-<td align="right">0.3441907</td>
-<td align="right">0.4777899</td>
-<td align="right">0.6119982</td>
-<td align="right">0.1875163</td>
+<td align="right">0.0170796</td>
+<td align="right">-0.3419476</td>
+<td align="right">-0.4842108</td>
+<td align="right">-0.6231752</td>
+<td align="right">0.0166940</td>
+<td align="right">0.1400220</td>
+<td align="right">0.3683362</td>
+<td align="right">0.5032654</td>
+<td align="right">0.6455598</td>
+<td align="right">0.1398539</td>
 <td align="right">1</td>
-<td align="right">3.3698733</td>
-<td align="right">6.493653</td>
-<td align="right">10.654070</td>
-<td align="right">1.0002148</td>
+<td align="right">6.919842</td>
+<td align="right">12.918189</td>
+<td align="right">21.255941</td>
+<td align="right">0.9976008</td>
 <td align="right">50</td>
-<td align="right">6.795</td>
-<td align="left">Fri Jul 16 20:48:25 2021</td>
-<td align="right">430065894</td>
+<td align="right">6.076</td>
+<td align="left">Sun Jul 31 00:07:05 2022</td>
+<td align="right">1548188555</td>
 </tr>
 </tbody>
 </table>

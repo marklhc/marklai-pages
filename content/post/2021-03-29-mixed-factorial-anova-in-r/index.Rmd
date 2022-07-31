@@ -79,7 +79,7 @@ mixed_anova <- aov_ez(
 test_sphericity(mixed_anova)
 ```
 
-When one or more independent variable is a within-subject variable, mixed or repeated-measure ANOVA requires testing the assumption of sphericity. Here, the Mauchly's test of sphericity provided insufficient evidence that the assumption of sphericity was violated, $p = `r papaja::printp(test_sphericity(mixed_anova)[1, 2])`$. 
+When one or more independent variable is a within-subject variable, mixed or repeated-measure ANOVA requires testing the assumption of sphericity. Here, the Mauchly's test of sphericity provided insufficient evidence that the assumption of sphericity was violated, $p = `r papaja::printp(test_sphericity(mixed_anova)[1])`$. 
 
 ### ANOVA Table
 

@@ -24,7 +24,6 @@ output:
     df_print: paged
 ---
 
-<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
 <link href="{{< blogdown/postref >}}index_files/pagedtable/css/pagedtable.css" rel="stylesheet" />
 <script src="{{< blogdown/postref >}}index_files/pagedtable/js/pagedtable.js"></script>
 
@@ -49,18 +48,12 @@ output:
 <pre class="r"><code>library(afex)</code></pre>
 <pre><code>## Loading required package: lme4</code></pre>
 <pre><code>## Loading required package: Matrix</code></pre>
-<pre><code>## Registered S3 methods overwritten by &#39;car&#39;:
-##   method                          from
-##   influence.merMod                lme4
-##   cooks.distance.influence.merMod lme4
-##   dfbeta.influence.merMod         lme4
-##   dfbetas.influence.merMod        lme4</code></pre>
 <pre><code>## ************
 ## Welcome to afex. For support visit: http://afex.singmann.science/</code></pre>
 <pre><code>## - Functions for ANOVAs: aov_car(), aov_ez(), and aov_4()
-## - Methods for calculating p-values with mixed(): &#39;KR&#39;, &#39;S&#39;, &#39;LRT&#39;, and &#39;PB&#39;
+## - Methods for calculating p-values with mixed(): &#39;S&#39;, &#39;KR&#39;, &#39;LRT&#39;, and &#39;PB&#39;
 ## - &#39;afex_aov&#39; and &#39;mixed&#39; objects can be passed to emmeans() for follow-up tests
-## - NEWS: library(&#39;emmeans&#39;) now needs to be called explicitly!
+## - NEWS: emmeans() for ANOVA models now uses model = &#39;multivariate&#39; as default.
 ## - Get and set global package options with: afex_options()
 ## - Set orthogonal sum-to-zero contrasts globally: set_sum_contrasts()
 ## - For example analyses see: browseVignettes(&quot;afex&quot;)
@@ -121,11 +114,11 @@ long_data</code></pre>
 <pre><code>## Converting to factor: gender</code></pre>
 <pre><code>## Contrasts set to contr.sum for the following variables: gender</code></pre>
 <pre class="r"><code>test_sphericity(mixed_anova)</code></pre>
+<pre><code>## Warning: Functionality has moved to the &#39;performance&#39; package.
+## Calling &#39;performance::check_sphericity()&#39;.</code></pre>
 <pre><code>## Warning in summary.Anova.mlm(object$Anova, multivariate = FALSE): HF eps &gt; 1
 ## treated as 1</code></pre>
-<pre><code>##                 Test statistic p-value
-## charisma               0.94392 0.61226
-## gender:charisma        0.94392 0.61226</code></pre>
+<pre><code>## OK: Data seems to be spherical (p &gt; 0.612).</code></pre>
 <p>When one or more independent variable is a within-subject variable, mixed or repeated-measure ANOVA requires testing the assumption of sphericity. Here, the Mauchly’s test of sphericity provided insufficient evidence that the assumption of sphericity was violated, <span class="math inline">\(p = .612\)</span>.</p>
 <div id="anova-table" class="section level3">
 <h3>ANOVA Table</h3>
@@ -165,10 +158,10 @@ long_data</code></pre>
 <tr class="header">
 <th align="left">Effect</th>
 <th align="left"><span class="math inline">\(\hat{\eta}^2_G\)</span></th>
+<th align="left">90% CI</th>
 <th align="left"><span class="math inline">\(F\)</span></th>
 <th align="left"><span class="math inline">\(\mathit{df}^{\mathrm{GG}}\)</span></th>
 <th align="left"><span class="math inline">\(\mathit{df}_{\mathrm{res}}^{\mathrm{GG}}\)</span></th>
-<th align="left"><span class="math inline">\(\mathit{MSE}\)</span></th>
 <th align="left"><span class="math inline">\(p\)</span></th>
 </tr>
 </thead>
@@ -176,36 +169,36 @@ long_data</code></pre>
 <tr class="odd">
 <td align="left">Gender</td>
 <td align="left">.586</td>
+<td align="left">[.311, .739]</td>
 <td align="left">71.82</td>
 <td align="left">1</td>
 <td align="left">18</td>
-<td align="left">25.42</td>
 <td align="left">&lt; .001</td>
 </tr>
 <tr class="even">
 <td align="left">Charisma</td>
 <td align="left">.857</td>
+<td align="left">[.781, .899]</td>
 <td align="left">167.84</td>
 <td align="left">1.89</td>
 <td align="left">34.09</td>
-<td align="left">24.42</td>
 <td align="left">&lt; .001</td>
 </tr>
 <tr class="odd">
 <td align="left">Gender <span class="math inline">\(\times\)</span> Charisma</td>
 <td align="left">.676</td>
+<td align="left">[.516, .768]</td>
 <td align="left">58.10</td>
 <td align="left">1.89</td>
 <td align="left">34.09</td>
-<td align="left">24.42</td>
 <td align="left">&lt; .001</td>
 </tr>
 </tbody>
 </table>
-<p>A two-way mixed ANOVA was conducted, with gender (female vs. male) as the between-subject independent variable and charisma (high, some, none) as the within-subject independent variable. There was a significant main effect of charisma, <span class="math inline">\(F(1.89, 34.09) = 167.84\)</span>, <span class="math inline">\(\mathit{MSE} = 24.42\)</span>, <span class="math inline">\(p &lt; .001\)</span>, <span class="math inline">\(\hat{\eta}^2_G = .857\)</span>. As shown in the figure, overall female participants provided a higer rating than male participants. There was also a significant main effect of gender, <span class="math inline">\(F(1, 18) = 71.82\)</span>, <span class="math inline">\(\mathit{MSE} = 25.42\)</span>, <span class="math inline">\(p &lt; .001\)</span>, <span class="math inline">\(\hat{\eta}^2_G = .586\)</span>. As shown in the figure, ratings were higher for partners who had high charisma. Finally, there was a significant charisma <span class="math inline">\(\times\)</span> gender interaction, <span class="math inline">\(F(1.89, 34.09) = 58.10\)</span>, <span class="math inline">\(\mathit{MSE} = 24.42\)</span>, <span class="math inline">\(p &lt; .001\)</span>, <span class="math inline">\(\hat{\eta}^2_G = .676\)</span>. As shown in the figure, while the ratings were similar between female and male participants for partners who had some or no charisma, female participants gave higher ratings for the partner with high charisma, as compared to male participants.</p>
+<p>A two-way mixed ANOVA was conducted, with gender (female vs. male) as the between-subject independent variable and charisma (high, some, none) as the within-subject independent variable. There was a significant main effect of charisma, <span class="math inline">\(F(1.89, 34.09) = 167.84\)</span>, <span class="math inline">\(p &lt; .001\)</span>, <span class="math inline">\(\hat{\eta}^2_G = .857\)</span>, 90% CI <span class="math inline">\([.781, .899]\)</span>. As shown in the figure, overall female participants provided a higer rating than male participants. There was also a significant main effect of gender, <span class="math inline">\(F(1, 18) = 71.82\)</span>, <span class="math inline">\(p &lt; .001\)</span>, <span class="math inline">\(\hat{\eta}^2_G = .586\)</span>, 90% CI <span class="math inline">\([.311, .739]\)</span>. As shown in the figure, ratings were higher for partners who had high charisma. Finally, there was a significant charisma <span class="math inline">\(\times\)</span> gender interaction, <span class="math inline">\(F(1.89, 34.09) = 58.10\)</span>, <span class="math inline">\(p &lt; .001\)</span>, <span class="math inline">\(\hat{\eta}^2_G = .676\)</span>, 90% CI <span class="math inline">\([.516, .768]\)</span>. As shown in the figure, while the ratings were similar between female and male participants for partners who had some or no charisma, female participants gave higher ratings for the partner with high charisma, as compared to male participants.</p>
 </div>
 </div>
-<div class="footnotes">
+<div class="footnotes footnotes-end-of-document">
 <hr />
 <ol>
 <li id="fn1"><p>Field, A. P. (2017). <em>Discovering Statistics Using IBM SPSS Statistics</em> (5th ed.). Sage.<a href="#fnref1" class="footnote-back">↩︎</a></p></li>

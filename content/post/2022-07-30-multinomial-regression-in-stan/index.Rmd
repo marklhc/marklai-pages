@@ -1,0 +1,98 @@
+---
+title: Nominal Regression in STAN
+author: marklai
+date: '2022-07-30'
+slug: multinomial-regression-in-stan
+toc: true
+categories:
+  - Statistics
+tags:
+  - Bayesian
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2022-07-30T10:23:22-07:00'
+featured: no
+draft: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+## Load Packages
+
+```{r load-pkg, message = FALSE}
+library(cmdstanr)
+library(dplyr)
+library(ggplot2)
+```
+
+Check out this paper: https://journals.sagepub.com/doi/full/10.1177/2515245918823199
+
+```{r stemcell}
+stemcell <- read.csv("https://osf.io/vxw73/download")
+```
+
+```{r plot-stemcell}
+stemcell |>
+    ggplot(aes(x = rating)) +
+    geom_bar() +
+    facet_wrap(~ gender)
+```
+
+https://www.thearda.com/archive/files/Codebooks/GSS2006_CB.asp
+
+The outcome is attitude towards stem cells research, and the predictor is gender.
+
+> Recently, there has been controversy over whether the government should provide any funds at all for scientific research that uses stem cells taken from human embryos. Would you say the government . . .
+
+- 1 = Definitely, should fund such research
+- 2 = Probably should fund such research
+- 3 = Probably should not fund such research
+- 4 = Definitely should not fund such research
+
+## Nominal Logistic Regression
+
+Ordinal regression is a special case of nominal regression with the proportional odds assumption.
+
+## Model
+
+\begin{align}
+  \text{rating}_i & \sim \mathrm{Categorical}(\pi^1_{i}, \pi^2_{i}, \pi^3_{i}, \pi^4_{i})  \\
+  \pi^1_{i} & = \frac{1}{\exp(\eta^2_{i}) + \exp(\eta^3_{i}) + \exp(\eta^4_{i}) + 1}  \\
+  \pi^2_{i} & = \frac{\exp(\eta^2_{i})}{\exp(\eta^2_{i}) + \exp(\eta^3_{i}) + \exp(\eta^4_{i}) + 1}  \\
+  \pi^3_{i} & = \frac{\exp(\eta^3_{i})}{\exp(\eta^2_{i}) + \exp(\eta^3_{i}) + \exp(\eta^4_{i}) + 1}  \\
+  \pi^4_{i} & = \frac{\exp(\eta^4_{i})}{\exp(\eta^2_{i}) + \exp(\eta^3_{i}) + \exp(\eta^4_{i}) + 1}  \\
+  \eta^2_{i} & = \beta^2_{0} + \beta^2_{1} \text{male}_{i}  \\
+  \eta^3_{i} & = \beta^3_{0} + \beta^3_{1} \text{male}_{i} \\
+  \eta^4_{i} & = \beta^4_{0} + \beta^4_{1} \text{male}_{i} \\
+\end{align}
+
+```{r}
+mod <- cmdstan_model("nominal_reg.stan")
+mod
+```
+
+```{r data}
+stan_dat <- with(stemcell,
+     list(K = n_distinct(rating),
+          N = length(rating),
+          D = 1,
+          y = rating,
+          x = matrix(as.integer(gender == "male")))
+)
+```
+
+```{r fit, message = FALSE}
+# Draw samples
+fit <- mod$sample(data = stan_dat, seed = 123, chains = 4, 
+                  parallel_chains = 2, refresh = 500,
+                  iter_sampling = 2000, iter_warmup = 2000)
+```
+
+```{r summary-fit}
+fit$summary() |>
+    knitr::kable()
+```
