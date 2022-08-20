@@ -26,6 +26,7 @@ projects: []
 
 </div>
 
+<p>I was talking to a colleague about modeling nominal outcomes in STAN, and wrote up this example. Just put it here in case it’s helpful for anyone (probably myself in the future). This is based on <a href="https://psyc573-2022spring.netlify.app/glm2.html#nominal-logistic-regression">an example I made for a course</a>, where you can find the <code>brms</code> code for nominal regression. Please also check out the <a href="https://mc-stan.org/docs/stan-users-guide/multi-logit.html">Multi-logit regression session</a> on the Stan User’s guide.</p>
 <div id="load-packages" class="section level2">
 <h2>Load Packages</h2>
 <pre class="r"><code>library(cmdstanr)
@@ -113,56 +114,6 @@ mod</code></pre>
 fit &lt;- mod$sample(data = stan_dat, seed = 123, chains = 4, 
                   parallel_chains = 2, refresh = 500,
                   iter_sampling = 2000, iter_warmup = 2000)</code></pre>
-<pre><code>## Running MCMC with 4 chains, at most 2 in parallel...
-## 
-## Chain 1 Iteration:    1 / 4000 [  0%]  (Warmup) 
-## Chain 2 Iteration:    1 / 4000 [  0%]  (Warmup) 
-## Chain 1 Iteration:  500 / 4000 [ 12%]  (Warmup) 
-## Chain 2 Iteration:  500 / 4000 [ 12%]  (Warmup) 
-## Chain 1 Iteration: 1000 / 4000 [ 25%]  (Warmup) 
-## Chain 2 Iteration: 1000 / 4000 [ 25%]  (Warmup) 
-## Chain 1 Iteration: 1500 / 4000 [ 37%]  (Warmup) 
-## Chain 2 Iteration: 1500 / 4000 [ 37%]  (Warmup) 
-## Chain 1 Iteration: 2000 / 4000 [ 50%]  (Warmup) 
-## Chain 1 Iteration: 2001 / 4000 [ 50%]  (Sampling) 
-## Chain 2 Iteration: 2000 / 4000 [ 50%]  (Warmup) 
-## Chain 2 Iteration: 2001 / 4000 [ 50%]  (Sampling) 
-## Chain 1 Iteration: 2500 / 4000 [ 62%]  (Sampling) 
-## Chain 2 Iteration: 2500 / 4000 [ 62%]  (Sampling) 
-## Chain 1 Iteration: 3000 / 4000 [ 75%]  (Sampling) 
-## Chain 2 Iteration: 3000 / 4000 [ 75%]  (Sampling) 
-## Chain 1 Iteration: 3500 / 4000 [ 87%]  (Sampling) 
-## Chain 2 Iteration: 3500 / 4000 [ 87%]  (Sampling) 
-## Chain 1 Iteration: 4000 / 4000 [100%]  (Sampling) 
-## Chain 1 finished in 3.3 seconds.
-## Chain 2 Iteration: 4000 / 4000 [100%]  (Sampling) 
-## Chain 3 Iteration:    1 / 4000 [  0%]  (Warmup) 
-## Chain 2 finished in 3.3 seconds.
-## Chain 4 Iteration:    1 / 4000 [  0%]  (Warmup) 
-## Chain 3 Iteration:  500 / 4000 [ 12%]  (Warmup) 
-## Chain 4 Iteration:  500 / 4000 [ 12%]  (Warmup) 
-## Chain 3 Iteration: 1000 / 4000 [ 25%]  (Warmup) 
-## Chain 4 Iteration: 1000 / 4000 [ 25%]  (Warmup) 
-## Chain 3 Iteration: 1500 / 4000 [ 37%]  (Warmup) 
-## Chain 4 Iteration: 1500 / 4000 [ 37%]  (Warmup) 
-## Chain 3 Iteration: 2000 / 4000 [ 50%]  (Warmup) 
-## Chain 3 Iteration: 2001 / 4000 [ 50%]  (Sampling) 
-## Chain 4 Iteration: 2000 / 4000 [ 50%]  (Warmup) 
-## Chain 4 Iteration: 2001 / 4000 [ 50%]  (Sampling) 
-## Chain 3 Iteration: 2500 / 4000 [ 62%]  (Sampling) 
-## Chain 4 Iteration: 2500 / 4000 [ 62%]  (Sampling) 
-## Chain 3 Iteration: 3000 / 4000 [ 75%]  (Sampling) 
-## Chain 4 Iteration: 3000 / 4000 [ 75%]  (Sampling) 
-## Chain 3 Iteration: 3500 / 4000 [ 87%]  (Sampling) 
-## Chain 4 Iteration: 3500 / 4000 [ 87%]  (Sampling) 
-## Chain 3 Iteration: 4000 / 4000 [100%]  (Sampling) 
-## Chain 3 finished in 2.9 seconds.
-## Chain 4 Iteration: 4000 / 4000 [100%]  (Sampling) 
-## Chain 4 finished in 2.9 seconds.
-## 
-## All 4 chains finished successfully.
-## Mean chain execution time: 3.1 seconds.
-## Total execution time: 6.6 seconds.</code></pre>
 <pre class="r"><code>fit$summary() |&gt;
     knitr::kable()</code></pre>
 <table>
@@ -279,4 +230,28 @@ fit &lt;- mod$sample(data = stan_dat, seed = 123, chains = 4,
 </tr>
 </tbody>
 </table>
+<p>Compare to <code>brms</code>:</p>
+<pre class="r"><code>library(brms)
+brm(rating ~ gender, data = stemcell, family = categorical(link = &quot;logit&quot;),
+    file = &quot;mlogit&quot;)</code></pre>
+<pre><code>##  Family: categorical 
+##   Links: mu2 = logit; mu3 = logit; mu4 = logit 
+## Formula: rating ~ gender 
+##    Data: stemcell (Number of observations: 829) 
+##   Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+##          total post-warmup draws = 4000
+## 
+## Population-Level Effects: 
+##                Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+## mu2_Intercept      0.47      0.11     0.26     0.69 1.00     3990     3108
+## mu3_Intercept     -0.67      0.15    -0.97    -0.39 1.00     3809     3130
+## mu4_Intercept     -0.96      0.17    -1.29    -0.63 1.00     4027     3031
+## mu2_gendermale    -0.18      0.17    -0.51     0.15 1.00     4272     2829
+## mu3_gendermale    -0.01      0.22    -0.43     0.41 1.00     4141     2902
+## mu4_gendermale    -0.17      0.25    -0.67     0.34 1.00     3922     2937
+## 
+## Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+## and Tail_ESS are effective sample size measures, and Rhat is the potential
+## scale reduction factor on split chains (at convergence, Rhat = 1).</code></pre>
+<p>The estimates are pretty much the same.</p>
 </div>

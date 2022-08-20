@@ -21,6 +21,8 @@ image:
 projects: []
 ---
 
+I was talking to a colleague about modeling nominal outcomes in STAN, and wrote up this example. Just put it here in case it's helpful for anyone (probably myself in the future). This is based on [an example I made for a course](https://psyc573-2022spring.netlify.app/glm2.html#nominal-logistic-regression), where you can find the `brms` code for nominal regression. Please also check out the [Multi-logit regression session](https://mc-stan.org/docs/stan-users-guide/multi-logit.html) on the Stan User's guide. 
+
 ## Load Packages
 
 ```{r load-pkg, message = FALSE}
@@ -85,7 +87,7 @@ stan_dat <- with(stemcell,
 )
 ```
 
-```{r fit, message = FALSE}
+```{r fit, message = FALSE, results = "hide"}
 # Draw samples
 fit <- mod$sample(data = stan_dat, seed = 123, chains = 4, 
                   parallel_chains = 2, refresh = 500,
@@ -96,3 +98,13 @@ fit <- mod$sample(data = stan_dat, seed = 123, chains = 4,
 fit$summary() |>
     knitr::kable()
 ```
+
+Compare to `brms`:
+
+```{r, message = FALSE}
+library(brms)
+brm(rating ~ gender, data = stemcell, family = categorical(link = "logit"),
+    file = "mlogit")
+```
+
+The estimates are pretty much the same. 
