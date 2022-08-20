@@ -1,6 +1,6 @@
 ---
 # Course title, summary, and position.
-linktitle: PSYC 575
+linktitle: PSYC 575 (2020 Fall)
 summary: Learn and apply multilevel modeling for data analysis.
 weight: 1
 

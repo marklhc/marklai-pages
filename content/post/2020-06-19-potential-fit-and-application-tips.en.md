@@ -12,7 +12,7 @@ subtitle: ''
 summary: ''
 authors:
   - marklai
-lastmod: '2020-06-19T09:30:41-07:00'
+lastmod: '2022-08-20T09:30:41-07:00'
 featured: no
 image:
   caption: ''
@@ -20,6 +20,12 @@ image:
   preview_only: no
 projects: []
 ---
+
+{{% alert note %}}
+
+This post was first written in 2020, with an update on [rubric](#rubric) in 2022.
+
+{{% /alert %}}
 
 I'm especially interested in applicants who
 
@@ -61,3 +67,14 @@ picture now, and it is not uncommon for people to change their plans during
 grad school (I did too), but at least putting a plan into writing shows that you
 have given some thoughts on your future. 
 
+### Rubric{#rubric}
+
+To keep things more transparent (which sadly isn't generally the case in graduate admission), here's the criteria in my rubric that I use to assess applicants in a previous year. Again, please note that these only represent what I focus when reviewing applications, and do not apply to the criteria by my colleagues or our school and our field in general. Also, admission decisions are also based on fit to the department and discussions with other faculty. 
+
+Review criteria from a previous year:
+
+- Demonstrated interest in quantitative and statistical methods (from personal statement, letters, etc)
+- Research experience related to quantitative methods
+- Evidence of writing skills
+- Background in statistics and programming (coursework, computer skills, etc)
+- Fit to the lab
