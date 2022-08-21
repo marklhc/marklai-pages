@@ -1,0 +1,191 @@
+---
+title: Scaling and Standard Errors in SEM
+author: marklai
+date: '2022-06-17'
+slug: scaling-and-standard-errors-in-sem
+toc: true
+categories:
+  - Statistics
+tags:
+  - SEM
+  - estimation
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2022-08-20T22:57:20-07:00'
+featured: no
+draft: yes
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+In this post, I demonstrate why rescaling a coefficient (i.e., multiplied/divided by a constant) is different from "standardizing" a coefficient (i.e., multiplied/divided by the sample standard deviation, which is a random variable) in SEM.
+
+See also [this discussion on StackExchange](https://stats.stackexchange.com/questions/402133/in-cfa-does-it-matter-which-factor-loading-is-set-to-1) and the article [When constraints interact: A caution about reference variables, identification constraints, and scale dependencies in structural equation modeling.](https://psycnet.apa.org/record/2002-13431-004)
+
+## Load Packages
+
+```{r load-pkg}
+library(lavaan)
+# library(performance)
+# library(parameters)
+library(modelsummary)
+```
+
+# Example
+
+## Different Scaling Choices
+
+In the following, I manipulate the scaling constraints on (1) the average loading, (2) the first loading, (3) the second loading, and (4) the latent variance, so that they all have the same sample unit for the latent variable.
+
+### 1. Effect coding (average loading = 1)
+
+```{r fit1}
+model <- '
+  # latent variable definitions
+    ind60 =~ x1 + x2 + x3
+    dem60 =~ y1 + y2 + y3 + y4
+  # regression
+    dem60 ~ ind60
+'
+fit <- sem(model, data = PoliticalDemocracy, effect.coding = "loadings")
+parameterEstimates(fit)
+```
+
+### 2. Fix first loading
+
+```{r fit}
+# Get estimates from first model
+coef(fit)[c("ind60=~x1", "dem60=~y1")]
+model <- '
+  # latent variable definitions
+    ind60 =~ 0.6002121 * x1 + x2 + x3
+    dem60 =~ 0.8094457 * y1 + y2 + y3 + y4
+  # regression
+    dem60 ~ ind60
+'
+fit1 <- sem(model, data = PoliticalDemocracy)
+parameterEstimates(fit1)
+```
+
+### 3. Fix second loading
+
+```{r fit2}
+# Get estimates from first model
+coef(fit)[c("ind60=~x2", "dem60=~y2")]
+model2 <- '
+  # latent variable definitions
+    ind60 =~ NA * x1 + 1.308404 * x2 + x3
+    dem60 =~ NA * y1 + 1.148334 * y2 + y3 + y4
+  # regression
+    dem60 ~ ind60
+'
+fit2 <- sem(model2, data = PoliticalDemocracy)
+parameterEstimates(fit2)  # SE changed!
+```
+
+## 4. Fix latent variances
+
+```{r fit3}
+# Get estimates from first model
+coef(fit)[c("ind60~~ind60", "dem60~~dem60")]
+model3 <- '
+  # latent variable definitions
+    ind60 =~ NA * x1 + x2 + x3
+    dem60 =~ NA * y1 + y2 + y3 + y4
+  # latent variances
+    ind60 ~~ 1.245068 * ind60
+    dem60 ~~ 5.270542 * dem60
+  # regression
+    dem60 ~ ind60
+'
+fit3 <- sem(model3, data = PoliticalDemocracy)
+parameterEstimates(fit3)  # SE changed again!
+```
+
+```{r summ-up-to-fit3}
+msummary(list(`Effect coding` = fit,
+              `Fix item 1` = fit1,
+              `Fix item 2` = fit2,
+              `Fix variance` = fit3))
+```
+
+Note that the parameter estimates are all the same, but the standard errors are all different. This has implications for statistical power when doing latent variable analysis.
+
+## Standardized Coefficients
+
+### Delta method
+
+Directly in `lavaan`
+
+```{r stdcoef-fit}
+msummary(list(`Fix item 1` = fit,
+              `Fix item 2` = fit2,
+              `Fix variance` = fit3),
+         standardize = TRUE)
+```
+
+### 1. Define new parameters in the model
+
+```{r fit-std}
+model_std <- '
+  # latent variable definitions
+    ind60 =~ x1 + x2 + x3
+    dem60 =~ y1 + y2 + y3 + y4
+  # latent variances
+    ind60 ~~ v1 * ind60
+    dem60 ~~ ev2 * dem60
+  # regression
+    dem60 ~ b * ind60
+  # define standardized coefficients
+    v2 := b^2 * v1 + ev2
+    beta := b * sqrt(v1 / v2)
+'
+fit_std <- sem(model_std, data = PoliticalDemocracy)
+parameterEstimates(fit_std)  # same standardized coefficient
+```
+
+### 2. Use constraints to fix variances
+
+```{r fit-con}
+model_con <- '
+  # latent variable definitions
+    ind60 =~ NA * x1 + x2 + x3
+    dem60 =~ NA * y1 + y2 + y3 + y4
+  # latent variances
+    ind60 ~~ 1 * ind60
+    dem60 ~~ ev2 * dem60
+  # regression
+    dem60 ~ beta * ind60
+  # constraints
+    ev2 == 1 - beta^2
+'
+fit_con <- sem(model_con, data = PoliticalDemocracy)
+parameterEstimates(fit_con)  # same standardized coefficient
+```
+
+### 3. (Incorrect) constraining the first indicators
+
+```{r fit-conl}
+coef(fit_con)[c("ind60=~x1", "dem60=~y1")]
+model_conl <- '
+  # latent variable definitions
+    ind60 =~ 0.6697334 * x1 + x2 + x3
+    dem60 =~ 2.0934489 * y1 + y2 + y3 + y4
+  # regression
+    dem60 ~ beta * ind60
+'
+fit_conl <- sem(model_conl, data = PoliticalDemocracy)
+parameterEstimates(fit_conl)  # same standardized coefficient
+```
+
+```{r stdcoef-fit-hand}
+msummary(list(`Define new par` = fit_std,
+              `Constraints` = fit_con,
+              `Fix loading` = fit_conl))
+```
+
+As can be shown, while the first two methods give the same standardized beta in terms of estimates and standard errors, the third does not as it does not account for the uncertainty in the standard deviation.
