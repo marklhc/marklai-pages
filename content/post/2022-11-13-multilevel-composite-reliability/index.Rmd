@@ -1,0 +1,75 @@
+---
+title: Multilevel Composite Reliability
+author: marklai
+date: '2022-11-13'
+slug: multilevel-composite-reliability
+categories:
+  - Statistics
+tags:
+  - Reliability
+  - Multilevel
+  - SEM
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2022-11-13T20:56:38-08:00'
+featured: no
+draft: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+This is a short blog post on computing multilevel reliability based on [Lai (2021)](/publication/lai2020pm).
+
+## Load Packages
+
+```{r}
+library(lavaan)
+library(semTools)
+```
+
+First, use demo data from `lavaan`
+
+```{r}
+data("Demo.twolevel", package = "lavaan")
+```
+
+Then source a script I wrote [here](https://github.com/marklhc/mcfa_reliability_supp/blob/master/multilevel_alpha.R) implementing the procedures in the paper, which defines a function `multilevel_alpha()`:
+
+```{r}
+source("https://github.com/marklhc/mcfa_reliability_supp/raw/master/multilevel_alpha.R")
+```
+
+Example syntax in R and Mplus for the paper can be found in https://github.com/marklhc/mcfa_reliability_supp. Going back to the multilevel demo data, we can consider the reliability for between-level and within-level composite scores when summing `y1`, `y2`, and `y3`. This can be done using
+
+```{r}
+multilevel_alpha(Demo.twolevel[c("y1", "y2", "y3")],
+                 id = Demo.twolevel$cluster)
+```
+
+Note that the $\omega$ indices assume unidimensionality, local independence, and cross-level invariance. There were a total of six indices: three $\alpha$s and three $\omega$s, corresponding to raw composite ("2l"), between-level composite ("b"), and within-level composite ("w"). The 95% CIs were obtained using the Monte Carlo method by simulating from the asymptotic distribution of the model parameters. In addition, the function also implemented a parallel analysis procedure for determining the number of factors/components at each level, as discussed in [this paper](https://www.tandfonline.com/doi/abs/10.1080/10705511.2021.1916394). 
+
+## Using `semTools::compRelSEM()`
+
+Some of the above procedures were implemented in the `semTools` package. To use that, one needs to fit a two-level CFA in `lavaan` first (see `?compRelSEM`:
+
+```{r}
+mcfa_mod <- '
+  level: 1
+    f =~ y1 + L2*y2 + L3*y3
+  level: 2
+    f =~ y1 + L2*y2 + L3*y3
+'
+mcfa_fit <- cfa(mcfa_mod, data = Demo.twolevel, cluster = "cluster")
+```
+
+Then call the function
+
+```{r}
+compRelSEM(mcfa_fit, config = c("f"), shared = c("f"))
+```
+
+
