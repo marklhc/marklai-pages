@@ -21,6 +21,7 @@ Courses I teach at USC:
 - PSYC 575: Multilevel Modeling
     + [Course site for 2020 Fall](psyc575/)
     + [Course site for 2021 Fall](https://psyc575-2021fall.netlify.app/)
+    + [Course site for 2022 Fall](https://psyc575-2022fall.netlify.app/)
 - PSYC 573: Bayesian Data Analysis
     + [Course site for 2022 Spring](https://psyc573-2022spring.netlify.app/)
 
