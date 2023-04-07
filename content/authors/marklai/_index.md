@@ -88,6 +88,8 @@ studying the prevalence, antecedents and consequences of gambling disorder, and
 in other areas such as evolutionary psychology, social psychology, developmental
 sciences, health sciences, etc.
 
+<!--
+
 {{% alert note %}}
 I plan to take a Ph.D. student interested in quantitative and statistical methods (including but not limited to: data harmonization, psychometrics, multilevel modeling, effect size estimation, and statistical learning) in the 2023-2024 academic year. 
 
@@ -96,3 +98,5 @@ To learn more about the doctoral program at USC and speak to a program advisor, 
 <button name="fit" onclick="window.open('{{< relref "/content/post/2020-06-19-potential-fit-and-application-tips.en.md">}}');">Potential Fit and Tips</button>
 <button name="usc-admit" onclick="window.open('https://dornsife.usc.edu/psyc/admission/');">Apply</button>
 {{% /alert %}}
+
+-->

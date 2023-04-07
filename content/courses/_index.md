@@ -24,6 +24,8 @@ Courses I teach at USC:
     + [Course site for 2022 Fall](https://psyc575-2022fall.netlify.app/)
 - PSYC 573: Bayesian Data Analysis
     + [Course site for 2022 Spring](https://psyc573-2022spring.netlify.app/)
+- PSYC 520: Fundamentals of Psychological Measurement
+    + [Course site for 2023 Spring](https://marklhc.quarto.pub/psyc520-2023spring/)
 
 Courses I taught at UC:
 
