@@ -1,11 +1,8 @@
 ---
 title: Estimating a 2-PL Model in Julia (Part 1)
-author: marklai
-date: '2022-05-19'
-slug: estimating-a-2-pl-model-in-julia-part-1
-output:
-  blogdown::html_page:
-    toc: true
+author: Mark Lai
+date: "2022-05-19"
+date-modified: "2022-05-28"
 categories:
   - Statistics
 tags:
@@ -13,17 +10,6 @@ tags:
   - IRT
   - statistics
   - estimation
-subtitle: ''
-summary: ''
-authors: []
-lastmod: '2022-05-28T14:47:00-07:00'
-featured: no
-draft: no
-image:
-  caption: ''
-  focal_point: ''
-  preview_only: no
-projects: []
 ---
 
 The semester is finally over, and for some reason, I wanted to consolidate my understanding of some psychometric models, perhaps because I'll be teaching a graduate measurement class soon. I actually spent quite some time learning about the estimation of models from item response theory (IRT), which makes me better appreciate the training of the psychometricians from the IRT tradition.

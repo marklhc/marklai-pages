@@ -1,23 +1,12 @@
 ---
 title: Unit-Specific vs. Population-Average Models
-author: marklhc
-date: '2020-12-28'
-slug: unit-specific-vs-population-average-models
+author: Mark Lai
+date: "2020-12-28"
 categories:
   - Statistics
 tags:
   - Multilevel
   - statistics
-subtitle: ''
-summary: ''
-authors: []
-lastmod: '2020-12-28T13:37:59-08:00'
-featured: no
-image:
-  caption: ''
-  focal_point: ''
-  preview_only: no
-projects: []
 ---
 
 \DeclareMathOperator{\E}{E}

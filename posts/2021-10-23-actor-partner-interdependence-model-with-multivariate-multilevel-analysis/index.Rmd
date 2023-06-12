@@ -1,26 +1,11 @@
 ---
 title: Actor Partner Interdependence Model With Multilevel Analysis
-author: marklai
-date: '2021-10-23'
-slug: actor-partner-interdependence-model-with-multilevel-analysis
-output:
-  blogdown::html_page:
-    toc: true
+author: Mark Lai
+date: "2021-10-23"
 categories:
   - Statistics
 tags:
   - multilevel
-subtitle: ''
-summary: ''
-authors: []
-lastmod: '2021-10-23T13:12:54-07:00'
-featured: no
-draft: no
-image:
-  caption: ''
-  focal_point: ''
-  preview_only: no
-projects: []
 ---
 
 Every time I teach multilevel modeling (MLM) at USC, I have students interested in running the actor partner independence model (APIM) using dyadic model. While such models are easier to fit with structural equation modeling, it can also be fit using MLM. In this post I provide a software tutorial for fitting such a model using MLM, and contrast to results to SEM. 

@@ -1,11 +1,7 @@
 ---
 title: Estimating a 2-PL Model in Julia (Part 2)
-author: marklai
-date: '2022-05-28'
-slug: estimating-a-2-pl-model-in-julia-part-2
-output:
-  blogdown::html_page:
-    toc: true
+author: Mark Lai
+date: "2022-05-28"
 categories:
   - Statistics
   - Programming
@@ -14,17 +10,6 @@ tags:
   - IRT
   - Julia
   - estimation
-subtitle: ''
-summary: ''
-authors: []
-lastmod: '2022-05-28T14:48:40-07:00'
-featured: no
-draft: no
-image:
-  caption: ''
-  focal_point: ''
-  preview_only: no
-projects: []
 ---
 
 <div class="hidden">

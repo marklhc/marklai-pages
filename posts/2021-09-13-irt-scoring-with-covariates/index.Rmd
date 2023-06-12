@@ -1,23 +1,11 @@
 ---
 title: IRT Scoring With Covariates
-author: marklai
-date: '2021-09-13'
-slug: irt-scoring-with-covariates
+author: Mark Lai
+date: "2021-09-13"
 categories:
   - Statistics
 tags:
   - IRT
-subtitle: ''
-summary: ''
-authors: []
-lastmod: '2021-09-13T11:38:58-07:00'
-featured: no
-draft: no
-image:
-  caption: ''
-  focal_point: ''
-  preview_only: no
-projects: []
 ---
 
 I was working on an extension to the two-stage path analysis [Lai & Hsiao (2021)](/publication/lai_etal_2021pm/) related to integrative data analysis, and ran into an issue described in [Davoudzadeh et al. (2021)](https://www.tandfonline.com/doi/abs/10.1080/10705511.2020.1724113) (which is a very inspiring paper). The basic idea is that when doing a multiple-group analysis to obtain factor scores, a multiple-group and a single-group approach generally give different results due to the different priors. This happens for both confirmatory factor analysis (CFA) and item response theory (IRT). The math can be found in the cited paper; here I just make some notes and show the differences. 

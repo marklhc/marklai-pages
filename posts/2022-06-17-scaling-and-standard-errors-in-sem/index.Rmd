@@ -1,25 +1,13 @@
 ---
 title: Scaling and Standard Errors in SEM
-author: marklai
-date: '2022-06-17'
-slug: scaling-and-standard-errors-in-sem
-toc: true
+author: Mark Lai
+date: "2022-06-17"
+date-modified: "2022-08-20"
 categories:
   - Statistics
 tags:
   - SEM
   - estimation
-subtitle: ''
-summary: ''
-authors: []
-lastmod: '2022-08-20T22:57:20-07:00'
-featured: no
-draft: no
-image:
-  caption: ''
-  focal_point: ''
-  preview_only: no
-projects: []
 ---
 
 In this post, I demonstrate why rescaling a coefficient (i.e., multiplied/divided by a constant) is different from "standardizing" a coefficient (i.e., multiplied/divided by the sample standard deviation, which is a random variable) in SEM.

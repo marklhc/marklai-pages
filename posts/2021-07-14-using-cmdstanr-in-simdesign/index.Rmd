@@ -1,27 +1,14 @@
 ---
 title: Using cmdstanr in SimDesign
-author: marklai
-date: '2021-07-14'
-slug: using-cmdstanr-in-simdesign
-output:
-  blogdown::html_page:
-    toc: true
+author: Mark Lai
+date: "2021-07-14"
+date-modified: "2021-07-16"
 categories:
   - Programming
   - Statistics
 tags:
   - Bayesian
   - Simulation
-subtitle: ''
-summary: ''
-authors: []
-lastmod: '2021-07-16T20:42:00-07:00'
-featured: no
-image:
-  caption: ''
-  focal_point: ''
-  preview_only: no
-projects: []
 ---
 
 ```{r, message = FALSE}

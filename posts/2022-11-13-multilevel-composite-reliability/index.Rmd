@@ -1,25 +1,13 @@
 ---
 title: Multilevel Composite Reliability
-author: marklai
-date: '2022-11-13'
-slug: multilevel-composite-reliability
+author: Mark Lai
+date: "2022-11-13"
 categories:
   - Statistics
 tags:
   - Reliability
   - Multilevel
   - SEM
-subtitle: ''
-summary: ''
-authors: []
-lastmod: '2022-11-13T20:56:38-08:00'
-featured: no
-draft: no
-image:
-  caption: ''
-  focal_point: ''
-  preview_only: no
-projects: []
 ---
 
 This is a short blog post on computing multilevel reliability based on [Lai (2021)](/publication/lai2020pm).

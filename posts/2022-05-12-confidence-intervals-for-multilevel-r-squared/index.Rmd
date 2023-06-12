@@ -1,27 +1,12 @@
 ---
 title: Confidence Intervals for Multilevel R-Squared
-author: marklai
-date: '2022-05-12'
-slug: confidence-intervals-for-multilevel-r-squared
-output:
-  blogdown::html_page:
-    toc: true
+author: Mark Lai
+date: "2022-05-12"
 categories:
   - Statistics
 tags:
   - multilevel modeling
   - bootstrap
-subtitle: ''
-summary: ''
-authors: []
-lastmod: '2022-05-12T08:47:48-07:00'
-featured: no
-draft: no
-image:
-  caption: ''
-  focal_point: ''
-  preview_only: no
-projects: []
 ---
 
 ```{r setup, include = FALSE}

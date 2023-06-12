@@ -1,27 +1,12 @@
 ---
 title: Mixed Factorial ANOVA in R
-author: marklai
-date: '2021-03-29'
-slug: mixed-factorial-anova-in-r
+author: Mark Lai
+date: "2021-03-29"
 categories:
   - Statistics
 tags:
   - statistics
   - ANOVA
-subtitle: ''
-summary: ''
-authors: []
-lastmod: '2021-03-29T09:59:03-07:00'
-featured: no
-image:
-  caption: ''
-  focal_point: ''
-  preview_only: no
-projects: []
-output:
-  blogdown::html_page:
-    toc: true
-    df_print: paged
 ---
 
 # Load Required Packages
