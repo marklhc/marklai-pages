@@ -1,22 +1,11 @@
 ---
 title: Piping with `magrittr`
 author: marklai
-date: '2020-12-16'
-slug: piping-with-magrittr
+date: "2020-12-16"
 categories:
   - Programming
 tags:
   - R
-subtitle: ''
-summary: ''
-authors: []
-lastmod: '2020-12-16T14:38:37-08:00'
-featured: no
-image:
-  caption: ''
-  focal_point: ''
-  preview_only: no
-projects: []
 ---
 
 I have just spent a semester teaching [multilevel modeling](/courses/psyc575), and in the R codes I provided, I usually use the [pipe operator (`%>%`)](https://cran.r-project.org/web/packages/magrittr/vignettes/magrittr.html). For example, to compute the cluster means, we can do

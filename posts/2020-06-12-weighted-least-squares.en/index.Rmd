@@ -1,20 +1,12 @@
 ---
 title: Weighted Least Squares
 author: Mark Lai
-date: '2020-06-12'
-slug: weighted-least-squares
+date: "2020-06-12"
 categories:
   - Statistics
 tags:
   - cfa
   - R
-header:
-  caption: ''
-  image: ''
-  preview: yes
-output:
-  blogdown::html_page:
-    toc: true
 ---
 
 \newcommand{\bv}[1]{\boldsymbol{\mathbf{#1}}}

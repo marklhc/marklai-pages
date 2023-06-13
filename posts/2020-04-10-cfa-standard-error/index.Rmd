@@ -1,11 +1,7 @@
 ---
 title: Asymptotic Standard Errors in CFA
 author: Mark Lai
-date: '2020-04-11'
-slug: cfa-standard-error
-output:
-  blogdown::html_page:
-    toc: true
+date: "2020-04-11"
 categories:
   - Statistics
 tags:

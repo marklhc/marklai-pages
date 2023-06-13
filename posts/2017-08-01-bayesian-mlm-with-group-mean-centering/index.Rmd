@@ -1,12 +1,8 @@
 ---
 title: Bayesian MLM With Group Mean Centering
 author: Mark Lai
-date: '2020-02-04'
-slug: bayesian-mlm-with-group-mean-centering
+date: "2020-02-04"
 bibliography: references.bib
-output:
-  blogdown::html_page:
-    toc: true
 categories:
   - Statistics
 tags:
