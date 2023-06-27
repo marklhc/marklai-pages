@@ -1,0 +1,55 @@
+---
+title: "Selected Publications"
+---
+
+See my CV for the full list of publications.
+
+- Lai, M. H. C., Tse, W. W.-Y., Zhang, G., Li, Y., & Hsiao, Y.-Y. (2023). Correcting for Unreliability and Partial Invariance: A Two-Stage Path Analysis Approach. Structural Equation Modeling: A Multidisciplinary Journal, 30(2), 258–271. <https://doi.org/10.1080/10705511.2022.2125397>\
+[[Postprint]](/postprint/Lai_etal_2022_sem_2spa_invariance_am.pdf) [[Supp]](https://github.com/marklhc/2spa-inv-supp) [[Slides]](https://www.slideshare.net/MarkLai27/correcting-for-unreliability-partial-invariance-a-twostage-path-analysis-approach)
+
+- Lai, M. H. C. (2023). Adjusting for Measurement Noninvariance with Alignment in Growth Modeling. Multivariate Behavioral Research, 58(1), 30–47. <https://doi.org/10.1080/00273171.2021.1941730>\
+[[Postprint]](/postprint/Lai_2021_mbr_awc_growth_am.pdf) [[Supp]](https://github.com/marklhc/awc-growth-supp)
+
+- Zhang, Y., Lai, M. H. C., & Palardy, G. J. (2022). A Bayesian region of measurement equivalence (ROME) approach for establishing measurement invariance. Psychological Methods. <https://doi.org/10.1037/met0000455>\
+[[Supp]](https://osf.io/e75wk/)
+
+- Lai, M. H. C., & Zhang, Y. (2022). Classification Accuracy of Multidimensional Tests: Quantifying the Impact of Noninvariance. Structural Equation Modeling: A Multidisciplinary Journal, 29(4), 620–629. <https://doi.org/10.1080/10705511.2021.1977936>\
+[[Postprint]](/postprint/Lai%26Zhang_2021_sem_mcaa_partial_invariance_am.pdf) [[Supp]](https://github.com/marklhc/mcaa_supp) [[Poster]](/poster/mcaa_poster_apa.pdf)
+
+- Lai, M. H. C., & Hsiao, Y.-Y. (2022). Two-stage path analysis with definition variables: An alternative framework to account for measurement error. Psychological Methods, 27(4), 568–588. https://doi.org/10.1037/met0000410
+
+- Luo, W., & Lai, H. C. (2021). A Weighted Residual Bootstrap Method for Multilevel Modeling with Sampling Weights. Journal of Behavioral Data Science. https://doi.org/10.35566/jbds/v1n2/p6
+
+- Lai, M. H. C., Liu, Y., & Tse, W. W.-Y. (2021). Adjusting for partial invariance in latent parameter estimation: Comparing forward specification search and approximate invariance methods. Behavior Research Methods, 54(1), 414–434. https://doi.org/10.3758/s13428-021-01560-2
+
+- Lai, M. H. C. (2021). Composite reliability of multilevel data: It’s about observed scores and construct meanings. Psychological Methods, 26(1), 90–102. https://doi.org/10.1037/met0000287
+
+- Lai, M. H. C. (2021). Bootstrap Confidence Intervals for Multilevel Standardized Effect Size. Multivariate Behavioral Research, 56(4), 558–578. https://doi.org/10.1080/00273171.2020.1746902
+
+- Lai, M. H. C., Richardson, G. B., & Mak, H. W. (2019). Quantifying the impact of partial measurement invariance in diagnostic research: An application to addiction research. Addictive Behaviors, 94, 50–56. https://doi.org/10.1016/j.addbeh.2018.11.029
+
+- Lai, M. H. C. (2019). Correcting Fixed Effect Standard Errors When a Crossed Random Effect Was Ignored for Balanced and Unbalanced Designs. Journal of Educational and Behavioral Statistics, 44(4), 448–472. https://doi.org/10.3102/1076998619843168
+
+- Yoon, M., & Lai, M. H. C. (2018). Testing Factorial Invariance With Unbalanced Samples. Structural Equation Modeling: A Multidisciplinary Journal, 25(2), 201–213. https://doi.org/10.1080/10705511.2017.1387859
+
+- Lai, M. H. C., Kwok, O., Hsiao, Y.-Y., & Cao, Q. (2018). Finite population correction for two-level hierarchical linear models. Psychological Methods, 23(1), 94–112. https://doi.org/10.1037/met0000137
+
+- Kwok, O.-M., Lai, M. H.-C., Tong, F., Lara-Alecio, R., Irby, B., Yoon, M., & Yeh, Y.-C. (2018). Analyzing Complex Longitudinal Data in Educational Research: A Demonstration With Project English Language and Literacy Acquisition (ELLA) Data Using xxM. Frontiers in Psychology, 9, 790. https://doi.org/10.3389/fpsyg.2018.00790
+
+- Hsiao, Y.-Y., & Lai, M. H. C. (2018). The Impact of Partial Measurement Invariance on Testing Moderation for Single and Multi-Level Data. Frontiers in Psychology, 9, 740. https://doi.org/10.3389/fpsyg.2018.00740
+
+- Lai, M. H. C., & Zhang, J. (2017). Evaluating fit indices for multivariate t-based structural equation modeling with data contamination. Frontiers in Psychology, 8, 1286. https://doi.org/10.3389/fpsyg.2017.01286
+
+- Lai, M. H. C., Kwok, O., Yoon, M., & Hsiao, Y.-Y. (2017). Understanding the impact of partial factorial invariance on selection accuracy: An R script. Structural Equation Modeling: A Multidisciplinary Journal, 24(5), 783–799. https://doi.org/10.1080/10705511.2017.1318703
+
+- Lai, M. H. C., & Kwok, O. (2016). Estimating standardized effect sizes for two- and three-level partially nested data. Multivariate Behavioral Research, 1–17. https://doi.org/10.1080/00273171.2016.1231606
+
+- Lai, M. H. C., & Yoon, M. (2015). A modified comparative fit index for factorial invariance studies. Structural Equation Modeling: A Multidisciplinary Journal, 22(2), 236–248. https://doi.org/10.1080/10705511.2014.935928
+
+- Lai, M. H. C., Wu, A. M. S., & Tong, K. K. (2015). Validation of the Gambling Refusal Self-Efficacy Questionnaire for Chinese undergraduate students. Journal of Gambling Studies, 31(1), 243–256. https://doi.org/10.1007/s10899-013-9412-7
+
+- Lai, M. H. C., & Kwok, O. (2015). Examining the rule of thumb of not using multilevel modeling: The “design effect smaller than two” rule. The Journal of Experimental Education, 83(3), 423–438. https://doi.org/10.1080/00220973.2014.907229
+
+- Lai, M. H. C., & Kwok, O.-M. (2014). Standardized mean differences in two-level cross-classified random effects models. Journal of Educational and Behavioral Statistics, 39(4), 282–302. https://doi.org/10.3102/1076998614532950
+
+- Lai, M. H. C., Ren, M. Y. W., Wu, A. M. S., & Hung, E. P. W. (2013). Motivation as mediator between national identity and intention to volunteer: National identity and volunteerism. Journal of Community & Applied Social Psychology, 23(2), 128–142. https://doi.org/10.1002/casp.2108

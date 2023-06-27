@@ -1,5 +1,11 @@
 project:
   type: website
+  render:
+    - index.qmd
+    - post.qmd
+    - publication.qmd
+    - "posts/"
+    - "!content/"
 
 website:
   title: "Mark Lai"
@@ -9,7 +15,9 @@ website:
         text: Home
       - href: post.qmd
         text: Posts
-      - about.qmd
+      - href: publication.qmd
+        text: Publications
+      # - about.qmd
   page-footer: "Copyright 2023, Hok Chio (Mark) Lai"
   google-analytics: "G-NLMBWPMFDG"
 
