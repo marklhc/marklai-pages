@@ -5,7 +5,9 @@ project:
     - post.qmd
     - publication.qmd
     - "posts/"
-    - "!content/"
+    - "slide/"
+  resources:
+    - "slide/"
 
 website:
   title: "Mark Lai"

@@ -16,13 +16,16 @@ See my CV for the full list of publications.
 - Lai, M. H. C., & Zhang, Y. (2022). Classification Accuracy of Multidimensional Tests: Quantifying the Impact of Noninvariance. Structural Equation Modeling: A Multidisciplinary Journal, 29(4), 620–629. <https://doi.org/10.1080/10705511.2021.1977936>\
 [[Postprint]](/postprint/Lai%26Zhang_2021_sem_mcaa_partial_invariance_am.pdf) [[Supp]](https://github.com/marklhc/mcaa_supp) [[Poster]](/poster/mcaa_poster_apa.pdf)
 
-- Lai, M. H. C., & Hsiao, Y.-Y. (2022). Two-stage path analysis with definition variables: An alternative framework to account for measurement error. Psychological Methods, 27(4), 568–588. https://doi.org/10.1037/met0000410
+- Lai, M. H. C., & Hsiao, Y.-Y. (2022). Two-stage path analysis with definition variables: An alternative framework to account for measurement error. Psychological Methods, 27(4), 568–588. <https://doi.org/10.1037/met0000410>\
+[[Postprint]](/postprint/Lai%26Hsiao_2021_pm_2spa_am.pdf) [[Supp]](https://osf.io/h95vx/) [[Poster]](https://aera21-aera.ipostersessions.com/Default.aspx?s=F5-60-EC-7F-8B-FC-38-8D-8C-83-D8-EE-6C-E9-BF-96)
 
-- Luo, W., & Lai, H. C. (2021). A Weighted Residual Bootstrap Method for Multilevel Modeling with Sampling Weights. Journal of Behavioral Data Science. https://doi.org/10.35566/jbds/v1n2/p6
+- Luo, W., & Lai, H. C. (2021). A Weighted Residual Bootstrap Method for Multilevel Modeling with Sampling Weights. Journal of Behavioral Data Science. <https://doi.org/10.35566/jbds/v1n2/p6>
 
-- Lai, M. H. C., Liu, Y., & Tse, W. W.-Y. (2021). Adjusting for partial invariance in latent parameter estimation: Comparing forward specification search and approximate invariance methods. Behavior Research Methods, 54(1), 414–434. https://doi.org/10.3758/s13428-021-01560-2
+- Lai, M. H. C., Liu, Y., & Tse, W. W.-Y. (2021). Adjusting for partial invariance in latent parameter estimation: Comparing forward specification search and approximate invariance methods. Behavior Research Methods, 54(1), 414–434. <https://doi.org/10.3758/s13428-021-01560-2>\
+[[Postprint]](/postprint/Lai_2021_brm_fs_vs_ao_am.pdf) [[Supp]](https://osf.io/y98sj/)
 
-- Lai, M. H. C. (2021). Composite reliability of multilevel data: It’s about observed scores and construct meanings. Psychological Methods, 26(1), 90–102. https://doi.org/10.1037/met0000287
+- Lai, M. H. C. (2021). Composite reliability of multilevel data: It’s about observed scores and construct meanings. Psychological Methods, 26(1), 90–102. <https://doi.org/10.1037/met0000287>\
+[[Postprint]](/postprint/Lai_2020_pm_mcfa_reliability_am.pdf) [[Supp]](https://github.com/marklhc/mcfa_reliability_supp) [[Slides]](/slide/asu_brownbag_2020_Lai_mcfa_reliability.html)
 
 - Lai, M. H. C. (2021). Bootstrap Confidence Intervals for Multilevel Standardized Effect Size. Multivariate Behavioral Research, 56(4), 558–578. https://doi.org/10.1080/00273171.2020.1746902
 
