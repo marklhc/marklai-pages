@@ -1,0 +1,9 @@
+---
+title: "Curriculum Vitae"
+---
+
+If the file does not show, [click here](/Vita_Lai.pdf)
+
+```{=html}
+<iframe src="https://quantscience.rbind.io/files/Vita_Lai.pdf" class="gde-frame" style="height: 1000px; width: 100%; border: none;" scrolling="yes"></iframe>
+```

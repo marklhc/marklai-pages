@@ -4,6 +4,8 @@ project:
     - index.qmd
     - post.qmd
     - publication.qmd
+    - software.qmd
+    - cv.qmd
     - "posts/"
     - "slide/"
   resources:
@@ -19,6 +21,10 @@ website:
         text: Posts
       - href: publication.qmd
         text: Publications
+      - href: software.qmd
+        text: Software
+      - href: cv.qmd
+        text: CV
       # - about.qmd
   page-footer: "Copyright 2023, Hok Chio (Mark) Lai"
   google-analytics: "G-NLMBWPMFDG"

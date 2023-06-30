@@ -2,7 +2,7 @@
 title: "Selected Publications"
 ---
 
-See my CV for the full list of publications.
+See my [CV](/cv.qmd) for the full list of publications.
 
 - Lai, M. H. C., Tse, W. W.-Y., Zhang, G., Li, Y., & Hsiao, Y.-Y. (2023). Correcting for Unreliability and Partial Invariance: A Two-Stage Path Analysis Approach. Structural Equation Modeling: A Multidisciplinary Journal, 30(2), 258–271. <https://doi.org/10.1080/10705511.2022.2125397>\
 [[Postprint]](/postprint/Lai_etal_2022_sem_2spa_invariance_am.pdf) [[Supp]](https://github.com/marklhc/2spa-inv-supp) [[Slides]](https://www.slideshare.net/MarkLai27/correcting-for-unreliability-partial-invariance-a-twostage-path-analysis-approach)
