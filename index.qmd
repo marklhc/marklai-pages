@@ -6,13 +6,19 @@ about:
   links:
     - icon: github
       text: Github
-      href: https://github.com
+      href: https://github.com/marklhc
+    - icon: envelope
+      text: Email
+      href: mailto:hokchiol@usc.edu
+    - icon: file-pdf
+      text: CV
+      href: /Vita_Lai.pdf
 ---
 
 I am an Associate Professor of Psychology (Quantitative Methods) in the [Department of Psychology](https://dornsife.usc.edu/psyc/) at the University of Southern California. I am from [Macau](https://en.wikipedia.org/?title=Macau) and speaks Cantonese as my native language. Mathematics has always been a favorite subject to me, but my growing interest in understanding the human mind lead me to pursue a bachelor degree in Psychology at the University of Macau, where I discovered that a career of developing and applying quantitative methods in the social sciences would be a very good fit to me.
 
 - [Postprints of publications and supplemental materials](/publication.qmd)
-- [Open-access course materials (Multilevel Modeling, Bayesian, Simulation)](courses/)
+- [Open-access course materials (Multilevel Modeling, Bayesian, Simulation)](/course.qmd)
 - [Software packages](/software.qmd)
 
 I am interested in all kinds of statistical methods, but currently my research areas include multilevel modeling, structural equation modeling, effect size statistics, and measurement invariance. I also have collaborations on projects studying the prevalence, antecedents and consequences of gambling disorder, and in other areas such as evolutionary psychology, social psychology, developmental sciences, health sciences, etc.

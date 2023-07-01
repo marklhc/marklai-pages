@@ -1,16 +1,10 @@
 ---
 title: Courses
-layout: docs  # Do not modify.
-
-# Optional header image (relative to `static/img/` folder).
-header:
-  caption: ""
-  image: ""
 ---
 
 Workshops:
 
-- [Advancing Quantitative Science with Monte Carlo Simulation](montecarlo/)
+- [Advancing Quantitative Science with Monte Carlo Simulation](https://github.com/marklhc/MCWorkshop)
 
 Courses I teach at USC:
 
@@ -19,7 +13,7 @@ Courses I teach at USC:
 - PSYC 621: Seminar in Quantitative Psychology (Bayesian Data Analysis)
     + [Course notes](https://psyc-bayes-notes.netlify.com)
 - PSYC 575: Multilevel Modeling
-    + [Course site for 2020 Fall](psyc575/)
+    + [Course site (GitHub materials) for 2020 Fall](https://github.com/marklhc/marklai-pages/tree/master/content/courses/psyc575)
     + [Course site for 2021 Fall](https://psyc575-2021fall.netlify.app/)
     + [Course site for 2022 Fall](https://psyc575-2022fall.netlify.app/)
 - PSYC 573: Bayesian Data Analysis
