@@ -6,6 +6,7 @@ project:
     - publication.qmd
     - software.qmd
     - course.qmd
+    - presentation.qmd
     # - cv.qmd
     - "posts/"
     - "slide/"
@@ -26,6 +27,8 @@ website:
         text: Software
       - href: course.qmd
         text: Courses
+      - href: presentation.qmd
+        text: Presentations
       # - href: cv.qmd
       #   text: CV
       # - about.qmd

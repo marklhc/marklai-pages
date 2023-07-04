@@ -1,0 +1,39 @@
+---
+title: "Presentations"
+---
+
+## 2022
+
+- [Correcting for unreliability and partial invariance: A two-stage path analysis approach.](https://www.slideshare.net/MarkLai27/correcting-for-unreliability-partial-invariance-a-twostage-path-analysis-approach) 8th Texas Universities’ Educational Statistics and Psychometrics (TUESAP) Meeting, Texas A&M University, TX, USA (Zoom). 
+
+## 2021
+
+- [What to Do If Measurement Invariance Does Not Hold? Let's Look at the Practical Significance.](/slide/slides_invariance_mizzou.html) University of Missouri, MO, USA (Zoom).
+
+- [Obtaining reliability for daily diary data using multilevel factor analysis.](/slide/imps_2021_Lai_mcfa_reliability.html) 2021 IMPS Virtual Conference.\
+[[Code]](https://github.com/marklhc/mcfa_reliability_supp/blob/master/multilevel_alpha.R) [[Video]](https://youtu.be/3y9N88tvs2I)
+
+- [Reliability of Composite Scores With Multilevel Data.](/slide/Fordham_2021_Lai_mcfa_reliability.html) Fordham University, NY, USA (Zoom).
+
+- [A Multilevel Weighted Bootstrap Procedure to Handle Sampling Weights.](/slide/2021aera_wspboot.html) 2021 AERA Virtual Meeting.
+
+## 2020
+
+- [Internal Consistency of Multilevel Data: Cluster Means, Centering, and Construct Meanings.](slide/asu_brownbag_2020_Lai_mcfa_reliability.html) Arizona State University, AZ, USA (Zoom).
+
+- [Multilevel Bootstrap Confidence Intervals for Standardized Effect Size.](/slide/slides_imps.html) 2020 IMPS Virtual Conference.
+
+## 2019
+
+- [Advancing Quantitative Science with Monte Carlo Simulation.](/slide/2019mc_slides.html) Texas A&M University, College Station, TX.\
+[[GitHub]](https://github.com/marklhc/2019MC)
+
+## 2018
+
+- [Multilevel Modeling: Introduction and Recent Advances for Behavioral Research.](/slide/mlm_intro_recent_advances.html) University of Macau, Macau SAR.
+
+- [Introduction to Multilevel Modeling.](/slide/intro_mlm.html) Guest lecture for PSYC 503 at the University of Southern California, CA, USA.
+
+## 2017
+
+- [Bayesian Data Analysis Workshop.](https://osf.io/v3e52/?view_only=02c80b5655c1403db5709836079363e3) Texas A&M University, TX, USA.
