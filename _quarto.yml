@@ -1,15 +1,15 @@
 project:
   type: website
-  render:
-    - index.qmd
-    - post.qmd
-    - publication.qmd
-    - software.qmd
-    - course.qmd
-    - presentation.qmd
-    # - cv.qmd
-    - "posts/"
-    - "slide/"
+  # render:
+  #   - index.qmd
+  #   - post.qmd
+  #   - publication.qmd
+  #   - software.qmd
+  #   - course.qmd
+  #   - presentation.qmd
+  #   # - cv.qmd
+  #   - "posts/"
+  #   - "slide/"
   resources:
     - "slide/"
 
