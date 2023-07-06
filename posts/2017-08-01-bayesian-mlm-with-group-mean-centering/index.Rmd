@@ -1,8 +1,9 @@
 ---
 title: Bayesian MLM With Group Mean Centering
 author: Mark Lai
-date: "2020-02-04"
+date: "2017-08-01"
 bibliography: references.bib
+date-modified: "2020-02-04"
 categories:
   - Statistics
 tags:
@@ -10,7 +11,7 @@ tags:
   - R
 ---
 
-This post is updated on `r Sys.Date()` with cleaner and more efficient `STAN`
+This post is re-rendered on `r Sys.Date()` with cleaner and more efficient `STAN`
 code. 
 
 ```{r setup, include=FALSE}
@@ -65,8 +66,8 @@ library(haven)
 library(lme4)
 library(brms)
 library(rstan)
-rstan_options(auto_write = TRUE)
-options(mc.cores = 2L)
+# rstan_options(auto_write = TRUE)
+# options(mc.cores = 2L)
 ```
 
 ```{r}
@@ -139,33 +140,6 @@ I use the `brms` package with the default priors:
 m1_brm <- brm(MATHACH ~ SES_gpm + SES_gpc + (1 | ID), data = hsb_sub, 
               control = list(adapt_delta = .90))
 summary(m1_brm)
-# Transform data
-hsb_mdv <- hsb_sub %>%
-  # duplicate original predictor
-  mutate(pred_SES = SES) %>%
-  pivot_longer(cols = c(MATHACH, SES), names_to = "var")
-brm(bf(value ~ b1 * pred_SES + b2 * partx + b3 * party,
-       b1 ~ 0 + var,
-       b2 ~ 0 + var,
-       b3 ~ 0 + var,
-       partx ~ (1 | ID),
-       party ~ (1 | ID),
-       sigma ~ 0 + var,
-       nl = TRUE),
-    data = hsb_mdv,
-    prior = c(
-      prior(student_t(4, 0, 10), coef = "varMATHACH", nlpar = "b1"),
-      prior(constant(0), coef = "varSES", nlpar = "b1"),
-      prior(student_t(4, 0, 10), coef = "varMATHACH", nlpar = "b2"),
-      prior(constant(1), coef = "varSES", nlpar = "b2"),
-      prior(constant(1), coef = "varMATHACH", nlpar = "b3"),
-      prior(constant(0), coef = "varSES", nlpar = "b3")
-    ),
-    iter = 2000,
-    chains = 2)
-# Compare
-summary(lmer(SES ~ (1 | ID), data = hsb_sub))
-summary(lmer(MATHACH ~ MEANSES + SES + (1 | ID), data = hsb_sub))
 ```
 
 With Bayesian, the results are similar to those with `lme4`. 
@@ -178,7 +152,7 @@ post_contextual <- with(post_fixef, b_SES_gpm - b_SES_gpc)
 c(mean = mean(post_contextual), median = median(post_contextual), 
   quantile(post_contextual, c(.025, .975)))
 ggplot(aes(x = post_contextual), data = data_frame(post_contextual)) + 
-    geom_density(bw = "SJ")
+  geom_density(bw = "SJ")
 ```
 
 

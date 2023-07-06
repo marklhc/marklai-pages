@@ -1,24 +1,11 @@
 ---
 title: Nominal Regression in STAN
-author: marklai
-date: '2022-07-30'
-slug: multinomial-regression-in-stan
-toc: true
+author: Mark Lai
+date: "2022-07-30"
 categories:
   - Statistics
 tags:
   - Bayesian
-subtitle: ''
-summary: ''
-authors: []
-lastmod: '2022-07-30T10:23:22-07:00'
-featured: no
-draft: no
-image:
-  caption: ''
-  focal_point: ''
-  preview_only: no
-projects: []
 ---
 
 I was talking to a colleague about modeling nominal outcomes in STAN, and wrote up this example. Just put it here in case it's helpful for anyone (probably myself in the future). This is based on [an example I made for a course](https://psyc573-2022spring.netlify.app/glm2.html#nominal-logistic-regression), where you can find the `brms` code for nominal regression. Please also check out the [Multi-logit regression session](https://mc-stan.org/docs/stan-users-guide/multi-logit.html) on the Stan User's guide. 
