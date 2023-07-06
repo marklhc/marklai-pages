@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.433">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Mark Lai">
+<meta name="dcterms.date" content="2017-08-01">
+
+<title>Mark Lai - Bayesian MLM With Group Mean Centering</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NLMBWPMFDG"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-NLMBWPMFDG', { 'anonymize_ip': true});
+</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Mark Lai</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../index.html" rel="" target="">
+ <span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../post.html" rel="" target="">
+ <span class="menu-text">Posts</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../publication.html" rel="" target="">
+ <span class="menu-text">Publications</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../software.html" rel="" target="">
+ <span class="menu-text">Software</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../course.html" rel="" target="">
+ <span class="menu-text">Courses</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../presentation.html" rel="" target="">
+ <span class="menu-text">Presentations</span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools ms-auto">
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#the-problem" id="toc-the-problem" class="nav-link active" data-scroll-target="#the-problem">The Problem</a></li>
+  <li><a href="#demonstration" id="toc-demonstration" class="nav-link" data-scroll-target="#demonstration">Demonstration</a>
+  <ul class="collapse">
+  <li><a href="#group-mean-centering-with-lme4" id="toc-group-mean-centering-with-lme4" class="nav-link" data-scroll-target="#group-mean-centering-with-lme4">Group mean centering with <code>lme4</code></a></li>
+  <li><a href="#same-analyses-with-bayesian-using-brms" id="toc-same-analyses-with-bayesian-using-brms" class="nav-link" data-scroll-target="#same-analyses-with-bayesian-using-brms">Same analyses with Bayesian using <code>brms</code></a></li>
+  <li><a href="#group-mean-centering-treating-group-means-as-latent-variables" id="toc-group-mean-centering-treating-group-means-as-latent-variables" class="nav-link" data-scroll-target="#group-mean-centering-treating-group-means-as-latent-variables">Group mean centering treating group means as latent variables</a></li>
+  <li><a href="#with-random-slopes" id="toc-with-random-slopes" class="nav-link" data-scroll-target="#with-random-slopes">With random slopes</a></li>
+  </ul></li>
+  <li><a href="#using-the-full-data" id="toc-using-the-full-data" class="nav-link" data-scroll-target="#using-the-full-data">Using the Full Data</a>
+  <ul class="collapse">
+  <li><a href="#with-lme4" id="toc-with-lme4" class="nav-link" data-scroll-target="#with-lme4">With <code>lme4</code></a></li>
+  <li><a href="#with-bayesian-taking-into-account-the-unreliability" id="toc-with-bayesian-taking-into-account-the-unreliability" class="nav-link" data-scroll-target="#with-bayesian-taking-into-account-the-unreliability">With Bayesian taking into account the unreliability</a></li>
+  </ul></li>
+  <li><a href="#bibliography" id="toc-bibliography" class="nav-link" data-scroll-target="#bibliography">Bibliography</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Bayesian MLM With Group Mean Centering</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">Statistics</div>
+  </div>
+  </div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Mark Lai </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">August 1, 2017</p>
+    </div>
+  </div>
+  
+    <div>
+    <div class="quarto-title-meta-heading">Modified</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date-modified">February 4, 2020</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<p>This post is re-rendered on 2023-06-13 with cleaner and more efficient <code>STAN</code> code.</p>
+<p>In the past week I was teaching a one-and-a-half-day workshop on multilevel modeling (MLM) at UC, where I discussed the use of group mean centering to decompose level-1 and level-2 effects of a predictor. In that session I ended by noting alternative approaches that reduce bias <span class="citation" data-cites="Ludtke2008">(mainly from <a href="#ref-Ludtke2008" role="doc-biblioref">Lüdtke et al. 2008</a>)</span>. That lead me also consider the use of Bayesian methods for group mean centering, which will be demonstrated in this post. <span class="citation" data-cites="Zitzmann2015">(Turns out <a href="#ref-Zitzmann2015" role="doc-biblioref">Zitzmann, Lüdtke, and Robitzsch 2015</a> has already discussed something similar, but still a good exercise.)</span></p>
+<section id="the-problem" class="level2">
+<h2 class="anchored" data-anchor-id="the-problem">The Problem</h2>
+<p>In some social scienc research, a predictor can have different meanings at different levels. For example, student’s competence, when aggregated to the school level, becomes the competitiveness of a school. As explained in the <a href="https://en.wikipedia.org/wiki/Big-fish%E2%80%93little-pond_effect">big-fish-little-pond effect</a>, whereas the former can help an individual’s self-concept, being in a more competitive environment can hurt one’s self-concept. Traditionally, and still popular nowadays, we investigate the differential effects of a predictor, <span class="math inline">\(X_{ij}\)</span>, on an outcome at different levels by including the group means, <span class="math inline">\(\bar X_{.j}\)</span>, in the equation.</p>
+<p>The problem, however, is that unless each cluster (e.g., school) has a very large sample size, the group means will not be very reliable. This is true even when the measurement of <span class="math inline">\(X_{ij}\)</span> is perfectly reliable. This is not difficult to understand: just remember in intro stats we learn that the standard error of the sample mean is <span class="math inline">\(\sigma / \sqrt{N}\)</span>, so with limited <span class="math inline">\(N\)</span> our sample (group) mean can be quite different from the population (group) mean.</p>
+<p>What’s the problem when the group means are not reliable? Regression literature has shown that unreliability in the predictors lead to downwardly biased coefficients, which is what happen here. The way to account for that, in general, is to treat the unreliable as a latent variable, which is the approach discussed in <span class="citation" data-cites="Ludtke2008">Lüdtke et al. (<a href="#ref-Ludtke2008" role="doc-biblioref">2008</a>)</span> and also demonstrated later in this post.</p>
+</section>
+<section id="demonstration" class="level2">
+<h2 class="anchored" data-anchor-id="demonstration">Demonstration</h2>
+<p>Let’s compare the results using the well-known High School and Beyond Survey subsample discussed in the textbook by <span class="citation" data-cites="Raudenbush2002">Raudenbush and Bryk (<a href="#ref-Raudenbush2002" role="doc-biblioref">2002</a>)</span>. To illustrate the issue with unreliability of group means, I’ll use a subset of 800 cases, with a random sample of 5 cases from each school.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(haven)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lme4)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(brms)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rstan)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># rstan_options(auto_write = TRUE)</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># options(mc.cores = 2L)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>hsb <span class="ot">&lt;-</span> haven<span class="sc">::</span><span class="fu">read_sas</span>(<span class="st">'https://stats.idre.ucla.edu/wp-content/uploads/2016/02/hsb.sas7bdat'</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Select a subsample</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>hsb_sub <span class="ot">&lt;-</span> hsb <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(ID) <span class="sc">%&gt;%</span> <span class="fu">sample_n</span>(<span class="dv">5</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>hsb_sub</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 800 × 12
+# Groups:   ID [160]
+   ID     SIZE SECTOR PRACAD DISCLIM HIMINTY MEANSES MINORITY FEMALE    SES
+   &lt;chr&gt; &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;
+ 1 1224    842      0   0.35   1.60        0  -0.428        0      1 -0.478
+ 2 1224    842      0   0.35   1.60        0  -0.428        0      0  0.332
+ 3 1224    842      0   0.35   1.60        0  -0.428        0      1 -0.988
+ 4 1224    842      0   0.35   1.60        0  -0.428        0      0 -0.528
+ 5 1224    842      0   0.35   1.60        0  -0.428        0      1 -1.07 
+ 6 1288   1855      0   0.27   0.174       0   0.128        0      1  0.692
+ 7 1288   1855      0   0.27   0.174       0   0.128        0      0 -0.118
+ 8 1288   1855      0   0.27   0.174       0   0.128        0      0  1.26 
+ 9 1288   1855      0   0.27   0.174       0   0.128        1      1 -1.47 
+10 1288   1855      0   0.27   0.174       0   0.128        0      0  0.222
+# ℹ 790 more rows
+# ℹ 2 more variables: MATHACH &lt;dbl&gt;, `_MERGE` &lt;dbl&gt;</code></pre>
+</div>
+</div>
+<p>With the subsample, let’s study the association of socioeconomic status (<code>SES</code>) with math achievement (<code>MATHACH</code>) at the student level and the school level. The conventional way is to do group mean centering of <code>SES</code>, by computing the group means and the deviation of each <code>SES</code> score from the corresponding group mean.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>hsb_sub <span class="ot">&lt;-</span> hsb_sub <span class="sc">%&gt;%</span> <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">SES_gpm =</span> <span class="fu">ave</span>(SES, ID), <span class="at">SES_gpc =</span> SES <span class="sc">-</span> SES_gpm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>To make things simpler, the random slope of <code>SES</code> is not included. Also, one can study differential effects with grand mean centering <span class="citation" data-cites="Enders2007">(<a href="#ref-Enders2007" role="doc-biblioref">Enders and Tofighi 2007</a>)</span>, but still the group means should be added as a predictor, so the same issue with unreliability still applies.</p>
+<section id="group-mean-centering-with-lme4" class="level3">
+<h3 class="anchored" data-anchor-id="group-mean-centering-with-lme4">Group mean centering with <code>lme4</code></h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>m1_mer <span class="ot">&lt;-</span> <span class="fu">lmer</span>(MATHACH <span class="sc">~</span> SES_gpm <span class="sc">+</span> SES_gpc <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> ID), <span class="at">data =</span> hsb_sub)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(m1_mer)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear mixed model fit by REML ['lmerMod']
+Formula: MATHACH ~ SES_gpm + SES_gpc + (1 | ID)
+   Data: hsb_sub
+
+REML criterion at convergence: 5188.7
+
+Scaled residuals: 
+     Min       1Q   Median       3Q      Max 
+-2.74545 -0.75449  0.04934  0.75875  2.64005 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ ID       (Intercept)  3.13    1.769   
+ Residual             35.81    5.984   
+Number of obs: 800, groups:  ID, 160
+
+Fixed effects:
+            Estimate Std. Error t value
+(Intercept)  12.8714     0.2536   50.75
+SES_gpm       4.6564     0.4840    9.62
+SES_gpc       2.4229     0.3481    6.96
+
+Correlation of Fixed Effects:
+        (Intr) SES_gpm
+SES_gpm -0.005        
+SES_gpc  0.000  0.000 </code></pre>
+</div>
+</div>
+<p>So the results suggested that one unit difference <code>SES</code> is associated with 4.7 (<em>SE</em> = 0.48) units difference in mean <code>MATHACH</code> at the school level, but 2.4 (<em>SE</em> = 0.35) units difference in mean <code>MATHACH</code> at the student level.</p>
+<p>We can get the contextual effect by substracting the fixed effect coefficient of <code>SES_gpm</code> from that of <code>SES_gpc</code>, or by using the original <code>SES</code> variable <em>together with the group means</em>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>m1_mer2 <span class="ot">&lt;-</span> <span class="fu">lmer</span>(MATHACH <span class="sc">~</span> SES_gpm <span class="sc">+</span> SES <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> ID), <span class="at">data =</span> hsb_sub)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(m1_mer2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear mixed model fit by REML ['lmerMod']
+Formula: MATHACH ~ SES_gpm + SES + (1 | ID)
+   Data: hsb_sub
+
+REML criterion at convergence: 5188.7
+
+Scaled residuals: 
+     Min       1Q   Median       3Q      Max 
+-2.74545 -0.75449  0.04934  0.75875  2.64005 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ ID       (Intercept)  3.13    1.769   
+ Residual             35.81    5.984   
+Number of obs: 800, groups:  ID, 160
+
+Fixed effects:
+            Estimate Std. Error t value
+(Intercept)  12.8714     0.2536  50.750
+SES_gpm       2.2336     0.5962   3.746
+SES           2.4229     0.3481   6.960
+
+Correlation of Fixed Effects:
+        (Intr) SES_gp
+SES_gpm -0.004       
+SES      0.000 -0.584</code></pre>
+</div>
+</div>
+<p>The coefficient for <code>SES_gpm</code> is now the contextual effect. We can get a 95% confidence interval:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">confint</span>(m1_mer2, <span class="at">parm =</span> <span class="st">"beta_"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                2.5 %    97.5 %
+(Intercept) 12.374410 13.368315
+SES_gpm      1.066932  3.400232
+SES          1.740067  3.105664</code></pre>
+</div>
+</div>
+</section>
+<section id="same-analyses-with-bayesian-using-brms" class="level3">
+<h3 class="anchored" data-anchor-id="same-analyses-with-bayesian-using-brms">Same analyses with Bayesian using <code>brms</code></h3>
+<p>I use the <code>brms</code> package with the default priors:</p>
+<p><span class="math display">\[\begin{align*}
+  Y_{ij} &amp; \sim N(\mu_j + \beta_1 (X_{ij} - \bar X_{.j}), \sigma^2) \\
+  \mu_j &amp; \sim N(\beta_0 + \beta_2 \bar X_{.j}, \tau^2) \\
+  \beta &amp; \sim N(0, \infty) \\
+  \sigma &amp; \sim t_3(0, 10) \\
+  \tau &amp; \sim t_3(0, 10)
+\end{align*}\]</span></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>m1_brm <span class="ot">&lt;-</span> <span class="fu">brm</span>(MATHACH <span class="sc">~</span> SES_gpm <span class="sc">+</span> SES_gpc <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> ID), <span class="at">data =</span> hsb_sub, </span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>              <span class="at">control =</span> <span class="fu">list</span>(<span class="at">adapt_delta =</span> .<span class="dv">90</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 1).
+Chain 1: 
+Chain 1: Gradient evaluation took 8.5e-05 seconds
+Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.85 seconds.
+Chain 1: Adjust your expectations accordingly!
+Chain 1: 
+Chain 1: 
+Chain 1: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 1: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 1: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 1: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 1: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 1: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 1: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 1: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 1: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 1: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 1: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 1: 
+Chain 1:  Elapsed Time: 1.231 seconds (Warm-up)
+Chain 1:                0.585 seconds (Sampling)
+Chain 1:                1.816 seconds (Total)
+Chain 1: 
+
+SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 2).
+Chain 2: 
+Chain 2: Gradient evaluation took 4.5e-05 seconds
+Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.45 seconds.
+Chain 2: Adjust your expectations accordingly!
+Chain 2: 
+Chain 2: 
+Chain 2: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 2: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 2: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 2: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 2: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 2: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 2: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 2: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 2: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 2: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 2: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 2: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 2: 
+Chain 2:  Elapsed Time: 1.235 seconds (Warm-up)
+Chain 2:                0.583 seconds (Sampling)
+Chain 2:                1.818 seconds (Total)
+Chain 2: 
+
+SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 3).
+Chain 3: 
+Chain 3: Gradient evaluation took 4.5e-05 seconds
+Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 0.45 seconds.
+Chain 3: Adjust your expectations accordingly!
+Chain 3: 
+Chain 3: 
+Chain 3: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 3: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 3: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 3: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 3: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 3: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 3: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 3: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 3: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 3: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 3: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 3: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 3: 
+Chain 3:  Elapsed Time: 1.193 seconds (Warm-up)
+Chain 3:                0.585 seconds (Sampling)
+Chain 3:                1.778 seconds (Total)
+Chain 3: 
+
+SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 4).
+Chain 4: 
+Chain 4: Gradient evaluation took 8e-05 seconds
+Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.8 seconds.
+Chain 4: Adjust your expectations accordingly!
+Chain 4: 
+Chain 4: 
+Chain 4: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 4: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 4: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 4: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 4: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 4: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 4: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 4: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 4: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 4: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 4: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 4: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 4: 
+Chain 4:  Elapsed Time: 1.487 seconds (Warm-up)
+Chain 4:                0.585 seconds (Sampling)
+Chain 4:                2.072 seconds (Total)
+Chain 4: </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(m1_brm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> Family: gaussian 
+  Links: mu = identity; sigma = identity 
+Formula: MATHACH ~ SES_gpm + SES_gpc + (1 | ID) 
+   Data: hsb_sub (Number of observations: 800) 
+  Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+         total post-warmup draws = 4000
+
+Group-Level Effects: 
+~ID (Number of levels: 160) 
+              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sd(Intercept)     1.73      0.37     0.95     2.41 1.00     1035     1171
+
+Population-Level Effects: 
+          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+Intercept    12.87      0.25    12.38    13.37 1.00     3461     3012
+SES_gpm       4.65      0.49     3.70     5.60 1.00     3831     2324
+SES_gpc       2.43      0.35     1.75     3.12 1.00     6509     3278
+
+Family Specific Parameters: 
+      Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sigma     6.00      0.17     5.67     6.36 1.00     3018     2438
+
+Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+and Tail_ESS are effective sample size measures, and Rhat is the potential
+scale reduction factor on split chains (at convergence, Rhat = 1).</code></pre>
+</div>
+</div>
+<p>With Bayesian, the results are similar to those with <code>lme4</code>.</p>
+<p>We can summarize the posterior of the contextual effect:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>post_fixef <span class="ot">&lt;-</span> <span class="fu">posterior_samples</span>(m1_brm, <span class="at">pars =</span> <span class="fu">c</span>(<span class="st">"b_SES_gpm"</span>, <span class="st">"b_SES_gpc"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Method 'posterior_samples' is deprecated. Please see ?as_draws for
+recommended alternatives.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>post_contextual <span class="ot">&lt;-</span> <span class="fu">with</span>(post_fixef, b_SES_gpm <span class="sc">-</span> b_SES_gpc)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">c</span>(<span class="at">mean =</span> <span class="fu">mean</span>(post_contextual), <span class="at">median =</span> <span class="fu">median</span>(post_contextual), </span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">quantile</span>(post_contextual, <span class="fu">c</span>(.<span class="dv">025</span>, .<span class="dv">975</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>    mean   median     2.5%    97.5% 
+2.223545 2.237711 1.017085 3.437801 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> post_contextual), <span class="at">data =</span> <span class="fu">data_frame</span>(post_contextual)) <span class="sc">+</span> </span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_density</span>(<span class="at">bw =</span> <span class="st">"SJ"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: `data_frame()` was deprecated in tibble 1.1.0.
+ℹ Please use `tibble()` instead.</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="group-mean-centering-treating-group-means-as-latent-variables" class="level3">
+<h3 class="anchored" data-anchor-id="group-mean-centering-treating-group-means-as-latent-variables">Group mean centering treating group means as latent variables</h3>
+<p>Instead of treating the group means as known, we can instead treat them as latent variables: <span class="math display">\[X_{ij} \sim N(\mu_{Xj}, \sigma^2_X)\]</span></p>
+<p>and we can set up the model with the priors:</p>
+<p><span class="math display">\[\begin{align*}
+  Y_{ij} &amp; \sim N(\mu_j + \beta_1 (X_{ij} - \mu_{Xj}), \sigma^2) \\
+  X_{ij} &amp; \sim N(\mu_{Xj}, \sigma^2_X) \\
+  \mu_j &amp; \sim N(\beta_0 + \beta_2 \mu_{Xj}, \tau^2) \\
+  \mu_{Xj} &amp; \sim N(0, \tau^2_X) \\
+  \sigma &amp; \sim t_3(0, 10) \\
+  \tau &amp; \sim t_3(0, 10) \\
+  \sigma_X &amp; \sim t_3(0, 10) \\
+  \tau_X &amp; \sim t_3(0, 10) \\
+  \beta &amp; \sim N(0, 10) \\
+\end{align*}\]</span></p>
+<p>Notice that here we treat <span class="math inline">\(X\)</span> as an outcome variable with a random intercept, just like the way we model <span class="math inline">\(Y\)</span> when there is no predictor.</p>
+<p>Below is the STAN code for this model:</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>data { 
+  int&lt;lower=1&gt; N;  // total number of observations 
+  int&lt;lower=1&gt; J;  // number of clusters
+  int&lt;lower=1, upper=J&gt; gid[N]; 
+  vector[N] y;  // response variable 
+  int&lt;lower=1&gt; K;  // number of population-level effects 
+  matrix[N, K] X;  // population-level design matrix 
+  int&lt;lower=1&gt; q;  // index of which column needs group mean centering
+} 
+transformed data { 
+  int Kc = K - 1; 
+  matrix[N, K - 1] Xc;  // centered version of X 
+  vector[K - 1] means_X;  // column means of X before centering
+  vector[N] xc;  // the column of X to be decomposed
+  for (i in 2:K) { 
+    means_X[i - 1] = mean(X[, i]); 
+    Xc[, i - 1] = X[, i] - means_X[i - 1]; 
+  } 
+  xc = Xc[, q - 1];
+} 
+parameters { 
+  vector[Kc] b;  // population-level effects at level-1
+  real bm;  // population-level effects at level-2
+  real b0;  // intercept (with centered variables)
+  real&lt;lower=0&gt; sigma_y;  // residual SD 
+  real&lt;lower=0&gt; tau_y;  // group-level standard deviations 
+  vector[J] eta_y;  // normalized group-level effects of y
+  real&lt;lower=0&gt; sigma_x;  // residual SD 
+  real&lt;lower=0&gt; tau_x;  // group-level standard deviations 
+  vector[J] eta_x;  // normalized latent group means of x
+} 
+transformed parameters { 
+  // group means for x
+  vector[J] theta_x = tau_x * eta_x;  // group means of x
+  // group-level effects 
+  vector[J] theta_y = b0 + tau_y * eta_y + bm * theta_x;  // group intercepts of y
+  matrix[N, K - 1] Xw_c = Xc;  // copy the predictor matrix
+  Xw_c[ , q - 1] = xc - theta_x[gid];  // group mean centering
+} 
+model {
+  // prior specifications 
+  b ~ normal(0, 10); 
+  bm ~ normal(0, 10); 
+  sigma_y ~ student_t(3, 0, 10); 
+  tau_y ~ student_t(3, 0, 10); 
+  eta_y ~ std_normal(); 
+  sigma_x ~ student_t(3, 0, 10); 
+  tau_x ~ student_t(3, 0, 10); 
+  eta_x ~ std_normal(); 
+  xc ~ normal(theta_x[gid], sigma_x);  // prior for lv-1 predictor
+  // likelihood contribution 
+  y ~ normal(theta_y[gid] + Xw_c * b, sigma_y); 
+} 
+generated quantities {
+  // contextual effect
+  real b_contextual = bm - b[q - 1];
+}</code></pre>
+</div>
+</div>
+<p>And to run it in <code>rstan</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>hsb_sdata <span class="ot">&lt;-</span> <span class="fu">with</span>(hsb_sub, </span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>                  <span class="fu">list</span>(<span class="at">N =</span> <span class="fu">nrow</span>(hsb_sub), </span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>                       <span class="at">y =</span> MATHACH, </span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>                       <span class="at">K =</span> <span class="dv">2</span>, </span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>                       <span class="at">X =</span> <span class="fu">cbind</span>(<span class="dv">1</span>, SES), </span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>                       <span class="at">q =</span> <span class="dv">2</span>, </span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>                       <span class="at">gid =</span> <span class="fu">match</span>(ID, <span class="fu">unique</span>(ID)), </span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>                       <span class="at">J =</span> <span class="fu">length</span>(<span class="fu">unique</span>(ID))))</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>m2_stan <span class="ot">&lt;-</span> <span class="fu">stan</span>(<span class="st">"stan_gpc_pv.stan"</span>, <span class="at">data =</span> hsb_sdata, </span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>                <span class="at">chains =</span> 2L, <span class="at">iter =</span> 1000L, </span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>                <span class="at">pars =</span> <span class="fu">c</span>(<span class="st">"b0"</span>, <span class="st">"b"</span>, <span class="st">"bm"</span>, <span class="st">"b_contextual"</span>, <span class="st">"sigma_y"</span>, <span class="st">"tau_y"</span>, </span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"sigma_x"</span>, <span class="st">"tau_x"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: There were 1 divergent transitions after warmup. See
+https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
+to find out why this is a problem and how to eliminate them.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Examine the pairs() plot to diagnose sampling problems</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
+Running the chains for more iterations may help. See
+https://mc-stan.org/misc/warnings.html#bulk-ess</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
+Running the chains for more iterations may help. See
+https://mc-stan.org/misc/warnings.html#tail-ess</code></pre>
+</div>
+</div>
+<p>The results are shown below:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(m2_stan, <span class="at">pars =</span> <span class="st">"lp__"</span>, <span class="at">include =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Inference for Stan model: anon_model.
+2 chains, each with iter=1000; warmup=500; thin=1; 
+post-warmup draws per chain=500, total post-warmup draws=1000.
+
+              mean se_mean   sd  2.5%   25%   50%   75% 97.5% n_eff Rhat
+b0           12.88    0.01 0.26 12.35 12.72 12.88 13.07 13.40   675 1.00
+b[1]          2.41    0.01 0.35  1.75  2.17  2.41  2.63  3.09   668 1.00
+bm            5.89    0.04 0.77  4.44  5.37  5.87  6.41  7.39   379 1.01
+b_contextual  3.49    0.05 0.90  1.72  2.87  3.49  4.08  5.28   311 1.01
+sigma_y       6.00    0.01 0.18  5.65  5.88  6.01  6.12  6.35   349 1.00
+tau_y         1.41    0.05 0.53  0.19  1.08  1.46  1.80  2.27   104 1.01
+sigma_x       0.68    0.00 0.02  0.65  0.67  0.68  0.70  0.72   721 1.00
+tau_x         0.43    0.00 0.04  0.36  0.40  0.42  0.45  0.50   302 1.02
+
+Samples were drawn using NUTS(diag_e) at Tue Jun 13 20:40:46 2023.
+For each parameter, n_eff is a crude measure of effective sample size,
+and Rhat is the potential scale reduction factor on split chains (at 
+convergence, Rhat=1).</code></pre>
+</div>
+</div>
+<p>Note that the coefficient of <code>SES</code> at level-2 now has a posterior mean of 5.9 with a posterior <em>SD</em> of 0.77, and the contextual effect has a posterior mean of 3.5 with a posterior <em>SD</em> of 0.9</p>
+<section id="two-step-approach-using-brms" class="level4">
+<h4 class="anchored" data-anchor-id="two-step-approach-using-brms">Two-step approach using <code>brms</code></h4>
+<section id="step-1-estimating-measurement-error-in-observed-means" class="level5">
+<h5 class="anchored" data-anchor-id="step-1-estimating-measurement-error-in-observed-means">Step 1: estimating measurement error in observed means</h5>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>m_ses <span class="ot">&lt;-</span> <span class="fu">lmer</span>(SES <span class="sc">~</span> (<span class="dv">1</span> <span class="sc">|</span> ID), <span class="at">data =</span> hsb_sub)</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(m_ses)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear mixed model fit by REML ['lmerMod']
+Formula: SES ~ (1 | ID)
+   Data: hsb_sub
+
+REML criterion at convergence: 1830.9
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-4.8031 -0.6035  0.0062  0.6787  2.3937 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ ID       (Intercept) 0.1839   0.4289  
+ Residual             0.4617   0.6795  
+Number of obs: 800, groups:  ID, 160
+
+Fixed effects:
+            Estimate Std. Error t value
+(Intercept) 0.002775   0.041555   0.067</code></pre>
+</div>
+</div>
+<p>Extract measurement estimates:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># sigma_x</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>sigmax <span class="ot">&lt;-</span> <span class="fu">sigma</span>(m_ses)</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Add to data</span></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>hsb_sub <span class="ot">&lt;-</span> hsb_sub <span class="sc">%&gt;%</span> </span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(ID) <span class="sc">%&gt;%</span> </span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">SES_gpm_se =</span> sigmax <span class="sc">/</span> <span class="fu">sqrt</span>(<span class="fu">n</span>())) <span class="sc">%&gt;%</span> </span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Fit MLM, incorporating measurement error in latent group means:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>m1_brm_lm <span class="ot">&lt;-</span> <span class="fu">brm</span>(MATHACH <span class="sc">~</span> <span class="fu">me</span>(SES_gpm, <span class="at">sdx =</span> SES_gpm_se, <span class="at">gr =</span> ID) <span class="sc">+</span> </span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>                   SES <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> ID), </span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>                 <span class="at">data =</span> hsb_sub, </span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>                 <span class="at">control =</span> <span class="fu">list</span>(<span class="at">adapt_delta =</span> .<span class="dv">99</span>, </span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>                                <span class="at">max_treedepth =</span> <span class="dv">15</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 1).
+Chain 1: 
+Chain 1: Gradient evaluation took 8.9e-05 seconds
+Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.89 seconds.
+Chain 1: Adjust your expectations accordingly!
+Chain 1: 
+Chain 1: 
+Chain 1: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 1: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 1: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 1: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 1: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 1: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 1: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 1: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 1: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 1: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 1: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 1: 
+Chain 1:  Elapsed Time: 8.854 seconds (Warm-up)
+Chain 1:                4.871 seconds (Sampling)
+Chain 1:                13.725 seconds (Total)
+Chain 1: 
+
+SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 2).
+Chain 2: 
+Chain 2: Gradient evaluation took 8e-05 seconds
+Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.8 seconds.
+Chain 2: Adjust your expectations accordingly!
+Chain 2: 
+Chain 2: 
+Chain 2: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 2: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 2: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 2: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 2: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 2: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 2: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 2: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 2: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 2: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 2: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 2: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 2: 
+Chain 2:  Elapsed Time: 9.322 seconds (Warm-up)
+Chain 2:                4.803 seconds (Sampling)
+Chain 2:                14.125 seconds (Total)
+Chain 2: 
+
+SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 3).
+Chain 3: 
+Chain 3: Gradient evaluation took 8.6e-05 seconds
+Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 0.86 seconds.
+Chain 3: Adjust your expectations accordingly!
+Chain 3: 
+Chain 3: 
+Chain 3: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 3: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 3: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 3: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 3: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 3: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 3: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 3: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 3: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 3: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 3: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 3: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 3: 
+Chain 3:  Elapsed Time: 6.35 seconds (Warm-up)
+Chain 3:                4.763 seconds (Sampling)
+Chain 3:                11.113 seconds (Total)
+Chain 3: 
+
+SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 4).
+Chain 4: 
+Chain 4: Gradient evaluation took 8.2e-05 seconds
+Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.82 seconds.
+Chain 4: Adjust your expectations accordingly!
+Chain 4: 
+Chain 4: 
+Chain 4: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 4: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 4: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 4: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 4: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 4: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 4: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 4: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 4: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 4: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 4: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 4: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 4: 
+Chain 4:  Elapsed Time: 9.541 seconds (Warm-up)
+Chain 4:                3.425 seconds (Sampling)
+Chain 4:                12.966 seconds (Total)
+Chain 4: </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(m1_brm_lm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> Family: gaussian 
+  Links: mu = identity; sigma = identity 
+Formula: MATHACH ~ me(SES_gpm, sdx = SES_gpm_se, gr = ID) + SES + (1 | ID) 
+   Data: hsb_sub (Number of observations: 800) 
+  Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+         total post-warmup draws = 4000
+
+Group-Level Effects: 
+~ID (Number of levels: 160) 
+              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sd(Intercept)     1.41      0.49     0.26     2.25 1.01      600      565
+
+Population-Level Effects: 
+                               Estimate Est.Error l-95% CI u-95% CI Rhat
+Intercept                         12.87      0.26    12.35    13.38 1.00
+SES                                2.39      0.35     1.70     3.08 1.00
+meSES_gpmsdxEQSES_gpm_segrEQID     3.49      0.91     1.73     5.29 1.00
+                               Bulk_ESS Tail_ESS
+Intercept                          5076     3543
+SES                                2459     2861
+meSES_gpmsdxEQSES_gpm_segrEQID     1349     2186
+
+Family Specific Parameters: 
+      Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sigma     6.01      0.17     5.68     6.33 1.00     2932     2863
+
+Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+and Tail_ESS are effective sample size measures, and Rhat is the potential
+scale reduction factor on split chains (at convergence, Rhat = 1).</code></pre>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="with-random-slopes" class="level3">
+<h3 class="anchored" data-anchor-id="with-random-slopes">With random slopes</h3>
+<p>With <code>brms</code>, we have</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>m2_brm <span class="ot">&lt;-</span> <span class="fu">brm</span>(MATHACH <span class="sc">~</span> SES_gpm <span class="sc">+</span> SES_gpc <span class="sc">+</span> (SES_gpc <span class="sc">|</span> ID), <span class="at">data =</span> hsb_sub, </span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>              <span class="at">control =</span> <span class="fu">list</span>(<span class="at">max_treedepth =</span> <span class="dv">15</span>, <span class="at">adapt_delta =</span> .<span class="dv">90</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 1).
+Chain 1: 
+Chain 1: Gradient evaluation took 8.8e-05 seconds
+Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.88 seconds.
+Chain 1: Adjust your expectations accordingly!
+Chain 1: 
+Chain 1: 
+Chain 1: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 1: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 1: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 1: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 1: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 1: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 1: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 1: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 1: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 1: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 1: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 1: 
+Chain 1:  Elapsed Time: 2.83 seconds (Warm-up)
+Chain 1:                2.303 seconds (Sampling)
+Chain 1:                5.133 seconds (Total)
+Chain 1: 
+
+SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 2).
+Chain 2: 
+Chain 2: Gradient evaluation took 8.3e-05 seconds
+Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.83 seconds.
+Chain 2: Adjust your expectations accordingly!
+Chain 2: 
+Chain 2: 
+Chain 2: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 2: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 2: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 2: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 2: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 2: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 2: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 2: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 2: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 2: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 2: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 2: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 2: 
+Chain 2:  Elapsed Time: 3.583 seconds (Warm-up)
+Chain 2:                2.586 seconds (Sampling)
+Chain 2:                6.169 seconds (Total)
+Chain 2: 
+
+SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 3).
+Chain 3: 
+Chain 3: Gradient evaluation took 9.5e-05 seconds
+Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 0.95 seconds.
+Chain 3: Adjust your expectations accordingly!
+Chain 3: 
+Chain 3: 
+Chain 3: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 3: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 3: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 3: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 3: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 3: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 3: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 3: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 3: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 3: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 3: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 3: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 3: 
+Chain 3:  Elapsed Time: 3.43 seconds (Warm-up)
+Chain 3:                2.537 seconds (Sampling)
+Chain 3:                5.967 seconds (Total)
+Chain 3: 
+
+SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 4).
+Chain 4: 
+Chain 4: Gradient evaluation took 9.5e-05 seconds
+Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.95 seconds.
+Chain 4: Adjust your expectations accordingly!
+Chain 4: 
+Chain 4: 
+Chain 4: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 4: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 4: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 4: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 4: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 4: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 4: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 4: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 4: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 4: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 4: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 4: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 4: 
+Chain 4:  Elapsed Time: 3.48 seconds (Warm-up)
+Chain 4:                2.487 seconds (Sampling)
+Chain 4:                5.967 seconds (Total)
+Chain 4: </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
+Running the chains for more iterations may help. See
+https://mc-stan.org/misc/warnings.html#tail-ess</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(m2_brm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> Family: gaussian 
+  Links: mu = identity; sigma = identity 
+Formula: MATHACH ~ SES_gpm + SES_gpc + (SES_gpc | ID) 
+   Data: hsb_sub (Number of observations: 800) 
+  Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+         total post-warmup draws = 4000
+
+Group-Level Effects: 
+~ID (Number of levels: 160) 
+                       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS
+sd(Intercept)              1.71      0.41     0.80     2.41 1.01      636
+sd(SES_gpc)                1.00      0.65     0.04     2.38 1.00      970
+cor(Intercept,SES_gpc)     0.26      0.48    -0.81     0.96 1.00     2805
+                       Tail_ESS
+sd(Intercept)               345
+sd(SES_gpc)                1607
+cor(Intercept,SES_gpc)     2472
+
+Population-Level Effects: 
+          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+Intercept    12.87      0.25    12.39    13.38 1.00     5543     3367
+SES_gpm       4.66      0.47     3.72     5.58 1.00     4872     3029
+SES_gpc       2.41      0.37     1.68     3.15 1.00     7791     2632
+
+Family Specific Parameters: 
+      Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sigma     5.97      0.18     5.62     6.33 1.00     1590     1556
+
+Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+and Tail_ESS are effective sample size measures, and Rhat is the potential
+scale reduction factor on split chains (at convergence, Rhat = 1).</code></pre>
+</div>
+</div>
+<p>Below is the STAN code for this model incorporating the unreliability of group means:</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>data { 
+  int&lt;lower=1&gt; N;  // total number of observations 
+  int&lt;lower=1&gt; J;  // number of clusters
+  int&lt;lower=1, upper=J&gt; gid[N]; 
+  vector[N] y;  // response variable 
+  int&lt;lower=1&gt; K;  // number of population-level effects 
+  matrix[N, K] X;  // population-level design matrix 
+  int&lt;lower=1&gt; q;  // index of which column needs group mean centering
+} 
+transformed data { 
+  int Kc = K - 1; 
+  matrix[N, K - 1] Xc;  // centered version of X 
+  vector[K - 1] means_X;  // column means of X before centering
+  vector[N] xc;  // the column of X to be decomposed
+  for (i in 2:K) { 
+    means_X[i - 1] = mean(X[, i]); 
+    Xc[ , i - 1] = X[ , i] - means_X[i - 1]; 
+  } 
+  xc = Xc[ , q - 1];
+} 
+parameters { 
+  vector[Kc] b;  // population-level effects at level-1
+  real bm;  // population-level effects at level-2
+  real b0;  // intercept (with centered variables)
+  real&lt;lower=0&gt; sigma_y;  // residual SD 
+  vector&lt;lower=0&gt;[2] tau_y;  // group-level standard deviations 
+  matrix[2, J] z_u;  // normalized group-level effects 
+  real&lt;lower=0&gt; sigma_x;  // residual SD 
+  real&lt;lower=0&gt; tau_x;  // group-level standard deviations
+  cholesky_factor_corr[2] L_1; // Cholesky correlation factor of lv-2 residuals
+  vector[J] eta_x;  // unscaled group-level effects 
+} 
+transformed parameters { 
+  // group means for x
+  vector[J] theta_x = tau_x * eta_x;  // group means of x
+  // group-level effects of y
+  matrix[J, 2] u = (diag_pre_multiply(tau_y, L_1) * z_u)';
+} 
+model { 
+  // prior specifications 
+  b ~ normal(0, 10); 
+  bm ~ normal(0, 10); 
+  sigma_y ~ student_t(3, 0, 10); 
+  tau_y ~ student_t(3, 0, 10); 
+  L_1 ~ lkj_corr_cholesky(2);
+  // z_y ~ normal(0, 1);
+  to_vector(z_u) ~ normal(0, 1);
+  sigma_x ~ student_t(3, 0, 10); 
+  tau_x ~ student_t(3, 0, 10); 
+  eta_x ~ std_normal(); 
+  xc ~ normal(theta_x[gid], sigma_x);  // prior for lv-1 predictor
+  // likelihood contribution 
+  {
+    matrix[N, K - 1] Xw_c = Xc;  // copy the predictor matrix
+    vector[N] x_gpc = xc - theta_x[gid]; 
+    vector[J] beta0 = b0 + theta_x * bm + u[ , 1];
+    Xw_c[ , q - 1] = x_gpc;  // group mean centering
+    y ~ normal(beta0[gid] + Xw_c * b + u[gid, 2] .* x_gpc, 
+               sigma_y); 
+  }
+} 
+generated quantities {
+  // contextual effect
+  real b_contextual = bm - b[q - 1];
+}</code></pre>
+</div>
+</div>
+<p>And to run it in <code>rstan</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>hsb_sdata <span class="ot">&lt;-</span> <span class="fu">with</span>(hsb_sub, </span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>                  <span class="fu">list</span>(<span class="at">N =</span> <span class="fu">nrow</span>(hsb_sub), </span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>                       <span class="at">y =</span> MATHACH, </span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>                       <span class="at">K =</span> <span class="dv">2</span>, </span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>                       <span class="at">X =</span> <span class="fu">cbind</span>(<span class="dv">1</span>, SES), </span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>                       <span class="at">q =</span> <span class="dv">2</span>, </span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>                       <span class="at">gid =</span> <span class="fu">match</span>(ID, <span class="fu">unique</span>(ID)), </span>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a>                       <span class="at">J =</span> <span class="fu">length</span>(<span class="fu">unique</span>(ID))))</span>
+<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>m3_stan <span class="ot">&lt;-</span> <span class="fu">stan</span>(<span class="st">"stan_gpc_pv_ran_slp.stan"</span>, <span class="at">data =</span> hsb_sdata, </span>
+<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>                <span class="at">chains =</span> 2L, <span class="at">iter =</span> 1000L, </span>
+<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a>                <span class="at">control =</span> <span class="fu">list</span>(<span class="at">adapt_delta =</span> .<span class="dv">99</span>, <span class="at">max_treedepth =</span> <span class="dv">15</span>), </span>
+<span id="cb42-12"><a href="#cb42-12" aria-hidden="true" tabindex="-1"></a>                <span class="at">pars =</span> <span class="fu">c</span>(<span class="st">"b0"</span>, <span class="st">"b"</span>, <span class="st">"bm"</span>, <span class="st">"b_contextual"</span>, <span class="st">"sigma_y"</span>, <span class="st">"tau_y"</span>, </span>
+<span id="cb42-13"><a href="#cb42-13" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"sigma_x"</span>, <span class="st">"tau_x"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
+Running the chains for more iterations may help. See
+https://mc-stan.org/misc/warnings.html#bulk-ess</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
+Running the chains for more iterations may help. See
+https://mc-stan.org/misc/warnings.html#tail-ess</code></pre>
+</div>
+</div>
+<p>The results are shown below:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(m3_stan, <span class="at">pars =</span> <span class="st">"lp__"</span>, <span class="at">include =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Inference for Stan model: anon_model.
+2 chains, each with iter=1000; warmup=500; thin=1; 
+post-warmup draws per chain=500, total post-warmup draws=1000.
+
+              mean se_mean   sd  2.5%   25%   50%   75% 97.5% n_eff Rhat
+b0           12.89    0.01 0.26 12.39 12.72 12.87 13.06 13.40   959 1.00
+b[1]          2.39    0.02 0.36  1.68  2.15  2.38  2.64  3.09   545 1.01
+bm            5.86    0.05 0.79  4.33  5.31  5.81  6.40  7.46   244 1.01
+b_contextual  3.47    0.07 0.93  1.75  2.79  3.45  4.11  5.29   189 1.01
+sigma_y       5.98    0.01 0.17  5.64  5.85  5.98  6.10  6.30   749 1.00
+tau_y[1]      1.40    0.04 0.46  0.45  1.14  1.43  1.73  2.18   130 1.02
+tau_y[2]      0.83    0.04 0.55  0.02  0.37  0.78  1.23  1.99   205 1.00
+sigma_x       0.68    0.00 0.02  0.64  0.67  0.68  0.69  0.72  1175 1.00
+tau_x         0.43    0.00 0.04  0.36  0.40  0.43  0.45  0.50   437 1.01
+
+Samples were drawn using NUTS(diag_e) at Tue Jun 13 20:44:14 2023.
+For each parameter, n_eff is a crude measure of effective sample size,
+and Rhat is the potential scale reduction factor on split chains (at 
+convergence, Rhat=1).</code></pre>
+</div>
+</div>
+<section id="using-two-step-with-brms" class="level4">
+<h4 class="anchored" data-anchor-id="using-two-step-with-brms">Using two-step with <code>brms</code></h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>m3_brm_lm <span class="ot">&lt;-</span> <span class="fu">brm</span>(MATHACH <span class="sc">~</span> <span class="fu">me</span>(SES_gpm, <span class="at">sdx =</span> SES_gpm_se, <span class="at">gr =</span> ID) <span class="sc">+</span> </span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>                   SES <span class="sc">+</span> </span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>                   (SES_gpc <span class="sc">|</span> ID), </span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>                 <span class="at">data =</span> hsb_sub, </span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>                 <span class="at">control =</span> <span class="fu">list</span>(<span class="at">adapt_delta =</span> .<span class="dv">99</span>, </span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>                                <span class="at">max_treedepth =</span> <span class="dv">15</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 1).
+Chain 1: 
+Chain 1: Gradient evaluation took 0.000136 seconds
+Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 1.36 seconds.
+Chain 1: Adjust your expectations accordingly!
+Chain 1: 
+Chain 1: 
+Chain 1: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 1: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 1: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 1: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 1: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 1: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 1: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 1: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 1: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 1: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 1: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 1: 
+Chain 1:  Elapsed Time: 19.781 seconds (Warm-up)
+Chain 1:                7.743 seconds (Sampling)
+Chain 1:                27.524 seconds (Total)
+Chain 1: 
+
+SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 2).
+Chain 2: 
+Chain 2: Gradient evaluation took 0.000133 seconds
+Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 1.33 seconds.
+Chain 2: Adjust your expectations accordingly!
+Chain 2: 
+Chain 2: 
+Chain 2: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 2: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 2: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 2: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 2: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 2: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 2: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 2: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 2: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 2: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 2: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 2: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 2: 
+Chain 2:  Elapsed Time: 16.357 seconds (Warm-up)
+Chain 2:                7.146 seconds (Sampling)
+Chain 2:                23.503 seconds (Total)
+Chain 2: 
+
+SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 3).
+Chain 3: 
+Chain 3: Gradient evaluation took 0.000131 seconds
+Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 1.31 seconds.
+Chain 3: Adjust your expectations accordingly!
+Chain 3: 
+Chain 3: 
+Chain 3: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 3: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 3: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 3: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 3: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 3: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 3: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 3: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 3: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 3: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 3: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 3: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 3: 
+Chain 3:  Elapsed Time: 17.364 seconds (Warm-up)
+Chain 3:                7.121 seconds (Sampling)
+Chain 3:                24.485 seconds (Total)
+Chain 3: 
+
+SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 4).
+Chain 4: 
+Chain 4: Gradient evaluation took 0.00044 seconds
+Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 4.4 seconds.
+Chain 4: Adjust your expectations accordingly!
+Chain 4: 
+Chain 4: 
+Chain 4: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 4: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 4: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 4: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 4: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 4: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 4: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 4: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 4: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 4: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 4: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 4: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 4: 
+Chain 4:  Elapsed Time: 21.034 seconds (Warm-up)
+Chain 4:                7.144 seconds (Sampling)
+Chain 4:                28.178 seconds (Total)
+Chain 4: </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(m3_brm_lm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> Family: gaussian 
+  Links: mu = identity; sigma = identity 
+Formula: MATHACH ~ me(SES_gpm, sdx = SES_gpm_se, gr = ID) + SES + (SES_gpc | ID) 
+   Data: hsb_sub (Number of observations: 800) 
+  Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+         total post-warmup draws = 4000
+
+Group-Level Effects: 
+~ID (Number of levels: 160) 
+                       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS
+sd(Intercept)              1.43      0.50     0.28     2.28 1.01      522
+sd(SES_gpc)                1.03      0.65     0.04     2.36 1.00      779
+cor(Intercept,SES_gpc)     0.23      0.49    -0.81     0.96 1.00     1761
+                       Tail_ESS
+sd(Intercept)               557
+sd(SES_gpc)                1634
+cor(Intercept,SES_gpc)     1859
+
+Population-Level Effects: 
+                               Estimate Est.Error l-95% CI u-95% CI Rhat
+Intercept                         12.87      0.26    12.36    13.39 1.00
+SES                                2.39      0.37     1.68     3.10 1.00
+meSES_gpmsdxEQSES_gpm_segrEQID     3.50      0.94     1.74     5.40 1.00
+                               Bulk_ESS Tail_ESS
+Intercept                          5703     2843
+SES                                2915     2288
+meSES_gpmsdxEQSES_gpm_segrEQID     1469     2343
+
+Family Specific Parameters: 
+      Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sigma     5.97      0.18     5.64     6.33 1.00     1952     2279
+
+Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+and Tail_ESS are effective sample size measures, and Rhat is the potential
+scale reduction factor on split chains (at convergence, Rhat = 1).</code></pre>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="using-the-full-data" class="level2">
+<h2 class="anchored" data-anchor-id="using-the-full-data">Using the Full Data</h2>
+<section id="with-lme4" class="level3">
+<h3 class="anchored" data-anchor-id="with-lme4">With <code>lme4</code></h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>hsb <span class="ot">&lt;-</span> hsb <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">SES_gpm =</span> <span class="fu">ave</span>(SES, ID), <span class="at">SES_gpc =</span> SES <span class="sc">-</span> SES_gpm)</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>mfull_mer <span class="ot">&lt;-</span> <span class="fu">lmer</span>(MATHACH <span class="sc">~</span> SES_gpm <span class="sc">+</span> SES_gpc <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> ID), <span class="at">data =</span> hsb)</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(mfull_mer)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear mixed model fit by REML ['lmerMod']
+Formula: MATHACH ~ SES_gpm + SES_gpc + (1 | ID)
+   Data: hsb
+
+REML criterion at convergence: 46568.6
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-3.1666 -0.7254  0.0174  0.7558  2.9454 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ ID       (Intercept)  2.693   1.641   
+ Residual             37.019   6.084   
+Number of obs: 7185, groups:  ID, 160
+
+Fixed effects:
+            Estimate Std. Error t value
+(Intercept)  12.6833     0.1494   84.91
+SES_gpm       5.8662     0.3617   16.22
+SES_gpc       2.1912     0.1087   20.16
+
+Correlation of Fixed Effects:
+        (Intr) SES_gpm
+SES_gpm 0.010         
+SES_gpc 0.000  0.000  </code></pre>
+</div>
+</div>
+</section>
+<section id="with-bayesian-taking-into-account-the-unreliability" class="level3">
+<h3 class="anchored" data-anchor-id="with-bayesian-taking-into-account-the-unreliability">With Bayesian taking into account the unreliability</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>hsb_sdata <span class="ot">&lt;-</span> <span class="fu">with</span>(hsb, </span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>                  <span class="fu">list</span>(<span class="at">N =</span> <span class="fu">nrow</span>(hsb), </span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>                       <span class="at">y =</span> MATHACH, </span>
+<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a>                       <span class="at">K =</span> <span class="dv">2</span>, </span>
+<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a>                       <span class="at">X =</span> <span class="fu">cbind</span>(<span class="dv">1</span>, SES), </span>
+<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a>                       <span class="at">q =</span> <span class="dv">2</span>, </span>
+<span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a>                       <span class="at">gid =</span> <span class="fu">match</span>(ID, <span class="fu">unique</span>(ID)), </span>
+<span id="cb53-8"><a href="#cb53-8" aria-hidden="true" tabindex="-1"></a>                       <span class="at">J =</span> <span class="fu">length</span>(<span class="fu">unique</span>(ID))))</span>
+<span id="cb53-9"><a href="#cb53-9" aria-hidden="true" tabindex="-1"></a><span class="co"># This takes about 4 minutes on my computer</span></span>
+<span id="cb53-10"><a href="#cb53-10" aria-hidden="true" tabindex="-1"></a>m2full_stan <span class="ot">&lt;-</span> <span class="fu">stan</span>(<span class="st">"stan_gpc_pv.stan"</span>, <span class="at">data =</span> hsb_sdata, </span>
+<span id="cb53-11"><a href="#cb53-11" aria-hidden="true" tabindex="-1"></a>                    <span class="at">chains =</span> 2L, <span class="at">iter =</span> 1000L, </span>
+<span id="cb53-12"><a href="#cb53-12" aria-hidden="true" tabindex="-1"></a>                    <span class="at">pars =</span> <span class="fu">c</span>(<span class="st">"b0"</span>, <span class="st">"b"</span>, <span class="st">"bm"</span>, <span class="st">"b_contextual"</span>, </span>
+<span id="cb53-13"><a href="#cb53-13" aria-hidden="true" tabindex="-1"></a>                            <span class="st">"sigma_y"</span>, <span class="st">"tau_y"</span>, <span class="st">"sigma_x"</span>, <span class="st">"tau_x"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
+Running the chains for more iterations may help. See
+https://mc-stan.org/misc/warnings.html#bulk-ess</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(m2full_stan, <span class="at">pars =</span> <span class="st">"lp__"</span>, <span class="at">include =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Inference for Stan model: anon_model.
+2 chains, each with iter=1000; warmup=500; thin=1; 
+post-warmup draws per chain=500, total post-warmup draws=1000.
+
+              mean se_mean   sd  2.5%   25%   50%   75% 97.5% n_eff Rhat
+b0           12.68    0.01 0.15 12.37 12.58 12.67 12.78 12.98   314 1.00
+b[1]          2.19    0.00 0.11  1.97  2.12  2.18  2.26  2.40   887 1.00
+bm            6.05    0.02 0.38  5.28  5.82  6.06  6.33  6.74   337 1.00
+b_contextual  3.86    0.02 0.40  3.02  3.62  3.88  4.14  4.61   344 1.01
+sigma_y       6.08    0.00 0.05  5.99  6.05  6.08  6.12  6.19  2004 1.00
+tau_y         1.61    0.01 0.13  1.36  1.52  1.61  1.69  1.89   342 1.00
+sigma_x       0.67    0.00 0.01  0.66  0.66  0.67  0.67  0.68  2052 1.00
+tau_x         0.40    0.00 0.02  0.36  0.39  0.40  0.42  0.45   158 1.01
+
+Samples were drawn using NUTS(diag_e) at Tue Jun 13 20:47:13 2023.
+For each parameter, n_eff is a crude measure of effective sample size,
+and Rhat is the potential scale reduction factor on split chains (at 
+convergence, Rhat=1).</code></pre>
+</div>
+</div>
+<p>Note that with higher reliabilities, the results are more similar. Also, the results accounting for unreliability with the subset is much closer to the results with the full sample.</p>
+</section>
+</section>
+<section id="bibliography" class="level2">
+
+
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography"><h2 class="anchored quarto-appendix-heading">Bibliography</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-Enders2007" class="csl-entry" role="listitem">
+Enders, Craig K., and Davood Tofighi. 2007. <span>“<span class="nocase">Centering predictor variables in cross-sectional multilevel models: A new look at an old issue.</span>”</span> <em>Psychological Methods</em> 12: 121–38. <a href="https://doi.org/10.1037/1082-989X.12.2.121">https://doi.org/10.1037/1082-989X.12.2.121</a>.
+</div>
+<div id="ref-Ludtke2008" class="csl-entry" role="listitem">
+Lüdtke, Oliver, Herbert W. Marsh, Alexander Robitzsch, Ulrich Trautwein, Tihomir Asparouhov, and Bengt Muthén. 2008. <span>“<span class="nocase">The multilevel latent covariate model: A new, more reliable approach to group-level effects in contextual studies.</span>”</span> <em>Psychological Methods</em> 13: 203–29. <a href="https://doi.org/10.1037/a0012869">https://doi.org/10.1037/a0012869</a>.
+</div>
+<div id="ref-Raudenbush2002" class="csl-entry" role="listitem">
+Raudenbush, Stephen W., and Anthony S. Bryk. 2002. <em><span class="nocase">Hierarchical linear models: Applications and data analysis methods</span></em>. 2nd ed. Thousand Oaks, CA: Sage.
+</div>
+<div id="ref-Zitzmann2015" class="csl-entry" role="listitem">
+Zitzmann, Steffen, Oliver Lüdtke, and Alexander Robitzsch. 2015. <span>“<span class="nocase">A Bayesian approach to more stable estimates of group-level effects in contextual studies</span>.”</span> <em>Multivariate Behavioral Research</em> 50: 688–705. <a href="https://doi.org/10.1080/00273171.2015.1090899">https://doi.org/10.1080/00273171.2015.1090899</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">Copyright 2023, Hok Chio (Mark) Lai</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+</body></html>

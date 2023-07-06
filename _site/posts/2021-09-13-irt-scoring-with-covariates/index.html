@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.433">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Mark Lai">
+<meta name="dcterms.date" content="2021-09-13">
+
+<title>Mark Lai - IRT Scoring With Covariates</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-NLMBWPMFDG"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-NLMBWPMFDG', { 'anonymize_ip': true});
+</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Mark Lai</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../index.html" rel="" target="">
+ <span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../post.html" rel="" target="">
+ <span class="menu-text">Posts</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../publication.html" rel="" target="">
+ <span class="menu-text">Publications</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../software.html" rel="" target="">
+ <span class="menu-text">Software</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../course.html" rel="" target="">
+ <span class="menu-text">Courses</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../presentation.html" rel="" target="">
+ <span class="menu-text">Presentations</span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools ms-auto">
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#load-packages" id="toc-load-packages" class="nav-link active" data-scroll-target="#load-packages">Load Packages</a></li>
+  <li><a href="#simulate-data" id="toc-simulate-data" class="nav-link" data-scroll-target="#simulate-data">Simulate Data</a></li>
+  <li><a href="#irt-analayses" id="toc-irt-analayses" class="nav-link" data-scroll-target="#irt-analayses">IRT Analayses</a>
+  <ul class="collapse">
+  <li><a href="#single-group-with-no-covariates" id="toc-single-group-with-no-covariates" class="nav-link" data-scroll-target="#single-group-with-no-covariates">Single Group With No Covariates</a></li>
+  <li><a href="#multiple-group" id="toc-multiple-group" class="nav-link" data-scroll-target="#multiple-group">Multiple Group</a></li>
+  <li><a href="#compare-coefficients" id="toc-compare-coefficients" class="nav-link" data-scroll-target="#compare-coefficients">Compare Coefficients</a></li>
+  </ul></li>
+  <li><a href="#comparing-the-factor-scores" id="toc-comparing-the-factor-scores" class="nav-link" data-scroll-target="#comparing-the-factor-scores">Comparing the Factor Scores</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">IRT Scoring With Covariates</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">Statistics</div>
+  </div>
+  </div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Mark Lai </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 13, 2021</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<p>I was working on an extension to the two-stage path analysis <a href="../../publication/lai_etal_2021pm/">Lai &amp; Hsiao (2021)</a> related to integrative data analysis, and ran into an issue described in <a href="https://www.tandfonline.com/doi/abs/10.1080/10705511.2020.1724113">Davoudzadeh et al.&nbsp;(2021)</a> (which is a very inspiring paper). The basic idea is that when doing a multiple-group analysis to obtain factor scores, a multiple-group and a single-group approach generally give different results due to the different priors. This happens for both confirmatory factor analysis (CFA) and item response theory (IRT). The math can be found in the cited paper; here I just make some notes and show the differences.</p>
+<section id="load-packages" class="level2">
+<h2 class="anchored" data-anchor-id="load-packages">Load Packages</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mirt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: stats4</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: lattice</code></pre>
+</div>
+</div>
+</section>
+<section id="simulate-data" class="level2">
+<h2 class="anchored" data-anchor-id="simulate-data">Simulate Data</h2>
+<p>I’ll use the simulated data from the <code>mirt::multipleGroup()</code> function (see <code>?multipleGroup</code>). The two groups have different means (0 and 1) but the same SDs (1). Having different SDs make things a bit more complicated, so I avoided it here.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 15 items, 2 groups, each with n = 1000</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">12345</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>a <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">abs</span>(<span class="fu">rnorm</span>(<span class="dv">15</span>, <span class="dv">1</span>, .<span class="dv">3</span>)), <span class="at">ncol =</span> <span class="dv">1</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">rnorm</span>(<span class="dv">15</span>, <span class="dv">0</span>, .<span class="dv">7</span>), <span class="at">ncol =</span> <span class="dv">1</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>itemtype <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="st">'2PL'</span>, <span class="fu">nrow</span>(a))</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>N <span class="ot">&lt;-</span> <span class="dv">1000</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>sim_dat <span class="ot">&lt;-</span> <span class="fu">rbind</span>(</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">simdata</span>(a, d, N, itemtype),</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">simdata</span>(a, d, N, itemtype, <span class="at">mu =</span> <span class="dv">1</span>)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span> <span class="fu">as.data.frame</span>()</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>sim_dat<span class="sc">$</span>group <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">'D1'</span>, N), <span class="fu">rep</span>(<span class="st">'D2'</span>, N))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="irt-analayses" class="level2">
+<h2 class="anchored" data-anchor-id="irt-analayses">IRT Analayses</h2>
+<p>There are two ways to incorporate the group information: Multiple-group analyses and single-group analyses with the grouping variable as a covariate.</p>
+<section id="single-group-with-no-covariates" class="level3">
+<h3 class="anchored" data-anchor-id="single-group-with-no-covariates">Single Group With No Covariates</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>sg_irtfit <span class="ot">&lt;-</span> <span class="fu">mirt</span>(sim_dat[, <span class="dv">1</span><span class="sc">:</span><span class="dv">15</span>], <span class="at">model =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Iteration: 1, Log-Lik: -17563.859, Max-Change: 0.37567
+Iteration: 2, Log-Lik: -17439.794, Max-Change: 0.19031
+Iteration: 3, Log-Lik: -17415.336, Max-Change: 0.08938
+Iteration: 4, Log-Lik: -17409.343, Max-Change: 0.05436
+Iteration: 5, Log-Lik: -17407.219, Max-Change: 0.02927
+Iteration: 6, Log-Lik: -17406.462, Max-Change: 0.01671
+Iteration: 7, Log-Lik: -17406.087, Max-Change: 0.00705
+Iteration: 8, Log-Lik: -17406.009, Max-Change: 0.00448
+Iteration: 9, Log-Lik: -17405.972, Max-Change: 0.00319
+Iteration: 10, Log-Lik: -17405.942, Max-Change: 0.00108
+Iteration: 11, Log-Lik: -17405.938, Max-Change: 0.00084
+Iteration: 12, Log-Lik: -17405.935, Max-Change: 0.00065
+Iteration: 13, Log-Lik: -17405.931, Max-Change: 0.00010</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Factor score</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>fs1 <span class="ot">&lt;-</span> <span class="fu">fscores</span>(sg_irtfit)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>mimic_irtfit <span class="ot">&lt;-</span> <span class="fu">mirt</span>(sim_dat[, <span class="dv">1</span><span class="sc">:</span><span class="dv">15</span>], <span class="at">model =</span> <span class="dv">1</span>,</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>                     <span class="at">covdata =</span> sim_dat[, <span class="st">"group"</span>, <span class="at">drop =</span> <span class="cn">FALSE</span>],</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>                     <span class="at">formula =</span> <span class="sc">~</span> group)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Iteration: 1, Log-Lik: -17563.859, Max-Change: 0.70774
+Iteration: 2, Log-Lik: -17371.328, Max-Change: 0.20764
+Iteration: 3, Log-Lik: -17345.735, Max-Change: 0.13851
+Iteration: 4, Log-Lik: -17308.700, Max-Change: 0.11318
+Iteration: 5, Log-Lik: -17283.429, Max-Change: 0.08602
+Iteration: 6, Log-Lik: -17267.239, Max-Change: 0.06126
+Iteration: 7, Log-Lik: -17258.182, Max-Change: 0.04622
+Iteration: 8, Log-Lik: -17253.056, Max-Change: 0.03645
+Iteration: 9, Log-Lik: -17250.527, Max-Change: 0.02887
+Iteration: 10, Log-Lik: -17248.078, Max-Change: 0.01472
+Iteration: 11, Log-Lik: -17247.805, Max-Change: 0.00328
+Iteration: 12, Log-Lik: -17247.784, Max-Change: 0.00164
+Iteration: 13, Log-Lik: -17247.773, Max-Change: 0.00126
+Iteration: 14, Log-Lik: -17247.769, Max-Change: 0.00105
+Iteration: 15, Log-Lik: -17247.766, Max-Change: 0.00079
+Iteration: 16, Log-Lik: -17247.762, Max-Change: 0.00045
+Iteration: 17, Log-Lik: -17247.762, Max-Change: 0.00013
+Iteration: 18, Log-Lik: -17247.762, Max-Change: 0.00011
+Iteration: 19, Log-Lik: -17247.762, Max-Change: 0.00007</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Factor score</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>fs2 <span class="ot">&lt;-</span> <span class="fu">fscores</span>(mimic_irtfit)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="multiple-group" class="level3">
+<h3 class="anchored" data-anchor-id="multiple-group">Multiple Group</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>mg_irtfit <span class="ot">&lt;-</span> <span class="fu">multipleGroup</span>(</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  sim_dat[, <span class="dv">1</span><span class="sc">:</span><span class="dv">15</span>],</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">model =</span> <span class="dv">1</span>,</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">group =</span> sim_dat<span class="sc">$</span>group,</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">invariance =</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">c</span>(<span class="st">"free_means"</span>, <span class="st">"slopes"</span>, <span class="st">"intercepts"</span>)</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Iteration: 1, Log-Lik: -17563.859, Max-Change: 0.37617
+Iteration: 2, Log-Lik: -17363.419, Max-Change: 0.17124
+Iteration: 3, Log-Lik: -17323.202, Max-Change: 0.07469
+Iteration: 4, Log-Lik: -17305.002, Max-Change: 0.05986
+Iteration: 5, Log-Lik: -17292.975, Max-Change: 0.05443
+Iteration: 6, Log-Lik: -17284.074, Max-Change: 0.04842
+Iteration: 7, Log-Lik: -17277.118, Max-Change: 0.04322
+Iteration: 8, Log-Lik: -17271.567, Max-Change: 0.03816
+Iteration: 9, Log-Lik: -17267.107, Max-Change: 0.03421
+Iteration: 10, Log-Lik: -17259.260, Max-Change: 0.11071
+Iteration: 11, Log-Lik: -17252.001, Max-Change: 0.02217
+Iteration: 12, Log-Lik: -17251.059, Max-Change: 0.01457
+Iteration: 13, Log-Lik: -17250.118, Max-Change: 0.01677
+Iteration: 14, Log-Lik: -17249.644, Max-Change: 0.01040
+Iteration: 15, Log-Lik: -17249.285, Max-Change: 0.00864
+Iteration: 16, Log-Lik: -17248.750, Max-Change: 0.03253
+Iteration: 17, Log-Lik: -17248.087, Max-Change: 0.00731
+Iteration: 18, Log-Lik: -17248.018, Max-Change: 0.00380
+Iteration: 19, Log-Lik: -17247.913, Max-Change: 0.00828
+Iteration: 20, Log-Lik: -17247.867, Max-Change: 0.00216
+Iteration: 21, Log-Lik: -17247.848, Max-Change: 0.00198
+Iteration: 22, Log-Lik: -17247.816, Max-Change: 0.00714
+Iteration: 23, Log-Lik: -17247.782, Max-Change: 0.00110
+Iteration: 24, Log-Lik: -17247.778, Max-Change: 0.00095
+Iteration: 25, Log-Lik: -17247.774, Max-Change: 0.00296
+Iteration: 26, Log-Lik: -17247.767, Max-Change: 0.00066
+Iteration: 27, Log-Lik: -17247.766, Max-Change: 0.00049
+Iteration: 28, Log-Lik: -17247.765, Max-Change: 0.00230
+Iteration: 29, Log-Lik: -17247.763, Max-Change: 0.00020
+Iteration: 30, Log-Lik: -17247.762, Max-Change: 0.00016
+Iteration: 31, Log-Lik: -17247.762, Max-Change: 0.00065
+Iteration: 32, Log-Lik: -17247.762, Max-Change: 0.00010
+Iteration: 33, Log-Lik: -17247.762, Max-Change: 0.00012
+Iteration: 34, Log-Lik: -17247.762, Max-Change: 0.00010
+Iteration: 35, Log-Lik: -17247.762, Max-Change: 0.00008</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Factor score</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>fs3 <span class="ot">&lt;-</span> <span class="fu">fscores</span>(mg_irtfit)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="compare-coefficients" class="level3">
+<h3 class="anchored" data-anchor-id="compare-coefficients">Compare Coefficients</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The numbers are virtually the same; however, the single-group approach </span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="co"># standardizes on the combined data, whereas the MIMIC and the multiple-group</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co"># approaches standardize on just the first group. Therefore, a scale adjustment</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co"># will be needed to put the parameters on the same scale</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Scale adjustment factor:</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>total_sd <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="dv">1</span> <span class="sc">+</span> <span class="fu">coef</span>(mg_irtfit)<span class="sc">$</span>D2<span class="sc">$</span>GroupPars[<span class="dv">1</span>, <span class="st">"MEAN_1"</span>]<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> <span class="dv">4</span>)</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>sg_pars <span class="ot">&lt;-</span> <span class="fu">coef</span>(sg_irtfit, <span class="at">simplify =</span> <span class="cn">TRUE</span>)<span class="sc">$</span>items  <span class="co"># single-group (unadjusted)</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>sg_pars[, <span class="dv">1</span>] <span class="sc">/</span> total_sd  <span class="co"># discriminations with an approximate scale adjustment</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   Item_1    Item_2    Item_3    Item_4    Item_5    Item_6    Item_7    Item_8 
+1.1279379 1.2803483 0.9396957 0.8741506 1.1847194 0.4434912 1.2258472 0.9952438 
+   Item_9   Item_10   Item_11   Item_12   Item_13   Item_14   Item_15 
+1.0056366 0.6777604 0.8802975 1.4708279 1.2180373 1.1271193 0.7513079 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(mimic_irtfit, <span class="at">simplify =</span> <span class="cn">TRUE</span>)<span class="sc">$</span>items  <span class="co"># single-group with covariates</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>               a1           d g u
+Item_1  1.1344745  0.56141379 0 1
+Item_2  1.2748144 -0.71750014 0 1
+Item_3  0.9263239 -0.23168942 0 1
+Item_4  0.8788699  0.85739018 0 1
+Item_5  1.2010639  0.18724951 0 1
+Item_6  0.4345348  0.62056936 0 1
+Item_7  1.2176948  0.96014551 0 1
+Item_8  0.9742907 -0.42310233 0 1
+Item_9  1.0080648 -1.06816100 0 1
+Item_10 0.6773441 -1.05699733 0 1
+Item_11 0.8848418  1.22591144 0 1
+Item_12 1.4724849 -0.23745600 0 1
+Item_13 1.2160712  0.44539675 0 1
+Item_14 1.1248698  0.45726162 0 1
+Item_15 0.7457826 -0.06616818 0 1</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(mg_irtfit, <span class="at">simplify =</span> <span class="cn">TRUE</span>)<span class="sc">$</span>D1<span class="sc">$</span>items  <span class="co"># multiple-group</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>               a1           d g u
+Item_1  1.1344531  0.56249099 0 1
+Item_2  1.2744706 -0.71613006 0 1
+Item_3  0.9262275 -0.23080999 0 1
+Item_4  0.8788613  0.85822186 0 1
+Item_5  1.2009517  0.18839934 0 1
+Item_6  0.4345115  0.62096775 0 1
+Item_7  1.2178070  0.96135430 0 1
+Item_8  0.9741636 -0.42215719 0 1
+Item_9  1.0078107 -1.06705954 0 1
+Item_10 0.6772300 -1.05630348 0 1
+Item_11 0.8848795  1.22678453 0 1
+Item_12 1.4721600 -0.23594789 0 1
+Item_13 1.2160331  0.44655427 0 1
+Item_14 1.1248339  0.45832468 0 1
+Item_15 0.7457149 -0.06547177 0 1</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="comparing-the-factor-scores" class="level2">
+<h2 class="anchored" data-anchor-id="comparing-the-factor-scores">Comparing the Factor Scores</h2>
+<p>As shown below, the single-group approach gives different results then the MIMIC and the multiple-group approaches.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">cbind</span>(fs1, fs2, fs3))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>           F1        F1        F1
+1 -0.02550602 0.3402118 0.3394847
+2  0.77540259 1.1504818 1.1497899
+3  0.36027615 0.7367433 0.7361048
+4  0.65733506 1.0313568 1.0307768
+5  0.69447276 1.0671403 1.0665020
+6  0.53033799 0.9113015 0.9106491</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(fs1, fs2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/plot-sg-vs-mimic-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(fs1, fs3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/plot-sg-vs-mg-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>This is particularly problematic when looking at the mean differences across groups:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tapply</span>(fs1, sim_dat<span class="sc">$</span>group, mean)  <span class="co"># single-group; shrinkage applies to differences</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>        D1         D2 
+-0.3367292  0.3359305 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tapply</span>(fs2, sim_dat<span class="sc">$</span>group, mean)  <span class="co"># MIMIC; shrinkage does not apply to differences</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          D1           D2 
+0.0001759437 0.9643186768 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tapply</span>(fs3, sim_dat<span class="sc">$</span>group, mean)  <span class="co"># MGIRT; shrinkage does not apply to differences</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>           D1            D2 
+-0.0005464251  0.9634912005 </code></pre>
+</div>
+</div>
+<p>In <code>mirt</code>, one can change the prior to get factor scores for a pooled population:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>fs1_new <span class="ot">&lt;-</span> <span class="fu">fscores</span>(sg_irtfit,</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>                   <span class="co"># Use the mean implied from MGIRT</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">mean =</span> <span class="dv">0</span>,</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>                   <span class="at">cov =</span> total_sd)</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>fs2_new <span class="ot">&lt;-</span> <span class="fu">fscores</span>(mimic_irtfit, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">cov =</span> <span class="dv">1</span>)</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>fs3_new <span class="ot">&lt;-</span> <span class="fu">fscores</span>(mg_irtfit, </span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>                   <span class="at">mean =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>), <span class="at">cov =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>))</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a><span class="fu">tapply</span>(fs1_new, sim_dat<span class="sc">$</span>group, mean)  <span class="co"># single-group; shrinkage applies to differences</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>        D1         D2 
+-0.3428453  0.3502421 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tapply</span>(fs2_new, sim_dat<span class="sc">$</span>group, mean)  <span class="co"># MIMIC; shrinkage STILL does not apply to differences</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          D1           D2 
+0.0001759437 0.9643186768 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tapply</span>(fs3_new, sim_dat<span class="sc">$</span>group, mean)  <span class="co"># MGIRT; shrinkage applies to differences</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>           D1            D2 
+-0.0005464251  0.6886014934 </code></pre>
+</div>
+</div>
+<p>Now that the single-group and the multiple-group analyses are much closer (other than the difference in the means, as the single-group analysis sets the grand mean to 0, whereas the multiple-group analysis sets the mean of the first group to 0):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(fs1_new, fs3_new)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/plot-sg-vs-mg-new-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>However, it looks like with MIMIC needs a different kind of priors to do scoring.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(fs1_new, fs2_new)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/plot-sg-vs-mimic-new-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>As discussed in Davoudzadeh et al.&nbsp;(2021), the default options in getting factor scores in a multiple-group analysis may not be appropriate as it assumes different priors for different groups. This also happens when treating the grouping variable as a covariate, as in the MIMIC (multiple-indicator-multiple-causes) model, which is the basis of the moderated nonlinear factor analysis (Curran et al., doi: 10.1080/00273171.2014.889594)—an approach commonly used for integrative data analysis. This deserves attentions as if one is going to use factor scores to estimate differences among certain subgroups—either the original grouping variable (<span class="math inline">\(G\)</span>) in factor score estimation or some other variables related to <span class="math inline">\(G\)</span>, one gets different estimates depending on the different factor score approaches.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">Copyright 2023, Hok Chio (Mark) Lai</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+</body></html>

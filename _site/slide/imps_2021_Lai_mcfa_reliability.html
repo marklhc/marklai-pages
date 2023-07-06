@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Obtaining reliability for daily diary data using multilevel factor analysis</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Hok Chio (Mark) Lai, Feng Ji, Shi Chen" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Obtaining reliability for daily diary data using multilevel factor analysis
+### Hok Chio (Mark) Lai, Feng Ji, Shi Chen
+### University of Southern California, University of California, Berkeley, Northern Arizona University
+### 2021 IMPS
+
+---
+
+
+&lt;style type="text/css"&gt;
+.small-code { font-size: 50% }
+.remark-code {
+  font-size: 100%;
+}
+&lt;/style&gt;
+
+
+
+
+
+# Daily Diary Data (Positive Affect)
+
+&lt;img src="imps_2021_Lai_mcfa_reliability_files/figure-html/unnamed-chunk-2-1.png" width="80%" /&gt;
+
+
+
+`$$\newcommand{\bv}[1]{\boldsymbol{\mathbf{#1}}}$$`
+
+---
+
+# Multiple Items
+
+&lt;img src="imps_2021_Lai_mcfa_reliability_files/figure-html/unnamed-chunk-4-1.png" width="80%" /&gt;
+
+---
+
+# Composite/Scale Scores
+
+&lt;img src="imps_2021_Lai_mcfa_reliability_files/figure-html/unnamed-chunk-5-1.png" width="80%" /&gt;
+
+
+
+---
+
+# Person Mean And Deviation 
+
+&lt;img src="imps_2021_Lai_mcfa_reliability_files/figure-html/unnamed-chunk-7-1.png" width="80%" /&gt;
+
+---
+
+# Reliability is Not Commonly Reported for Diary Data
+
+PsycInfo ("daily diary" and "emotion", peer-reviewed, 2020 July 1 to December 31)
+
+- 15 articles; 14 with diary measures; 11 with multi-item measures
+    - Within-person/change reliability: 4
+    - Single reliability coefficient: 3
+    - None reported: 4
+
+--
+
+Approaches for level-specific reliability
+
+- Generalizability theory (GT; Cranford, et al., 2006; Shrout, et al., 2012)
+
+- Multilevel factor analysis (MFA; Geldhof, et al., 2014; Lai, 2021)
+
+---
+
+# Overview
+
+### GT as a special case of MFA
+
+### Reliability of person means (with sampling error)
+
+### Reliability of within-person deviations/Reliability of change
+
+### Do we have enough items?
+
+---
+
+# MFA
+
+.pull-left[
+
+&lt;img src="imps_2021_Lai_mcfa_reliability_files/figure-html/unnamed-chunk-8-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+]
+
+--
+
+.pull-right[
+
+### "Unconstrained" Multilevel Factor Model
+
+`\(i\)` indexes person; `\(t\)` indexes time
+
+`$$\bv Y_{ti} = \bv \nu + \underbrace{\bv \lambda^b \eta^b_i + \bv \epsilon^b_{i}}_\text{between model} + \underbrace{\bv \lambda^w_i \eta^w_{ti} + \bv \epsilon^w_{ti}}_\text{within model}$$`
+
+]
+
+---
+
+# GT as MFA
+
+.pull-left[
+
+&lt;img src="imps_2021_Lai_mcfa_reliability_files/figure-html/unnamed-chunk-9-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+]
+
+.pull-right[
+
+observations : (item × person)
+- Here I assume no day-specific variance
+
+(Essential) Parallel
+- `\(\lambda^b_j = \lambda^w_j = 1\)`
+- Constant uniqueness: `\(V(\epsilon^b_{ij}) = \theta^b\)` and 
+`\(V(\epsilon^w_{tij}) = \theta^w\)`
+
+]
+
+---
+
+# GT as MFA
+
+GT: `\(Y_{tij} = (\mu + I_j) + P_i + (PI)_{ij} + (TP)_{ti} + e_{tij}\)`
+
+MFA: `\(Y_{tij} = \nu_j + \lambda^b_j \eta^b_i + \epsilon^b_{ij} + \lambda^w_{ij} \eta^w_{ti} + \epsilon^w_{tij}\)`
+
+---
+
+# Types of Observed Scores
+
+- Raw Composite: `\(Z_{ti} = \sum_{j = 1}^p Y_{tij}\)`
+
+- Person Means: `\(\bar Z_{.i} = \sum_{t = 1}^n Z_{ti}\)`
+
+- Person deviation: `\(Z_{ti} - \bar Z_{.i}\)`
+
+.footnote[
+
+`\(n\)` = number of time points
+
+]
+
+---
+
+# Reliability of Person Means (Traits)
+
+.pull-left[
+
+&lt;img src="imps_2021_Lai_mcfa_reliability_files/figure-html/unnamed-chunk-10-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+]
+
+--
+
+.pull-left[
+
+`\(\bv \Sigma^w = \{\sigma^w_{j j'}\}\)` Within covariance
+
+`\(\bv \Sigma^b = \{\sigma^b_{j j'}\}\)` Between covariance
+
+Lai (2021):
+
+`$$\alpha^{b} = \frac{p}{p - 1}\left(\frac{\sum_{j \neq j'} \sigma^{b}_{j j'}}{\bv 1'\bv \Sigma^b \bv 1 + \underbrace{\color{red}{\bv 1' \bv \Sigma^w \bv 1 / \tilde n}}_{\text{sampling error}}}\right)$$`
+
+Sample person mean of `\(n\)` time points is not the same as the true person mean
+
+* Between reliability by Geldhof et al. (2014) ignores this sampling error
+
+]
+
+---
+
+# Reliability of Within-Person Deviations (States)
+
+Same as reliability of change/fluctuations
+
+.pull-left[
+
+&lt;img src="imps_2021_Lai_mcfa_reliability_files/figure-html/unnamed-chunk-11-1.png" width="50%" style="display: block; margin: auto;" /&gt;
+
+]
+
+--
+
+.pull-left[
+
+Lai (2021):
+
+`$$\alpha^{w} = \frac{p}{p - 1}\left(\frac{\sum_{k \neq k'} \sigma^{w}_{k k'}}{\bv 1' \bv \Sigma^w \bv 1}\right)$$`
+
+Between and within `\(\omega\)` reliability can be obtained by allowing different loadings across items
+
+]
+
+---
+
+# Example: Midlife in the United States
+
+Data from MIDUS 2: Daily Stress Project, 2004-2009 (Ryff et al., 2009)
+
+- 2,022 participants, 8 days each
+
+--
+
+- Target construct: Positive affect
+
+| Item     | Wording                          |
+| -------- | ---------------------------------|
+| b2dc24   | Did you feel attentive?          |
+| b2dc25   | Did you feel proud?              |
+| b2dc26   | Did you feel active?             |
+| b2dc27   | Did you feel confident?          |
+
+---
+
+.pull-left[
+
+Est `\(\text{ICC}(\eta) = .778\)`
+
+| Composite |Est `\(\alpha\)` | 95% CI       |Est `\(\omega\)` | 95% CI       |
+| --------- | ----------- | -------------| ----------- | -------------|
+| Raw       | .832        | [.820, .843] | .829        | [.817, .841] |
+| Within    | .646        | [.628, .664] | .645        | [.625, .662] |
+| Between   | .862        | [.849, .873] | .860        | [.817, .872] |
+
+]
+
+.pull-right[
+
+&lt;img src="images/mcfa11_pa.png" width="65%" style="display: block; margin: auto;" /&gt;
+
+]
+
+---
+
+# Equivalence of GT and Constrained MFA
+
+
+
+GT: 
+
+- Reliability of change (Cranford et al., 2006): `\(V(PI) / [V(PI) + V(e) / p]\)`
+
+
+```
+#&gt;    Rc 
+#&gt; 0.646
+```
+
+Constrained MFA:
+
+- `\(\rho^w\)` (Geldhof et al., 2014; Lai, 2021): `\(p^2 \psi^w / (p^2 \psi^w + p \theta^w)\)`
+
+
+
+
+```
+#&gt; rho^w 
+#&gt; 0.646
+```
+
+.footnote[
+
+`\(p\)` = number of items
+
+]
+
+---
+
+# R Function `multilevel_alpha()`
+
+https://github.com/marklhc/mcfa_reliability_supp/blob/master/multilevel_alpha.R
+
+
+
+.small-code[
+
+
+```r
+multilevel_alpha(d2_var[c("b2dc24", "b2dc25", "b2dc26", "b2dc27")], 
+                 id = d2_var$m2id)
+```
+
+```
+#&gt; Parallel analysis suggests that the number of factors =  NA  and the number of components =  1 
+#&gt; Parallel analysis suggests that the number of factors =  NA  and the number of components =  1
+```
+
+```
+#&gt; $alpha
+#&gt;   alpha2l    alphab    alphaw 
+#&gt; 0.8318040 0.8616034 0.6460802 
+#&gt; 
+#&gt; $alpha_ci
+#&gt;              2.5%     97.5%
+#&gt; alpha2l 0.8202014 0.8425253
+#&gt; alphab  0.8488781 0.8734602
+#&gt; alphaw  0.6269076 0.6638443
+#&gt; 
+#&gt; $omega
+#&gt;   omega2l    omegab    omegaw 
+#&gt; 0.8293460 0.8595804 0.6445232 
+#&gt; 
+#&gt; $omega_ci
+#&gt;              2.5%     97.5%
+#&gt; omega2l 0.8173008 0.8408357
+#&gt; omegab  0.8461517 0.8719812
+#&gt; omegaw  0.6259997 0.6620339
+#&gt; 
+#&gt; $ncomp
+#&gt;  within between 
+#&gt;       1       1
+```
+
+]
+
+---
+
+# Do We Have Enough Items to Capture Change?
+
+With 4 items, within-person reliability is only .646
+
+Spearman-Brown formula:
+
+&lt;img src="imps_2021_Lai_mcfa_reliability_files/figure-html/unnamed-chunk-19-1.png" width="70%" /&gt;
+
+Need 6 items for `\(\alpha^w &gt; .70\)`, 9 items for `\(\alpha^w &gt; .80\)`
+
+---
+
+# Conclusion
+
+- Reliability information needs to be more consistently reported for diary studies
+
+    * And tools are needed to make the computation more accessible
+    
+- Using one or two items may not allow reliable examination of change
+
+    * Esp when ICC is high
+    
+    * Choosing items with higher loadings may help
+    
+    * More scale validation in daily diary context helps researchers plan for sufficient reliability
+
+---
+
+# References
+
+Cranford, J. A. et al. (2006). "A procedure for evaluating sensitivity
+to within-person change: Can mood measures in diary studies detect
+change reliably?" In: _Personality and Social Psychology Bulletin_
+32.7, pp. 917-929. DOI:
+[10.1177/0146167206287721](https://doi.org/10.1177%2F0146167206287721).
+
+Geldhof, G. J. et al. (2014). "Reliability estimation in a multilevel
+confirmatory factor analysis framework". In: _Psychological Methods_
+19.1, pp. 72-91. DOI:
+[10.1037/a0032138](https://doi.org/10.1037%2Fa0032138).
+
+Lai, M. H. C. (2021). "Composite reliability of multilevel data: It’s
+about observed scores and construct meanings." In: _Psychological
+Methods_ 26 (1). DOI:
+[10.1037/met0000287](https://doi.org/10.1037%2Fmet0000287).
+
+Shrout, P. E. et al. (2012). "Psychometrics". In: _Handbook of Research
+Methods for Studying Daily Life_. New York, NY, US: The Guilford Press,
+pp. 302-320. ISBN: 978-1-60918-747-7 978-1-60918-749-1.
+
+---
+
+class: center, middle
+
+# Thanks!
+
+Slides created via the R package [**xaringan**](https://github.com/yihui/xaringan).
+
+The chakra comes from [remark.js](https://remarkjs.com), [**knitr**](https://yihui.org/knitr/), and [R Markdown](https://rmarkdown.rstudio.com).
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
