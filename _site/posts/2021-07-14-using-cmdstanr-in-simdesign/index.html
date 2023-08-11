@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.433">
+<meta name="generator" content="quarto-1.3.450">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -264,7 +264,7 @@ gtag('config', 'G-NLMBWPMFDG', { 'anonymize_ip': true});
 <span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>stan_path <span class="ot">&lt;-</span> <span class="fu">write_stan_file</span>(bmean_stan)</span>
 <span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>mod <span class="ot">&lt;-</span> <span class="fu">cmdstan_model</span>(stan_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Warning in '/tmp/Rtmpma4Flb/model-39a57203b445.stan', line 4, column 8: Declaration
+<pre><code>Warning in '/tmp/RtmpHtprEm/model-37ada485ded21.stan', line 4, column 8: Declaration
     of arrays by placing brackets after a variable name is deprecated and
     will be removed in Stan 2.33.0. Instead use the array keyword before the
     type. This can be changed automatically using the auto-format flag to
@@ -310,41 +310,41 @@ Number of parallel clusters in use: 2</code></pre>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 
-Design row: 1/8;   Started: Wed Jun 14 09:50:08 2023;   Total elapsed time: 0.00s 
+Design row: 1/8;   Started: Thu Aug 10 22:59:33 2023;   Total elapsed time: 0.00s 
  Conditions: sample_size=30, distribution=norm
 
 
-Design row: 2/8;   Started: Wed Jun 14 09:50:16 2023;   Total elapsed time: 7.27s 
+Design row: 2/8;   Started: Thu Aug 10 22:59:38 2023;   Total elapsed time: 5.14s 
  Conditions: sample_size=60, distribution=norm
 
 
-Design row: 3/8;   Started: Wed Jun 14 09:50:22 2023;   Total elapsed time: 13.84s 
+Design row: 3/8;   Started: Thu Aug 10 22:59:43 2023;   Total elapsed time: 10.18s 
  Conditions: sample_size=120, distribution=norm
 
 
-Design row: 4/8;   Started: Wed Jun 14 09:50:29 2023;   Total elapsed time: 20.55s 
+Design row: 4/8;   Started: Thu Aug 10 22:59:48 2023;   Total elapsed time: 15.24s 
  Conditions: sample_size=240, distribution=norm
 
 
-Design row: 5/8;   Started: Wed Jun 14 09:50:36 2023;   Total elapsed time: 27.51s 
+Design row: 5/8;   Started: Thu Aug 10 22:59:53 2023;   Total elapsed time: 20.38s 
  Conditions: sample_size=30, distribution=chi
 
 
-Design row: 6/8;   Started: Wed Jun 14 09:50:43 2023;   Total elapsed time: 34.42s 
+Design row: 6/8;   Started: Thu Aug 10 22:59:58 2023;   Total elapsed time: 25.32s 
  Conditions: sample_size=60, distribution=chi
 
 
-Design row: 7/8;   Started: Wed Jun 14 09:50:49 2023;   Total elapsed time: 41.13s 
+Design row: 7/8;   Started: Thu Aug 10 23:00:03 2023;   Total elapsed time: 30.37s 
  Conditions: sample_size=120, distribution=chi
 
 
-Design row: 8/8;   Started: Wed Jun 14 09:50:56 2023;   Total elapsed time: 48.00s 
+Design row: 8/8;   Started: Thu Aug 10 23:00:08 2023;   Total elapsed time: 35.58s 
  Conditions: sample_size=240, distribution=chi
 </code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
 <pre><code>
-Simulation complete. Total execution time: 54.96s</code></pre>
+Simulation complete. Total execution time: 40.79s</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -403,186 +403,186 @@ Simulation complete. Total execution time: 54.96s</code></pre>
 <tr class="odd">
 <td style="text-align: right;">30</td>
 <td style="text-align: left;">norm</td>
-<td style="text-align: right;">0.0297498</td>
-<td style="text-align: right;">0.0311210</td>
-<td style="text-align: right;">0.0416024</td>
-<td style="text-align: right;">0.0512205</td>
-<td style="text-align: right;">0.0284791</td>
-<td style="text-align: right;">0.1843068</td>
-<td style="text-align: right;">0.1789694</td>
-<td style="text-align: right;">0.1800554</td>
-<td style="text-align: right;">0.2130513</td>
-<td style="text-align: right;">0.1826303</td>
+<td style="text-align: right;">-0.0080777</td>
+<td style="text-align: right;">-0.0148161</td>
+<td style="text-align: right;">-0.0199939</td>
+<td style="text-align: right;">-0.0140270</td>
+<td style="text-align: right;">-0.0092592</td>
+<td style="text-align: right;">0.1868515</td>
+<td style="text-align: right;">0.1902263</td>
+<td style="text-align: right;">0.1988277</td>
+<td style="text-align: right;">0.2292133</td>
+<td style="text-align: right;">0.1867445</td>
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">0.9429198</td>
-<td style="text-align: right;">0.9543979</td>
-<td style="text-align: right;">1.336243</td>
-<td style="text-align: right;">0.9818899</td>
+<td style="text-align: right;">1.036449</td>
+<td style="text-align: right;">1.132298</td>
+<td style="text-align: right;">1.504826</td>
+<td style="text-align: right;">0.9988545</td>
 <td style="text-align: right;">50</td>
-<td style="text-align: right;">7.270</td>
-<td style="text-align: left;">Wed Jun 14 09:50:16 2023</td>
-<td style="text-align: right;">903416221</td>
+<td style="text-align: right;">5.136</td>
+<td style="text-align: left;">Thu Aug 10 22:59:38 2023</td>
+<td style="text-align: right;">690219018</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">60</td>
 <td style="text-align: left;">norm</td>
-<td style="text-align: right;">-0.0097494</td>
-<td style="text-align: right;">-0.0121612</td>
-<td style="text-align: right;">-0.0147662</td>
-<td style="text-align: right;">-0.0258952</td>
-<td style="text-align: right;">-0.0103229</td>
-<td style="text-align: right;">0.1409947</td>
-<td style="text-align: right;">0.1515269</td>
-<td style="text-align: right;">0.1594346</td>
-<td style="text-align: right;">0.1791889</td>
-<td style="text-align: right;">0.1409252</td>
+<td style="text-align: right;">-0.0137064</td>
+<td style="text-align: right;">-0.0093679</td>
+<td style="text-align: right;">-0.0045393</td>
+<td style="text-align: right;">-0.0064561</td>
+<td style="text-align: right;">-0.0143268</td>
+<td style="text-align: right;">0.1417534</td>
+<td style="text-align: right;">0.1435143</td>
+<td style="text-align: right;">0.1491282</td>
+<td style="text-align: right;">0.1809735</td>
+<td style="text-align: right;">0.1417746</td>
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">1.1549796</td>
-<td style="text-align: right;">1.2786739</td>
-<td style="text-align: right;">1.615166</td>
-<td style="text-align: right;">0.9990154</td>
+<td style="text-align: right;">1.024999</td>
+<td style="text-align: right;">1.106758</td>
+<td style="text-align: right;">1.629907</td>
+<td style="text-align: right;">1.0002986</td>
 <td style="text-align: right;">50</td>
-<td style="text-align: right;">6.571</td>
-<td style="text-align: left;">Wed Jun 14 09:50:22 2023</td>
-<td style="text-align: right;">1077467357</td>
+<td style="text-align: right;">5.040</td>
+<td style="text-align: left;">Thu Aug 10 22:59:43 2023</td>
+<td style="text-align: right;">717883248</td>
 </tr>
 <tr class="odd">
 <td style="text-align: right;">120</td>
 <td style="text-align: left;">norm</td>
-<td style="text-align: right;">0.0154507</td>
-<td style="text-align: right;">0.0190990</td>
-<td style="text-align: right;">0.0184514</td>
-<td style="text-align: right;">0.0201537</td>
-<td style="text-align: right;">0.0156482</td>
-<td style="text-align: right;">0.0854772</td>
-<td style="text-align: right;">0.0880060</td>
-<td style="text-align: right;">0.0926618</td>
-<td style="text-align: right;">0.1033099</td>
-<td style="text-align: right;">0.0853852</td>
+<td style="text-align: right;">-0.0037574</td>
+<td style="text-align: right;">-0.0016941</td>
+<td style="text-align: right;">-0.0016123</td>
+<td style="text-align: right;">0.0025052</td>
+<td style="text-align: right;">-0.0045510</td>
+<td style="text-align: right;">0.1016450</td>
+<td style="text-align: right;">0.1125109</td>
+<td style="text-align: right;">0.1212285</td>
+<td style="text-align: right;">0.1417114</td>
+<td style="text-align: right;">0.1018317</td>
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">1.0600443</td>
-<td style="text-align: right;">1.1751710</td>
-<td style="text-align: right;">1.460775</td>
-<td style="text-align: right;">0.9978502</td>
+<td style="text-align: right;">1.225228</td>
+<td style="text-align: right;">1.422451</td>
+<td style="text-align: right;">1.943737</td>
+<td style="text-align: right;">1.0036771</td>
 <td style="text-align: right;">50</td>
-<td style="text-align: right;">6.714</td>
-<td style="text-align: left;">Wed Jun 14 09:50:29 2023</td>
-<td style="text-align: right;">1461526622</td>
+<td style="text-align: right;">5.068</td>
+<td style="text-align: left;">Thu Aug 10 22:59:48 2023</td>
+<td style="text-align: right;">1262076152</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">240</td>
 <td style="text-align: left;">norm</td>
-<td style="text-align: right;">-0.0062304</td>
-<td style="text-align: right;">-0.0076866</td>
-<td style="text-align: right;">-0.0082527</td>
-<td style="text-align: right;">0.0007573</td>
-<td style="text-align: right;">-0.0063264</td>
-<td style="text-align: right;">0.0661626</td>
-<td style="text-align: right;">0.0672409</td>
-<td style="text-align: right;">0.0708765</td>
-<td style="text-align: right;">0.0739489</td>
-<td style="text-align: right;">0.0664047</td>
+<td style="text-align: right;">-0.0136352</td>
+<td style="text-align: right;">-0.0168455</td>
+<td style="text-align: right;">-0.0177158</td>
+<td style="text-align: right;">-0.0190949</td>
+<td style="text-align: right;">-0.0133480</td>
+<td style="text-align: right;">0.0769253</td>
+<td style="text-align: right;">0.0809831</td>
+<td style="text-align: right;">0.0848843</td>
+<td style="text-align: right;">0.0911389</td>
+<td style="text-align: right;">0.0769029</td>
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">1.0328611</td>
-<td style="text-align: right;">1.1475699</td>
-<td style="text-align: right;">1.249218</td>
-<td style="text-align: right;">1.0073314</td>
+<td style="text-align: right;">1.108284</td>
+<td style="text-align: right;">1.217635</td>
+<td style="text-align: right;">1.403686</td>
+<td style="text-align: right;">0.9994174</td>
 <td style="text-align: right;">50</td>
-<td style="text-align: right;">6.957</td>
-<td style="text-align: left;">Wed Jun 14 09:50:36 2023</td>
-<td style="text-align: right;">1727633798</td>
+<td style="text-align: right;">5.138</td>
+<td style="text-align: left;">Thu Aug 10 22:59:53 2023</td>
+<td style="text-align: right;">1246350342</td>
 </tr>
 <tr class="odd">
 <td style="text-align: right;">30</td>
 <td style="text-align: left;">chi</td>
-<td style="text-align: right;">0.0532533</td>
-<td style="text-align: right;">-0.3137971</td>
-<td style="text-align: right;">-0.4661847</td>
-<td style="text-align: right;">-0.5730742</td>
-<td style="text-align: right;">0.0415595</td>
-<td style="text-align: right;">0.4726788</td>
-<td style="text-align: right;">0.5550194</td>
-<td style="text-align: right;">0.6340303</td>
-<td style="text-align: right;">0.7317198</td>
-<td style="text-align: right;">0.4682795</td>
+<td style="text-align: right;">0.1195392</td>
+<td style="text-align: right;">-0.2029315</td>
+<td style="text-align: right;">-0.3536848</td>
+<td style="text-align: right;">-0.4768426</td>
+<td style="text-align: right;">0.1124220</td>
+<td style="text-align: right;">0.4440711</td>
+<td style="text-align: right;">0.4720724</td>
+<td style="text-align: right;">0.5647804</td>
+<td style="text-align: right;">0.6723685</td>
+<td style="text-align: right;">0.4429099</td>
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">1.3787454</td>
-<td style="text-align: right;">1.7992347</td>
-<td style="text-align: right;">2.396389</td>
-<td style="text-align: right;">0.9814723</td>
+<td style="text-align: right;">1.130088</td>
+<td style="text-align: right;">1.617537</td>
+<td style="text-align: right;">2.292502</td>
+<td style="text-align: right;">0.9947769</td>
 <td style="text-align: right;">50</td>
-<td style="text-align: right;">6.905</td>
-<td style="text-align: left;">Wed Jun 14 09:50:43 2023</td>
-<td style="text-align: right;">1641328088</td>
+<td style="text-align: right;">4.938</td>
+<td style="text-align: left;">Thu Aug 10 22:59:58 2023</td>
+<td style="text-align: right;">749286434</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">60</td>
 <td style="text-align: left;">chi</td>
-<td style="text-align: right;">0.0329161</td>
-<td style="text-align: right;">-0.3278993</td>
-<td style="text-align: right;">-0.4757649</td>
-<td style="text-align: right;">-0.6092868</td>
-<td style="text-align: right;">0.0296970</td>
-<td style="text-align: right;">0.3139272</td>
-<td style="text-align: right;">0.4392542</td>
-<td style="text-align: right;">0.5562916</td>
-<td style="text-align: right;">0.7027590</td>
-<td style="text-align: right;">0.3117431</td>
+<td style="text-align: right;">-0.0082797</td>
+<td style="text-align: right;">-0.3324018</td>
+<td style="text-align: right;">-0.4835403</td>
+<td style="text-align: right;">-0.6537112</td>
+<td style="text-align: right;">-0.0109095</td>
+<td style="text-align: right;">0.2957513</td>
+<td style="text-align: right;">0.4199191</td>
+<td style="text-align: right;">0.5463799</td>
+<td style="text-align: right;">0.7075674</td>
+<td style="text-align: right;">0.2965610</td>
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">1.9578254</td>
-<td style="text-align: right;">3.1401265</td>
-<td style="text-align: right;">5.011353</td>
-<td style="text-align: right;">0.9861338</td>
+<td style="text-align: right;">2.015941</td>
+<td style="text-align: right;">3.412998</td>
+<td style="text-align: right;">5.723771</td>
+<td style="text-align: right;">1.0054827</td>
 <td style="text-align: right;">50</td>
-<td style="text-align: right;">6.709</td>
-<td style="text-align: left;">Wed Jun 14 09:50:49 2023</td>
-<td style="text-align: right;">1415833419</td>
+<td style="text-align: right;">5.055</td>
+<td style="text-align: left;">Thu Aug 10 23:00:03 2023</td>
+<td style="text-align: right;">1942180708</td>
 </tr>
 <tr class="odd">
 <td style="text-align: right;">120</td>
 <td style="text-align: left;">chi</td>
-<td style="text-align: right;">-0.0533443</td>
-<td style="text-align: right;">-0.3921347</td>
-<td style="text-align: right;">-0.5362277</td>
-<td style="text-align: right;">-0.6736837</td>
-<td style="text-align: right;">-0.0545067</td>
-<td style="text-align: right;">0.2094071</td>
-<td style="text-align: right;">0.4419034</td>
-<td style="text-align: right;">0.5771418</td>
-<td style="text-align: right;">0.7123931</td>
-<td style="text-align: right;">0.2124386</td>
+<td style="text-align: right;">-0.0228672</td>
+<td style="text-align: right;">-0.3636097</td>
+<td style="text-align: right;">-0.5067585</td>
+<td style="text-align: right;">-0.6174661</td>
+<td style="text-align: right;">-0.0234262</td>
+<td style="text-align: right;">0.2288401</td>
+<td style="text-align: right;">0.4220460</td>
+<td style="text-align: right;">0.5526723</td>
+<td style="text-align: right;">0.6620019</td>
+<td style="text-align: right;">0.2305734</td>
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">4.4531980</td>
-<td style="text-align: right;">7.5959550</td>
-<td style="text-align: right;">11.573290</td>
-<td style="text-align: right;">1.0291632</td>
+<td style="text-align: right;">3.401381</td>
+<td style="text-align: right;">5.832719</td>
+<td style="text-align: right;">8.368627</td>
+<td style="text-align: right;">1.0152057</td>
 <td style="text-align: right;">50</td>
-<td style="text-align: right;">6.878</td>
-<td style="text-align: left;">Wed Jun 14 09:50:56 2023</td>
-<td style="text-align: right;">1729985301</td>
+<td style="text-align: right;">5.209</td>
+<td style="text-align: left;">Thu Aug 10 23:00:08 2023</td>
+<td style="text-align: right;">1942028948</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">240</td>
 <td style="text-align: left;">chi</td>
-<td style="text-align: right;">0.0089197</td>
-<td style="text-align: right;">-0.3296886</td>
-<td style="text-align: right;">-0.4742613</td>
-<td style="text-align: right;">-0.6334701</td>
-<td style="text-align: right;">0.0086411</td>
-<td style="text-align: right;">0.1523843</td>
-<td style="text-align: right;">0.3597207</td>
-<td style="text-align: right;">0.4949397</td>
-<td style="text-align: right;">0.6520986</td>
-<td style="text-align: right;">0.1529830</td>
+<td style="text-align: right;">-0.0250482</td>
+<td style="text-align: right;">-0.3634897</td>
+<td style="text-align: right;">-0.4988825</td>
+<td style="text-align: right;">-0.6317622</td>
+<td style="text-align: right;">-0.0252481</td>
+<td style="text-align: right;">0.1514635</td>
+<td style="text-align: right;">0.3921371</td>
+<td style="text-align: right;">0.5221725</td>
+<td style="text-align: right;">0.6590174</td>
+<td style="text-align: right;">0.1516265</td>
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">5.5725027</td>
-<td style="text-align: right;">10.5493059</td>
-<td style="text-align: right;">18.312427</td>
-<td style="text-align: right;">1.0078723</td>
+<td style="text-align: right;">6.702858</td>
+<td style="text-align: right;">11.885355</td>
+<td style="text-align: right;">18.931188</td>
+<td style="text-align: right;">1.0021534</td>
 <td style="text-align: right;">50</td>
-<td style="text-align: right;">6.957</td>
-<td style="text-align: left;">Wed Jun 14 09:51:03 2023</td>
-<td style="text-align: right;">928324547</td>
+<td style="text-align: right;">5.207</td>
+<td style="text-align: left;">Thu Aug 10 23:00:14 2023</td>
+<td style="text-align: right;">295841585</td>
 </tr>
 </tbody>
 </table>
