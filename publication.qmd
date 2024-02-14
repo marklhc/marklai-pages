@@ -4,6 +4,12 @@ title: "Selected Publications"
 
 See my [CV](/Vita_Lai.pdf) for the full list of publications.
 
+- Zhang, Y., & Lai, M. H. C. (2024). Evaluating two small sample corrections for fixed-effects standard errors and inferences in multilevel models with heteroscedastic, unbalanced, clustered data. Behavior Research Methods. Advance online publication. https://doi.org/10.3758/s13428-023-02325-9\
+[[Open Access]](https://link.springer.com/article/10.3758/s13428-023-02325-9) [[Supp]](https://osf.io/sa5wh/)
+
+- Tse, W. W.-Y., Lai, M. H. C., & Zhang, Y. (2023). Does strict invariance matter? Valid group mean comparisons with ordered-categorical items. Behavior Research Methods. Advance online publication. <https://doi.org/10.3758/s13428-023-02247-6>\
+[[Open Access]](https://link.springer.com/article/10.3758/s13428-023-02247-6) [[Supp]](https://github.com/winniewytse/micat-supp)
+
 - Lai, M. H. C., Tse, W. W.-Y., Zhang, G., Li, Y., & Hsiao, Y.-Y. (2023). Correcting for Unreliability and Partial Invariance: A Two-Stage Path Analysis Approach. Structural Equation Modeling: A Multidisciplinary Journal, 30(2), 258–271. <https://doi.org/10.1080/10705511.2022.2125397>\
 [[Postprint]](/postprint/Lai_etal_2022_sem_2spa_invariance_am.pdf) [[Supp]](https://github.com/marklhc/2spa-inv-supp) [[Slides]](https://www.slideshare.net/MarkLai27/correcting-for-unreliability-partial-invariance-a-twostage-path-analysis-approach)
 
@@ -14,7 +20,7 @@ See my [CV](/Vita_Lai.pdf) for the full list of publications.
 [[Supp]](https://osf.io/e75wk/)
 
 - Lai, M. H. C., & Zhang, Y. (2022). Classification Accuracy of Multidimensional Tests: Quantifying the Impact of Noninvariance. Structural Equation Modeling: A Multidisciplinary Journal, 29(4), 620–629. <https://doi.org/10.1080/10705511.2021.1977936>\
-[[Postprint]](/postprint/Lai%26Zhang_2021_sem_mcaa_partial_invariance_am.pdf) [[Supp]](https://github.com/marklhc/mcaa_supp) [[Poster]](/poster/mcaa_poster_apa.pdf)
+[[Postprint]](/postprint/Lai&Zhang_2021_sem_mcaa_partial_invariance_am.pdf) [[Supp]](https://github.com/marklhc/mcaa_supp) [[Poster]](/poster/mcaa_poster_apa.pdf)
 
 - Lai, M. H. C., & Hsiao, Y.-Y. (2022). Two-stage path analysis with definition variables: An alternative framework to account for measurement error. Psychological Methods, 27(4), 568–588. <https://doi.org/10.1037/met0000410>\
 [[Postprint]](/postprint/Lai&Hsiao_2021_pm_2spa_am.pdf) [[Supp]](https://osf.io/h95vx/) [[Poster]](https://aera21-aera.ipostersessions.com/Default.aspx?s=F5-60-EC-7F-8B-FC-38-8D-8C-83-D8-EE-6C-E9-BF-96)

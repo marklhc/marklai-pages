@@ -15,16 +15,16 @@ about:
       href: /Vita_Lai.pdf
 ---
 
-::: {.callout-important}
+<!-- ::: {.callout-important}
 
-I plan to take a Ph.D. student interested in quantitative and statistical methods (including but not limited to: statistical learning, multilevel modeling, structural equation modeling, psychometrics, and generalizability of quantitative findings) in the 2023-2024 academic year. 
+I plan to take a Ph.D. student interested in quantitative and statistical methods (including but not limited to: statistical learning, multilevel modeling, structural equation modeling, psychometrics, and generalizability of quantitative findings) in the 2024-2025 academic year. 
 
 To learn more about the doctoral program at USC and speak to a program advisor, check out the [Preview Day](https://dornsife.usc.edu/psyc/preview-day/) event. 
 
 <button name="fit" onclick="window.open('/posts/2020-06-19-potential-fit-and-application-tips/');">Potential Fit and Tips</button>
 <button name="usc-admit" onclick="window.open('https://dornsife.usc.edu/admission/apply');">Apply</button>
 
-:::
+::: -->
 
 I am an Associate Professor of Psychology (Quantitative Methods) in the [Department of Psychology](https://dornsife.usc.edu/psyc/) at the University of Southern California. I am from [Macau](https://en.wikipedia.org/?title=Macau) and speaks Cantonese as my native language. Mathematics has always been a favorite subject to me, but my growing interest in understanding the human mind lead me to pursue a bachelor degree in Psychology at the University of Macau, where I discovered that a career of developing and applying quantitative methods in the social sciences would be a very good fit to me.
 

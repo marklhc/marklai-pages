@@ -9,3 +9,6 @@
 .DS_Store
 Thumbs.db
 /.quarto/
+/_site/
+
+/.luarc.json

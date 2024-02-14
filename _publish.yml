@@ -1,4 +1,4 @@
 - source: project
   netlify:
-    - id: "b3ccaea4-fe6a-41a3-b7b2-e1f5f262d8e8"
-      url: "https://quantscience.rbind.io"
+    - id: b3ccaea4-fe6a-41a3-b7b2-e1f5f262d8e8
+      url: 'https://quantscience.rbind.io'
